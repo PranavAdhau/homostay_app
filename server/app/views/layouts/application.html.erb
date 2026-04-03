@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>HomostayApp</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <% if Rails.env.development? %>
+      <!-- React Refresh Preamble (Required for Fast Refresh) -->
+      <script type="module">
+        import RefreshRuntime from "/@react-refresh"
+        RefreshRuntime.injectIntoGlobalHook(window)
+        window.$RefreshReg$ = () => {}
+        window.$RefreshSig$ = () => (type) => type
+        window.__vite_plugin_react_preamble_installed__ = true
+      </script>
+
+      <!-- Vite Dev Client (Required for React SWC + HMR) -->
+      <script type="module" src="/@vite/client"></script>
+
+      <!-- React App Entry -->
+      <script type="module" src="/src/main.tsx"></script>
+    <% else %>
+      <!-- Production SPA assets are served from server/public/index.html by SpaController. -->
+    <% end %>
+  </head>
+
+  <body>
+    <%= yield %>
+  </body>
+</html>

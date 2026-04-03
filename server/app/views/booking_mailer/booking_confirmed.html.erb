@@ -1,0 +1,12 @@
+<h2>Booking Confirmed 🎉</h2>
+
+<p>Hi <%= @booking.guest_name %>,</p>
+
+<p>Your booking has been successfully confirmed.</p>
+
+<p><strong>Property:</strong> <%= @homestay.name %></p>
+<p><strong>Dates:</strong> <%= @booking.check_in_date %> to <%= @booking.check_out_date %></p>
+<p><strong>Guests:</strong> <%= @booking.number_of_guests %></p>
+<p><strong>Total:</strong> RM<%= @booking.total_price %></p>
+
+<p>We look forward to hosting you!</p>

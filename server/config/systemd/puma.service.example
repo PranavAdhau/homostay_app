@@ -1,0 +1,22 @@
+# Systemd service file for Puma
+# Place this in /etc/systemd/system/puma.service
+# Then run: systemctl enable puma && systemctl start puma
+
+[Unit]
+Description=Puma HTTP Server
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/var/www/homostay_app/server
+Environment="RAILS_ENV=production"
+Environment="PORT=3000"
+ExecStart=/home/deploy/.rbenv/shims/bundle exec puma -C config/puma.rb
+ExecReload=/bin/kill -USR1 $MAINPID
+KillMode=mixed
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

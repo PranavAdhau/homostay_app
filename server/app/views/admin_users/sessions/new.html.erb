@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Homostay</title>
+  <meta name="csrf-token" content="<%= form_authenticity_token %>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold text-slate-900 mb-2">Admin Login</h1>
+        <p class="text-sm text-slate-600">Sign in to access the admin panel</p>
+      </div>
+
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "space-y-5" }) do |f| %>
+        <% if alert %>
+          <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <%= alert %>
+          </div>
+        <% end %>
+
+        <% if notice %>
+          <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+            <%= notice %>
+          </div>
+        <% end %>
+
+        <div>
+          <%= f.label :email, class: "block text-sm font-medium text-slate-700 mb-1.5" %>
+          <%= f.email_field :email, 
+                autofocus: true, 
+                autocomplete: "email", 
+                required: true,
+                class: "w-full h-11 px-4 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors text-sm",
+                placeholder: "admin@homostay.com" %>
+        </div>
+
+        <div>
+          <%= f.label :password, class: "block text-sm font-medium text-slate-700 mb-1.5" %>
+          <%= f.password_field :password, 
+                autocomplete: "current-password", 
+                required: true,
+                minlength: 6,
+                class: "w-full h-11 px-4 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors text-sm",
+                placeholder: "Enter your password" %>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="flex items-center">
+            <%= f.check_box :remember_me, class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded" %>
+            <%= f.label :remember_me, class: "ml-2 block text-sm text-slate-600" %>
+          </div>
+        <% end %>
+
+        <div>
+          <%= f.submit "Sign in", class: "w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" %>
+        </div>
+      <% end %>
+
+      <div class="mt-6 text-center">
+        <% if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
+          <%= link_to "Forgot your password?", new_password_path(resource_name), class: "text-indigo-600 text-sm hover:text-indigo-700 font-medium" %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mt-6 text-center text-sm text-slate-500">
+      <p>© <%= Date.current.year %> Homostay. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

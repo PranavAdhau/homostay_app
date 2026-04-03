@@ -1,0 +1,46 @@
+source 'https://rubygems.org'
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
+
+ruby ">= 3.3.0"  
+
+gem "bootsnap", require: false
+
+# Core
+gem 'rails', '~> 7.1'
+gem 'pg', '~> 1.5'
+gem 'puma', '~> 6.0'
+
+# Authentication
+gem 'devise'
+
+# Background Jobs
+gem 'sidekiq'
+gem 'redis', '~> 5.0'
+
+# Storage & Image Processing
+gem 'image_processing', '~> 1.12'
+
+# ----------------------------
+# Development & Test
+# ----------------------------
+group :development, :test do
+  gem 'rspec-rails'
+  gem 'factory_bot_rails'
+  gem 'faker'
+  gem 'simplecov', require: false
+  gem 'dotenv-rails'
+  gem 'pry-rails'
+  gem 'letter_opener_web'
+end
+
+# ----------------------------
+# Development Only
+# ----------------------------
+group :development do
+  gem 'annotate'
+  gem 'letter_opener'
+  gem 'rubocop', require: false
+end
+
+# Windows-specific (if needed)
+gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]

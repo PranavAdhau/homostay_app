@@ -1,0 +1,12 @@
+Booking Confirmed
+
+Hi <%= @booking.guest_name %>,
+
+Your booking has been confirmed.
+
+Property: <%= @homestay.name %>
+Dates: <%= @booking.check_in_date %> to <%= @booking.check_out_date %>
+Guests: <%= @booking.number_of_guests %>
+Total: RM<%= @booking.total_price %>
+
+Thank you!

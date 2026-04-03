@@ -1,0 +1,22 @@
+# Systemd service file for Sidekiq
+# Place this in /etc/systemd/system/sidekiq.service
+# Then run: systemctl enable sidekiq && systemctl start sidekiq
+
+[Unit]
+Description=Sidekiq Background Job Processor
+After=network.target redis.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/var/www/homostay_app/server
+Environment="RAILS_ENV=production"
+Environment="REDIS_URL=redis://localhost:6379/0"
+ExecStart=/home/deploy/.rbenv/shims/bundle exec sidekiq -e production
+ExecReload=/bin/kill -TSTP $MAINPID
+KillMode=mixed
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

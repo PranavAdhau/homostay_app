@@ -1,0 +1,496 @@
+*, *::before, *::after { box-sizing: border-box; }
+    
+.pdp-page-body {
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 24px 16px 48px;
+}
+
+.pdp-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 20px;
+    transition: color 0.15s;
+}
+.pdp-back:hover { color: #1F8A84; }
+
+.pdp-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+}
+
+.pdp-left { display: flex; flex-direction: column; gap: 20px; }
+.pdp-right { display: none; }
+
+@media (min-width: 768px) {
+    .pdp-grid {
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 30px;
+        align-items: start;
+    }
+    .pdp-right {
+        display: block;
+        position: sticky;
+        top: var(--header-height, 80px);
+        align-self: start;
+    }
+    .pdp-mobile-form { display: none !important; }
+}
+
+/* ===========================
+   GALLERY
+=========================== */
+
+.pdp-gallery {
+    border-radius:16px;
+    overflow:hidden;
+    isolation:isolate;
+    background:#e2e8f0;
+    position:relative;
+    user-select:none;
+    -webkit-user-drag:none;
+    touch-action:pan-y;
+    height:auto;
+    aspect-ratio:16/10;
+}
+
+@media (min-width:768px){
+    .pdp-gallery{
+        height:440px;
+        aspect-ratio:auto;
+    }
+}
+
+.pdp-slider-track {
+    display:flex;
+    height:100%;
+    align-items:stretch;
+    transform-style:preserve-3d;
+    transition:transform .45s cubic-bezier(0.4,0,0.2,1);
+    will-change:transform;
+}
+
+.pdp-slide {
+    min-width:100%;
+    height:100%;
+    overflow:hidden;
+    position:relative;
+    border-radius:inherit;
+    display:flex;
+}
+
+.pdp-slide img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    border-radius:inherit;
+    position:absolute;
+    inset:0;
+}
+
+@media (max-width:768px){
+    .pdp-gallery{
+        aspect-ratio:auto;
+        height:auto;
+    }
+    .pdp-slide{
+        height:auto;
+    }
+    .pdp-slide img{
+        position:relative;
+        width:100%;
+        height:auto;
+        object-fit:contain;
+        background:#e2e8f0;
+    }
+}
+
+.pdp-slide > div {
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    border-radius:inherit;
+}
+
+/* ===========================
+   ARROWS
+=========================== */
+
+.pdp-gallery-btn {
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.88);
+    backdrop-filter:blur(6px);
+    border:none;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:10;
+    transition:background .2s, transform .2s;
+    box-shadow:0 2px 8px rgba(0,0,0,0.15);
+}
+
+.pdp-gallery-btn:hover {
+    background:#fff;
+    transform:translateY(-50%) scale(1.05);
+}
+
+.pdp-gallery-btn.prev { left:14px; }
+.pdp-gallery-btn.next { right:14px; }
+
+@media(max-width:768px){
+    .pdp-gallery-btn{ width:34px; height:34px; }
+    .pdp-gallery-btn svg{ width:18px; height:18px; }
+}
+
+.pdp-gallery-counter {
+    position:absolute;
+    bottom:14px;
+    right:16px;
+    background:rgba(0,0,0,0.42);
+    color:#fff;
+    padding:3px 11px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:500;
+    backdrop-filter:blur(4px);
+}
+
+/* ===========================
+   THUMBNAILS
+=========================== */
+
+.pdp-thumbs{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:12px;
+    margin-top:10px;
+    overflow:visible;
+    padding:0;
+}
+
+.pdp-thumb-btn{
+    width:100%;
+    height:80px;
+    border-radius:16px;
+    overflow:hidden;
+    border:none;
+    padding:0;
+    background:#e2e8f0;
+    cursor:pointer;
+    position:relative;
+    transition:transform .2s ease, opacity .2s ease, box-shadow .2s ease;
+}
+
+.pdp-thumb-btn img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center;
+    display:block;
+}
+
+.pdp-thumb-btn.active{
+    opacity:1;
+    transform:scale(1);
+    box-shadow: 0 0 0 3px #1F8A84, 0 6px 16px rgba(31,138,132,.22);
+    z-index:2;
+}
+
+.pdp-thumb-btn.inactive{ opacity:.55; }
+
+.pdp-thumb-btn:hover{
+    opacity:1;
+    transform:translateY(-2px);
+}
+
+@media(min-width:768px){
+    .pdp-thumb-btn{ height:90px; border-radius:18px; }
+}
+
+/* ===========================
+   CARDS + FORM
+=========================== */
+
+.pdp-info-card {
+    background:#fff;
+    border-radius:16px;
+    padding:22px 20px;
+    border:1px solid #f1f5f9;
+    box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+
+.pdp-res-card {
+    background:#fff;
+    border-radius:16px;
+    padding:16px 16px;
+    border:1px solid #f1f5f9;
+    box-shadow:0 6px 18px rgba(0,0,0,0.06);
+    overflow:visible;
+    position:relative;
+}
+
+.pdp-date-row { display:grid; grid-template-columns:1fr; gap:12px; }
+@media (min-width:480px) { .pdp-date-row { grid-template-columns:1fr 1fr; } }
+
+.pdp-field {
+    width:100%;
+    height:40px;
+    background:#f8fafc;
+    border:1.5px solid #e2e8f0;
+    border-radius:10px;
+    font-size:13px;
+    font-family:inherit;
+    color:#111827;
+    outline:none;
+    box-sizing:border-box;
+    display:block;
+    transition:border-color .15s, background .15s;
+}
+.pdp-field:focus { border-color:#1F8A84; background:#fff; }
+.pdp-field:hover { border-color:#A1B2A4; }
+
+.pdp-input { padding:0 13px; }
+
+/* ===========================
+   CALENDAR + DROPDOWN
+=========================== */
+
+.pdp-cal-trigger {
+    width:100%;
+    height:40px;
+    background:#f8fafc;
+    border:1.5px solid #e2e8f0;
+    border-radius:10px;
+    font-size:14px;
+    font-family:inherit;
+    color:#111827;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 13px;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+}
+.pdp-cal-trigger .placeholder { color: #9ca3af; font-size: 13px; }
+.pdp-cal-trigger:hover { border-color:#A1B2A4; background:#fff; }
+.pdp-cal-trigger.open { border-color:#1F8A84; background:#fff; }
+
+.pdp-calendar-wrapper { position: relative; }
+
+/* Calendar anchored inside the card — scrolls with the page */
+.pdp-calendar-popover {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+}
+
+@media (max-width: 480px) {
+    .pdp-calendar-popover {
+        left: 0;
+        transform: none;
+        right: 0;
+    }
+}
+.pdp-dropdown-popover {
+    position:absolute;
+    top:calc(100% + 6px);
+    left:0;
+    right:0;
+    z-index:9999;
+    background:white;
+    border-radius:16px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.12);
+    padding:8px;
+    width:100%;
+}
+/* ===========================
+   BUTTON
+=========================== */
+
+.pdp-btn {
+    width:100%; height:44px;
+    background:#1F8A84; color:#fff;
+    border:none; border-radius:10px;
+    font-size:15px; font-weight:600;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:background .2s, transform .15s;
+}
+.pdp-btn:hover:not(:disabled) { background:#264948; transform:translateY(-1px); }
+.pdp-btn:disabled { background:#A1B2A4; cursor:not-allowed; }
+
+.pdp-mobile-form { margin-top:0; }
+/* ===========================
+   MAP SECTION
+=========================== */
+
+.pdp-map-section{
+    margin-top:20px;
+    padding:20px;
+    background:#fff;
+    border-radius:16px;
+    border:1px solid #f1f5f9;
+    box-shadow:0 4px 14px rgba(0,0,0,.08);
+  }
+  
+  /* ===========================
+     MAP CONTAINER
+  =========================== */
+  
+  .pdp-map-container{
+    width:100%;
+    height:350px;
+    border-radius:16px;
+    overflow:hidden;
+    margin-top:12px;
+    position:relative;
+  }
+  
+  .pdp-map-container .leaflet-container{
+    border-radius:16px;
+  }
+  
+  /* ===========================
+     STATIC MAP PREVIEW
+  =========================== */
+  
+  .pdp-map-preview{
+    cursor:pointer;
+  }
+  
+  .pdp-map-image{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  
+  .pdp-map-overlay{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  
+    background:rgba(255,255,255,0.15);   /* much lighter */
+    backdrop-filter:blur(8px);           /* real blur */
+    -webkit-backdrop-filter:blur(8px);
+  
+    font-weight:500;
+    font-size:14px;
+    color:#111;
+  }
+  
+  /* ===========================
+   ZOOM BUTTONS
+=========================== */
+
+.leaflet-control-zoom{
+    border:none !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    gap:0;
+  }
+
+  .leaflet-bar{
+    background:transparent !important;
+    border:none !important;
+    box-shadow:none !important;
+  }
+  
+  .leaflet-control-zoom a{
+    width:36px;
+    height:36px;
+  
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  
+    font-size:20px;
+    font-weight:600;
+  
+    background:white;
+    color:#111;
+  
+    border:none !important;
+    border-radius:10px;
+  
+    margin-bottom:6px;
+  
+    box-shadow:0 6px 14px rgba(0,0,0,0.18);
+  
+    transition:all .15s ease;
+  }
+  
+  .leaflet-control-zoom a:last-child{
+    margin-bottom:0;
+  }
+  
+  .leaflet-control-zoom a:hover{
+    background:#f3f4f6;
+    transform:scale(1.05);
+  }
+  
+  /* ===========================
+     VIEW MAP LINK
+  =========================== */
+  .pdp-map-container img{
+    filter:brightness(.98);
+  }
+  
+  .pdp-map-section a{
+    display:inline-flex;
+    align-items:center;
+    font-weight:500;
+    font-size:14px;
+    color:#1F8A84;
+    text-decoration:none;
+    padding:6px 10px;
+    border-radius:8px;
+    transition:.15s ease;
+  }
+  
+  .pdp-map-section a:hover{
+    background:#FAF5F2;
+  }
+  
+  /* ===========================
+     MOBILE
+  =========================== */
+  
+  @media(max-width:640px){
+  
+    .pdp-map-container{
+      height:300px;
+    }
+  
+    .leaflet-control-zoom a{
+      width:34px;
+      height:34px;
+      font-size:17px;
+    }
+  
+  }

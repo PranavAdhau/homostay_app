@@ -1,0 +1,72 @@
+Rails.application.routes.draw do
+  root "spa#index"
+  get "spa/index"
+
+  get "up" => "rails/health#show", as: :rails_health_check
+
+  devise_for :admin_users, path: "admin", controllers: {
+    sessions: 'admin_users/sessions',
+    passwords: 'admin_users/passwords'
+  }
+
+  namespace :api do
+    namespace :v1 do
+      resources :blogs, only: [:index, :show]
+      resources :homestays, only: [:index, :show] do
+        member do
+          get :availability
+        end
+      end
+      resources :bookings, only: [:create, :show]
+      resource :site_settings, only: [:show], controller: "site_settings"
+    end
+  end
+
+  get "/calendars/:homestay_id.ics", to: "calendars#show", as: :homestay_calendar
+
+  namespace :admin do
+    namespace :api do
+      namespace :v1 do
+        resources :blogs
+        resources :homestays
+        resources :bookings, only: [:index, :show, :update] do
+          member do
+            patch :approve
+            patch :reject
+            patch :confirm
+          end
+        end
+        resources :amenities, only: [:index]
+        resource :site_setting, only: [:show, :update]
+        get 'dashboard/stats', to: 'dashboard#stats'
+      end
+    end
+
+  end
+
+  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+
+  require "sidekiq/web"
+  mount Sidekiq::Web => "/sidekiq"
+
+  if Rails.env.development?
+    get "/@react-refresh", to: "spa#vite_asset"
+    get "/@vite/*path", to: "spa#vite_asset"
+    get "/@id/*path", to: "spa#vite_asset"
+    get "/@fs/*path", to: "spa#vite_asset"
+    get "/src/*path", to: "spa#vite_asset"
+    get "/node_modules/*path", to: "spa#vite_asset"
+  else
+    get "/vite/*path", to: "spa#published_asset", defaults: { asset_root: "vite" }
+    get "/assets/*path", to: "spa#published_asset", defaults: { asset_root: "assets" }
+  end
+
+  # Chrome DevTools may probe this path during local development. Return an
+  # empty JSON response so it doesn't show up as a routing error in dev logs.
+  get "/.well-known/appspecific/com.chrome.devtools.json",
+    to: proc { [200, { "Content-Type" => "application/json", "Cache-Control" => "no-store" }, ['{}']] }
+
+  get '*path',
+    to: 'spa#index',
+    constraints: ->(req) { !req.xhr? && req.format.html? }
+end

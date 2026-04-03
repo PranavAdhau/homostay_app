@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 320" role="img" aria-labelledby="title">
+  <title>Sacred Homes</title>
+  <rect width="640" height="320" rx="22" fill="#1F8A84"/>
+  <g fill="none" stroke="#F4EBD7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M164 234V132l156-122 156 122v102" stroke-width="14"/>
+    <path d="M322 234v-94" stroke-width="12"/>
+    <path d="M322 99c-24 26-36 53-36 82 0 13 13 25 36 36 23-11 36-23 36-36 0-29-12-56-36-82Z" stroke-width="12"/>
+    <path d="M283 143c-30 6-49 20-56 42-5 15 0 31 16 48 25 1 43-5 54-18 11-14 6-38-14-72Z" stroke-width="12"/>
+    <path d="M361 143c30 6 49 20 56 42 5 15 0 31-16 48-25 1-43-5-54-18-11-14-6-38 14-72Z" stroke-width="12"/>
+    <path d="M252 186c-30-8-55-5-73 10-13 11-17 26-11 45 21 12 42 14 62 5 19-8 27-28 22-60Z" stroke-width="12"/>
+    <path d="M392 186c30-8 55-5 73 10 13 11 17 26 11 45-21 12-42 14-62 5-19-8-27-28-22-60Z" stroke-width="12"/>
+  </g>
+  <text x="320" y="286" fill="#F4EBD7" font-family="Georgia, 'Times New Roman', serif" font-size="46" text-anchor="middle" letter-spacing="3">SACRED HOMES</text>
+</svg>

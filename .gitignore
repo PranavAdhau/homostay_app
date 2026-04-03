@@ -1,0 +1,55 @@
+# =========================
+# Node
+# =========================
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# =========================
+# Build
+# =========================
+build/
+dist/
+client/build/
+client/dist/
+server/public/assets/
+
+# =========================
+# Env
+# =========================
+.env
+.env.*
+
+# =========================
+# Rails (IMPORTANT FIX HERE)
+# =========================
+server/log/
+server/tmp/
+server/storage/
+server/vendor/bundle/
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Editor
+# =========================
+.vscode/
+.cursor/
+.codex/
+.rubymate/
+.codex
+
+# =========================
+# Misc
+# =========================
+*.log
+
+# Windows junk
+*:Zone.Identifier
+
+# Rails secrets
+server/config/master.key
