@@ -47,7 +47,9 @@ Rails.application.routes.draw do
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
   require "sidekiq/web"
-  mount Sidekiq::Web => "/sidekiq"
+  authenticate :admin_user do
+    mount Sidekiq::Web => "/sidekiq"
+  end
 
   if Rails.env.development?
     get "/@react-refresh", to: "spa#vite_asset"

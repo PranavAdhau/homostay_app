@@ -21,3 +21,6 @@ Restart Rails
 #   authentication: "plain",
 #   enable_starttls_auto: true
 # }
+
+
+access_token github : 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

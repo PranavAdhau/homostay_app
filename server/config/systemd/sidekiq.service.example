@@ -1,22 +1,25 @@
 # Systemd service file for Sidekiq
-# Place this in /etc/systemd/system/sidekiq.service
-# Then run: systemctl enable sidekiq && systemctl start sidekiq
+# Place this in /etc/systemd/system/homostay_app_sidekiq.service
+# Then run: systemctl enable homostay_app_sidekiq && systemctl start homostay_app_sidekiq
 
 [Unit]
-Description=Sidekiq Background Job Processor
-After=network.target redis.target
+Description=Homestay App Sidekiq
+After=network.target postgresql.service redis-server.service
+Wants=postgresql.service redis-server.service
 
 [Service]
 Type=simple
 User=deploy
+Group=deploy
 WorkingDirectory=/var/www/homostay_app/server
-Environment="RAILS_ENV=production"
-Environment="REDIS_URL=redis://localhost:6379/0"
-ExecStart=/home/deploy/.rbenv/shims/bundle exec sidekiq -e production
+EnvironmentFile=/etc/homostay_app.env
+ExecStart=/home/deploy/.rbenv/shims/bundle exec sidekiq -e production -c 2
 ExecReload=/bin/kill -TSTP $MAINPID
 KillMode=mixed
 Restart=always
-RestartSec=1
+RestartSec=5
+TimeoutStopSec=30
+SyslogIdentifier=homostay_app_sidekiq
 
 [Install]
 WantedBy=multi-user.target

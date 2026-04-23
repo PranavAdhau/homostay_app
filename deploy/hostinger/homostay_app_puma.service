@@ -1,9 +1,5 @@
-# Systemd service file for Puma
-# Place this in /etc/systemd/system/homostay_app_puma.service
-# Then run: systemctl enable homostay_app_puma && systemctl start homostay_app_puma
-
 [Unit]
-Description=Homostay App Puma
+Description=Homestay App Puma
 After=network.target postgresql.service redis-server.service
 Wants=postgresql.service redis-server.service
 
@@ -16,9 +12,9 @@ EnvironmentFile=/etc/homostay_app.env
 ExecStartPre=/usr/bin/mkdir -p /var/www/homostay_app/server/tmp/pids /var/www/homostay_app/server/tmp/sockets
 ExecStart=/home/deploy/.rbenv/shims/bundle exec puma -C config/puma.rb
 ExecReload=/bin/kill -USR1 $MAINPID
-KillMode=mixed
 Restart=always
 RestartSec=5
+KillMode=mixed
 TimeoutStopSec=30
 SyslogIdentifier=homostay_app_puma
 
