@@ -97,7 +97,7 @@ export default function Hero({ searchUi }: HeroProps) {
           animate={{ scale: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1920&q=80')`,
+            backgroundImage: `url('https://images.pexels.com/photos/8112557/pexels-photo-8112557.jpeg?_gl=1*j2dtxz*_ga*MjA0MjUxNjQ3MS4xNzc2MzQwMjY4*_ga_8JE65Q40S6*czE3NzYzNDAyNjckbzEkZzEkdDE3NzYzNDIwNDIkajE5JGwwJGgw')`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",

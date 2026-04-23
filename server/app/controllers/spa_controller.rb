@@ -1,6 +1,8 @@
 require "net/http"
 
 class SpaController < ApplicationController
+  skip_before_action :verify_authenticity_token, only: [:vite_asset]
+
   layout "application"
 
   def index

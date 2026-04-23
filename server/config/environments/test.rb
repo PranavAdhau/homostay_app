@@ -58,6 +58,9 @@ Rails.application.configure do
   else
     config.action_mailer.default_url_options = {}
   end
+  config.hosts << "example.org"
+  config.hosts << "www.example.com"
+  config.hosts << "example.com"
   config.hosts << /[a-z0-9.-]+\.ngrok-free\.dev/
   config.hosts << /[a-z0-9.-]+\.ngrok-free\.app/
 
