@@ -44,7 +44,9 @@ Rails.application.routes.draw do
 
   end
 
-  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+  if Rails.env.development? && defined?(LetterOpenerWeb)
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
 
   require "sidekiq/web"
   authenticate :admin_user do
