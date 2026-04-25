@@ -248,31 +248,33 @@ export default function Index() {
   return (
     <div className="min-h-screen">
       <Header />
-      <Hero
-        searchUi={{
-          filters,
-          validation: searchValidation,
-          onCheckInChange: handleCheckInChange,
-          onCheckOutChange: handleCheckOutChange,
-          onGuestsChange: handleGuestsChange,
-          onRoomsChange: handleRoomsChange,
-          onClear: handleClearFilters,
-          onSearch: handleSearch,
-        }}
-      />
-      <HomestaysSection
-        homestays={visibleHomestays}
-        loading={homestaysLoading || filteredHomestaysLoading}
-        emptyMessage={hasAppliedFilters ? 'No homestays match your search.' : undefined}
-      />
-      <TeamSection />
-      <HostPropertySection imageCandidates={hostPropertyImageCandidates} />
-      <TrustSection images={trustSectionImages} />
-      <BlogsSection />
-      <BookingSection />
-      <ReviewsSection />
-      <ContactSection />
-      <Footer />
+      <div className="overflow-x-hidden">
+        <Hero
+          searchUi={{
+            filters,
+            validation: searchValidation,
+            onCheckInChange: handleCheckInChange,
+            onCheckOutChange: handleCheckOutChange,
+            onGuestsChange: handleGuestsChange,
+            onRoomsChange: handleRoomsChange,
+            onClear: handleClearFilters,
+            onSearch: handleSearch,
+          }}
+        />
+        <HomestaysSection
+          homestays={visibleHomestays}
+          loading={homestaysLoading || filteredHomestaysLoading}
+          emptyMessage={hasAppliedFilters ? 'No homestays match your search.' : undefined}
+        />
+        <TeamSection />
+        <HostPropertySection imageCandidates={hostPropertyImageCandidates} />
+        <TrustSection images={trustSectionImages} />
+        <BlogsSection />
+        <BookingSection />
+        <ReviewsSection />
+        <ContactSection />
+        <Footer />
+      </div>
     </div>
   );
 }

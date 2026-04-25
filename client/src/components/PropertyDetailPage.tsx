@@ -14,6 +14,8 @@ import PropertyMap from "./PropertyMap";
 import { getAmenityIcon } from "../lib/amenityIcons";
 import dayjs, { Dayjs } from "dayjs";
 import { Button } from "./ui/button";
+import { formatINR } from "../lib/currency";
+import { applySeoMetadata, buildAbsoluteUrl, setJsonLd } from "../lib/seo";
 import "./PropertyDetailPage.css";
 
 interface Homestay {
@@ -103,8 +105,8 @@ export default function PropertyDetailPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!homestay || nights <= 0) return alert('Pilih tanggal yang valid');
-    if (!guestName || !guestEmail || !guestPhone) return alert('Lengkapi informasi tamu');
+    if (!homestay || nights <= 0) return alert('Please select valid check-in and check-out dates.');
+    if (!guestName || !guestEmail || !guestPhone) return alert('Please complete the guest details before submitting.');
     setSubmitting(true);
     try {
       const r = await api.post('/bookings', {
@@ -119,7 +121,7 @@ export default function PropertyDetailPage() {
         setTimeout(() => { setSuccess(false); navigate('/'); }, 3000);
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error in Post Booking');
+      alert(err.response?.data?.message || 'Unable to submit your booking right now. Please try again.');
     } finally { setSubmitting(false); }
   };
 
@@ -165,6 +167,82 @@ export default function PropertyDetailPage() {
       else goPrev(imageCount);
     }
   };
+
+  useEffect(() => {
+    if (!homestay || !slug) {
+      return;
+    }
+
+    const imageUrl = images[0] || homestay.featured_image || "/sacred-homes-logo-circle.svg";
+    const metaDescription = `${homestay.description} Stay near ${
+      homestay.address || "Varanasi's ghats and temples"
+    } with Sacred Homes Varanasi.`;
+
+    applySeoMetadata({
+      title: `${homestay.name} | Homestay in Varanasi | Sacred Homes`,
+      description: metaDescription,
+      canonicalPath: `/properties/${slug}`,
+      image: imageUrl,
+    });
+
+    setJsonLd("sacred-homes-property-jsonld", {
+      "@context": "https://schema.org",
+      "@type": "LodgingBusiness",
+      name: homestay.name,
+      description: homestay.description,
+      url: buildAbsoluteUrl(`/properties/${slug}`),
+      image: buildAbsoluteUrl(imageUrl),
+      telephone: undefined,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: homestay.address || "Varanasi, Uttar Pradesh, India",
+        addressLocality: "Varanasi",
+        addressRegion: "Uttar Pradesh",
+        addressCountry: "IN",
+      },
+      numberOfRooms: homestay.rooms,
+      occupancy: {
+        "@type": "QuantitativeValue",
+        maxValue: homestay.capacity,
+      },
+      amenityFeature: homestay.amenities.map((amenity) => ({
+        "@type": "LocationFeatureSpecification",
+        name: amenity.name,
+        value: true,
+      })),
+      priceRange: formatINR(homestay.price_per_night),
+    });
+
+    setJsonLd("sacred-homes-breadcrumb-jsonld", {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: buildAbsoluteUrl("/"),
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Homestays",
+          item: buildAbsoluteUrl("/homestays"),
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: homestay.name,
+          item: buildAbsoluteUrl(`/properties/${slug}`),
+        },
+      ],
+    });
+
+    return () => {
+      setJsonLd("sacred-homes-property-jsonld", null);
+      setJsonLd("sacred-homes-breadcrumb-jsonld", null);
+    };
+  }, [homestay, images, slug]);
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF5F2' }}>
@@ -259,7 +337,7 @@ export default function PropertyDetailPage() {
                   </>
                 ) : (
                   <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: 14 }}>
-                    Tidak ada gambar
+                    No images available
                   </div>
                 )}
               </div>
@@ -284,7 +362,7 @@ export default function PropertyDetailPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
                 <h1 style={{ fontSize: 21, fontWeight: 700, color: '#173A39', margin: 0, lineHeight: 1.3 }}>{homestay.name}</h1>
                 <p style={{ margin: 0, whiteSpace: 'nowrap' }}>
-                  <span style={{ fontSize: 19, fontWeight: 700, color: '#1F8A84' }}>₹ {homestay.price_per_night.toLocaleString('en-IN')}</span>
+                  <span style={{ fontSize: 19, fontWeight: 700, color: '#1F8A84' }}>{formatINR(homestay.price_per_night)}</span>
                   <span style={{ fontSize: 13, color: '#73867A' }}> / night</span>
                 </p>
               </div>
@@ -625,10 +703,10 @@ function ReservationForm({
         {nights > 0 && (
           <div style={{ background: '#FAF5F2', borderRadius: 10, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 13, color: '#73867A' }}>
-              <span style={{ color: '#1F8A84', fontWeight: 600 }}>₹</span> {homestay.price_per_night.toLocaleString('en-IN')} × {nights} night
+              {formatINR(homestay.price_per_night)} × {nights} {nights === 1 ? 'night' : 'nights'}
             </span>
             <span style={{ fontSize: 15, fontWeight: 700, color: '#1F8A84', whiteSpace: 'nowrap' }}>
-              ₹ {total.toLocaleString('en-IN')}
+              {formatINR(total)}
             </span>
           </div>
         )}

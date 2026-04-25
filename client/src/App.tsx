@@ -16,11 +16,13 @@ import HomestayList from "./components/admin/HomestayList";
 import AdminAuthGuard from "./components/admin/AdminAuthGuard";
 import SettingsPage from "./components/admin/SettingsPage";
 import { SiteSettingsProvider } from "./components/SiteSettingsProvider";
+import SeoManager from "./components/SeoManager";
 
 export default function App() {
   return (
     <SiteSettingsProvider>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <SeoManager />
         <Routes>
           {/* PUBLIC ROUTES */}
           <Route path="/" element={<Index />} />

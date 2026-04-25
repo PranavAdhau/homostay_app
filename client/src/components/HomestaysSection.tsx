@@ -4,6 +4,7 @@ import HomestayCard from './HomestayCard';
 import AnimatedSection from './AnimatedSection';
 import api from '../lib/axios';
 import type { PublicHomestay } from '../lib/homestays';
+import { formatINR } from '../lib/currency';
 
 type HomestaysSectionProps = {
   homestays?: PublicHomestay[] | null;
@@ -115,7 +116,7 @@ function HomestaysSection({
                   slug={homestay.slug}
                   name={homestay.name}
                   description={homestay.description}
-                  price={`RM${homestay.price_per_night.toFixed(0)}`}
+                  price={formatINR(homestay.price_per_night)}
                   image={homestay.featured_image || (homestay.images.length > 0 ? homestay.images[0] : '')}
                   rating={4.8}
                   capacity={homestay.capacity}

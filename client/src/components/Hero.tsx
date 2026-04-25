@@ -158,7 +158,7 @@ export default function Hero({ searchUi }: HeroProps) {
               transition={{ duration: 0.8, delay: 0.7 }}
             >
               Discover thoughtfully designed homestays in the heart of Varanasi.
-              Experience authentic Benaras living with modern comfort.
+              Experience authentic Benaras hospitality with modern comfort.
             </motion.p>
 
             <motion.div

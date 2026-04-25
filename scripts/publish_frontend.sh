@@ -8,6 +8,8 @@ BUILD_MODE="${1:-production}"
 
 cd "$CLIENT_DIR"
 
+export VITE_FRONTEND_URL="${VITE_FRONTEND_URL:-${FRONTEND_URL:-}}"
+
 case "$BUILD_MODE" in
   production)
     npm run build

@@ -213,7 +213,7 @@ export default function HomestayForm() {
                 </div>
               </div>
               <div>
-                <Label htmlFor="price_per_night">Price per Night (RM) *</Label>
+                <Label htmlFor="price_per_night">Price per Night (INR) *</Label>
                 <Input
                   id="price_per_night"
                   type="number"
@@ -244,7 +244,7 @@ export default function HomestayForm() {
                         address: e.target.value,
                       }))
                     }
-                    placeholder="City, region, country"
+                    placeholder="e.g. Assi Ghat, Varanasi, Uttar Pradesh"
                     className="mt-1.5"
                   />
                 </div>

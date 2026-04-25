@@ -93,19 +93,19 @@ export default function HostPropertySection({
                 {/* SMALL HEADING */}
                 <div className="mb-4 hidden lg:flex items-center gap-4">
                   <p className="text-sm font-medium text-[#214847] whitespace-nowrap">
-                    Grow your Slice with HomeSlice
+                    Host with Sacred Homes
                   </p>
                   <span className="h-px flex-1 bg-[#DCCDC2]" />
                 </div>
 
                 {/* MOBILE */}
                 <p className="mb-2 text-lg font-medium text-[#214847] lg:hidden">
-                  Grow your Slice with HomeSlice
+                  Host with Sacred Homes
                 </p>
 
                 {/* MAIN */}
                 <h2 className="text-[clamp(2.2rem,3vw,3.2rem)] font-semibold text-[#173A39] leading-tight">
-                  List your Property with us
+                  List your property with Sacred Homes
                 </h2>
 
                 <p className="mt-4 max-w-md mx-auto lg:mx-0 text-base leading-7 text-[#6F7B76]">

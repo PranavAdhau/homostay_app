@@ -82,3 +82,5 @@ production:
   database: homostay_app_production
   username: homostay_app
   password: <%= ENV["HOMOSTAY_APP_DATABASE_PASSWORD"] %>
+  host: 127.0.0.1
+  port: 5432

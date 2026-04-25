@@ -7,6 +7,6 @@
 <p><strong>Property:</strong> <%= @homestay.name %></p>
 <p><strong>Dates:</strong> <%= @booking.check_in_date %> to <%= @booking.check_out_date %></p>
 <p><strong>Guests:</strong> <%= @booking.number_of_guests %></p>
-<p><strong>Total:</strong> RM<%= @booking.total_price %></p>
+<p><strong>Total:</strong> <%= number_to_currency(@booking.total_price, unit: "₹", precision: (@booking.total_price.to_f % 1).zero? ? 0 : 2) %></p>
 
 <p>We look forward to hosting you!</p>

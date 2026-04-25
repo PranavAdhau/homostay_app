@@ -167,7 +167,7 @@ function BlogsSection() {
             </div>
           ) : blogs.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-[#73867A]">No blogs available.</p>
+              <p className="text-[#73867A]">No journal entries are available right now.</p>
             </div>
           ) : (
             <>

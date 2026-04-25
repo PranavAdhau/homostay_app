@@ -12,6 +12,7 @@ import {
 } from '../ui/dropdown-menu';
 import { toast } from 'sonner@2.0.3';
 import api from '../../lib/adminAxios';
+import { formatINR, formatNightlyRate } from '../../lib/currency';
 interface Homestay {
   id: number;
   slug: string;
@@ -124,7 +125,7 @@ export default function HomestayList() {
                       <td className="px-6 py-4 text-sm font-medium text-card-foreground">{homestay.name}</td>
                       <td className="px-6 py-4 text-sm text-muted-foreground">{homestay.capacity}</td>
                       <td className="px-6 py-4 text-sm text-muted-foreground">{homestay.rooms}</td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">RM{homestay.price_per_night.toFixed(2)}</td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">{formatINR(homestay.price_per_night)}</td>
                     <td className="px-6 py-4 text-sm">
                       {homestay.is_active ? (
                         <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success">Active</span>
@@ -193,7 +194,7 @@ export default function HomestayList() {
                   <div className="flex gap-4 text-sm text-muted-foreground">
                     <span>Capacity: {homestay.capacity}</span>
                     <span>Rooms: {homestay.rooms}</span>
-                    <span>RM{homestay.price_per_night.toFixed(2)}/night</span>
+                    <span>{formatNightlyRate(homestay.price_per_night)}</span>
                   </div>
                   <div className="flex justify-end">
                     <DropdownMenu>

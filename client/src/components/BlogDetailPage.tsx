@@ -5,6 +5,7 @@ import Footer from './Footer';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import api from '../lib/axios';
 import { BLOG_PLACEHOLDER_IMAGE } from '../lib/blogPlaceholder';
+import { applySeoMetadata, buildAbsoluteUrl, setJsonLd } from '../lib/seo';
 
 interface Blog {
   id: number;
@@ -46,6 +47,46 @@ export default function BlogDetailPage() {
 
     fetchBlog();
   }, [id]);
+
+  useEffect(() => {
+    if (!blog || !id) {
+      return;
+    }
+
+    const description =
+      blog.content.replace(/\s+/g, ' ').trim().slice(0, 155) ||
+      'Read Sacred Homes journal stories and Varanasi travel notes.';
+    const imageUrl = blog.image_url || '/sacred-homes-logo-circle.svg';
+
+    applySeoMetadata({
+      title: `${blog.title} | Sacred Homes Journal`,
+      description,
+      canonicalPath: `/blogs/${id}`,
+      image: imageUrl,
+      type: 'article',
+      twitterCard: 'summary_large_image',
+    });
+
+    setJsonLd('sacred-homes-blog-jsonld', {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: blog.title,
+      description,
+      image: buildAbsoluteUrl(imageUrl),
+      url: buildAbsoluteUrl(`/blogs/${id}`),
+      publisher: {
+        '@type': 'Organization',
+        name: 'Sacred Homes Varanasi',
+        logo: {
+          '@type': 'ImageObject',
+          url: buildAbsoluteUrl('/sacred-homes-logo-circle.svg'),
+        },
+      },
+      datePublished: blog.created_at,
+    });
+
+    return () => setJsonLd('sacred-homes-blog-jsonld', null);
+  }, [blog, id]);
 
   if (loading) {
     return (
@@ -128,7 +169,7 @@ export default function BlogDetailPage() {
                   <p key={`${blog.id}-${index}`}>{paragraph}</p>
                 ))
               ) : (
-                <p>No blog content available.</p>
+                <p>No journal content is available for this entry yet.</p>
               )}
             </div>
           </article>

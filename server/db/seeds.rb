@@ -20,68 +20,68 @@ AMENITIES = [
 
 HOMESTAYS = [
   {
-    name: "Sacred Peak Villa",
-    description: "A peaceful hill-facing stay with a private deck, sunrise views, and a quiet workspace for longer stays.",
+    name: "Assi Ghat Courtyard",
+    description: "A peaceful stay near Assi Ghat with airy rooms, warm hospitality, and easy access to sunrise walks along the river.",
     capacity: 6,
     rooms: 3,
     size: "1200 sqft",
     price_per_night: 320.0,
     is_active: true,
-    latitude: 12.971600,
-    longitude: 77.594600,
-    address: "Hillside Retreat Road, Bengaluru",
-    amenity_names: ["WiFi", "AC", "Kitchen", "TV", "Parking", "Hot Water", "Mountain View", "Workspace"]
+    latitude: 25.287210,
+    longitude: 82.999260,
+    address: "Assi Ghat Road, Varanasi, Uttar Pradesh",
+    amenity_names: ["WiFi", "AC", "Kitchen", "TV", "Parking", "Hot Water", "Workspace"]
   },
   {
-    name: "Forest Glass Cabin",
-    description: "A romantic cabin for couples with panoramic windows, cozy interiors, and easy access to nearby walking trails.",
+    name: "Tulsi Ghat Studio",
+    description: "A cozy studio for couples and solo travelers who want a calm base close to Tulsi Ghat and Varanasi's old-city charm.",
     capacity: 2,
     rooms: 1,
     size: "480 sqft",
     price_per_night: 210.0,
     is_active: true,
-    latitude: 12.295810,
-    longitude: 76.639381,
-    address: "Misty Woods Trail, Mysuru",
-    amenity_names: ["WiFi", "AC", "Bathroom", "Hot Water", "Mountain View", "Fire Pit"]
+    latitude: 25.285140,
+    longitude: 83.005620,
+    address: "Tulsi Ghat Lane, Varanasi, Uttar Pradesh",
+    amenity_names: ["WiFi", "AC", "Bathroom", "Hot Water", "Workspace"]
   },
   {
-    name: "Lakeview Family Lodge",
-    description: "A spacious family-friendly homestay with two bedrooms, a full kitchen, and easy outdoor access for group stays.",
+    name: "Kashi Family Retreat",
+    description: "A spacious family homestay with generous common areas, a full kitchen, and convenient access to temples, cafés, and the ghats.",
     capacity: 8,
     rooms: 4,
     size: "1600 sqft",
     price_per_night: 390.0,
     is_active: true,
-    latitude: 11.016846,
-    longitude: 76.955833,
-    address: "Lakeside Drive, Coimbatore",
+    latitude: 25.317645,
+    longitude: 82.973914,
+    address: "Bhelupur, Varanasi, Uttar Pradesh",
     amenity_names: ["WiFi", "AC", "Kitchen", "TV", "Parking", "Bathroom", "Hot Water"]
   },
   {
-    name: "Garden Courtyard Stay",
-    description: "A calm courtyard stay designed for small families and weekend travelers who want a simple nature-focused escape.",
+    name: "Old City Courtyard Stay",
+    description: "A quiet courtyard stay designed for small families and thoughtful travelers who want a comfortable retreat in the heart of Varanasi.",
     capacity: 4,
     rooms: 2,
     size: "850 sqft",
     price_per_night: 180.0,
     is_active: true,
-    latitude: 15.299326,
-    longitude: 74.123996,
-    address: "Green Grove Lane, Goa",
+    latitude: 25.309340,
+    longitude: 83.010040,
+    address: "Godowlia, Varanasi, Uttar Pradesh",
     amenity_names: ["WiFi", "Kitchen", "Parking", "Bathroom", "Hot Water", "Workspace"]
   }
 ].freeze
 
 BLOGS = [
   {
-    title: "How to Choose the Right Homestay for a Weekend Getaway",
-    content: "Picking the right stay starts with location, guest capacity, and whether the amenities match the kind of trip you want to have. Look for flexible arrival windows, strong communication, and clear house rules before booking.",
+    title: "How to Choose the Right Homestay in Varanasi",
+    content: "The right stay in Varanasi depends on how you want to experience the city. Choose a homestay with the right guest capacity, a location close to the ghats or temples you plan to visit, and clear communication about arrival times, house rules, and local guidance.",
     is_published: true
   },
   {
-    title: "Packing Tips for a Scenic Nature Retreat",
-    content: "Bring comfortable layers, simple walking shoes, and a charger setup that works even when you spend most of the day outside. If your trip includes a workation, confirm WiFi strength and bring a small desk-ready kit.",
+    title: "What to Pack for a Peaceful Stay in Varanasi",
+    content: "Pack light cotton layers, comfortable footwear for walking through the lanes and ghats, and a few modest outfit options for temple visits. If you plan to work during your stay, check Wi-Fi availability and carry a simple setup for long, comfortable mornings indoors.",
     is_published: true
   }
 ].freeze
@@ -92,7 +92,7 @@ def upsert_site_setting!
     phone: "9743340477",
     email: "pranavadhau2003@gmail.com",
     instagram: "https://www.instagram.com/sacredhomes.in",
-    address: "India",
+    address: "Varanasi, Uttar Pradesh, India",
     whatsapp_number: "9743340477"
   )
   site_setting.save!
@@ -150,7 +150,7 @@ def upsert_bookings!(homestays_by_name)
   today = Date.current
   booking_blueprints = [
     {
-      homestay_name: "Sacred Peak Villa",
+      homestay_name: "Assi Ghat Courtyard",
       guest_email: "aarav@example.com",
       guest_name: "Aarav Sharma",
       guest_phone: "+919999000111",
@@ -162,7 +162,7 @@ def upsert_bookings!(homestays_by_name)
       whatsapp_message_sent: true
     },
     {
-      homestay_name: "Forest Glass Cabin",
+      homestay_name: "Tulsi Ghat Studio",
       guest_email: "meera@example.com",
       guest_name: "Meera Nair",
       guest_phone: "+919999000222",
@@ -174,7 +174,7 @@ def upsert_bookings!(homestays_by_name)
       whatsapp_message_sent: true
     },
     {
-      homestay_name: "Lakeview Family Lodge",
+      homestay_name: "Kashi Family Retreat",
       guest_email: "kabir@example.com",
       guest_name: "Kabir Patel",
       guest_phone: "+919999000333",
@@ -186,7 +186,7 @@ def upsert_bookings!(homestays_by_name)
       whatsapp_message_sent: true
     },
     {
-      homestay_name: "Garden Courtyard Stay",
+      homestay_name: "Old City Courtyard Stay",
       guest_email: "ananya@example.com",
       guest_name: "Ananya Rao",
       guest_phone: "+919999000444",
@@ -229,7 +229,7 @@ def upsert_bookings!(homestays_by_name)
 end
 
 def upsert_manual_block!(homestays_by_name)
-  homestay = homestays_by_name.fetch("Garden Courtyard Stay")
+  homestay = homestays_by_name.fetch("Old City Courtyard Stay")
   start_date = Date.current + 35
   end_date = Date.current + 37
 

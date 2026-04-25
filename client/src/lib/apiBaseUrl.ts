@@ -20,3 +20,17 @@ export const resolveAppBaseUrl = () => {
   const baseURL = resolveApiBaseUrl();
   return baseURL.endsWith('/api/v1') ? baseURL.replace(/\/api\/v1$/, '') : baseURL;
 };
+
+export const resolveCanonicalBaseUrl = () => {
+  const configuredFrontEndURL = import.meta.env.VITE_FRONTEND_URL?.trim();
+
+  if (import.meta.env.MODE === 'development') {
+    return trimTrailingSlash(window.location.origin);
+  }
+
+  if (import.meta.env.MODE === 'test') {
+    return trimTrailingSlash(configuredFrontEndURL || window.location.origin);
+  }
+
+  return trimTrailingSlash(configuredFrontEndURL || resolveAppBaseUrl());
+};

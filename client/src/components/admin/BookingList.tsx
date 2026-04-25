@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import api from '../../lib/adminAxios';
 import { useNavigate } from 'react-router-dom';
+import { formatINR } from '../../lib/currency';
 interface Booking {
   id: number;
   homestay_name: string;
@@ -132,7 +133,7 @@ export default function BookingList() {
                         <div><span className="font-medium text-muted-foreground">Check-in:</span> <span className="text-card-foreground">{booking.check_in_date}</span></div>
                         <div><span className="font-medium text-muted-foreground">Check-out:</span> <span className="text-card-foreground">{booking.check_out_date}</span></div>
                         <div><span className="font-medium text-muted-foreground">Guests:</span> <span className="text-card-foreground">{booking.number_of_guests}</span></div>
-                        <div><span className="font-medium text-muted-foreground">Total:</span> <span className="font-semibold text-card-foreground">RM{booking.total_price.toFixed(2)}</span></div>
+                        <div><span className="font-medium text-muted-foreground">Total:</span> <span className="font-semibold text-card-foreground">{formatINR(booking.total_price)}</span></div>
                       </div>
                     </div>
                     <div className="flex sm:flex-col gap-2.5 shrink-0">

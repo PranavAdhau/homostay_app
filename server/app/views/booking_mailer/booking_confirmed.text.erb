@@ -7,6 +7,6 @@ Your booking has been confirmed.
 Property: <%= @homestay.name %>
 Dates: <%= @booking.check_in_date %> to <%= @booking.check_out_date %>
 Guests: <%= @booking.number_of_guests %>
-Total: RM<%= @booking.total_price %>
+Total: <%= number_to_currency(@booking.total_price, unit: "₹", precision: (@booking.total_price.to_f % 1).zero? ? 0 : 2) %>
 
 Thank you!

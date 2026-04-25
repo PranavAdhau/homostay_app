@@ -19,6 +19,7 @@ import AnimatedSection from "./AnimatedSection";
 import api from "../lib/axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
+import { formatINR, formatNightlyRate } from "../lib/currency";
 
 interface Homestay {
   id: number;
@@ -256,7 +257,7 @@ export default function BookingSection() {
                             }}
                           >
                             {selectedHomestayObj
-                              ? `${selectedHomestayObj.name} - RM${selectedHomestayObj.price_per_night}/night`
+                              ? `${selectedHomestayObj.name} - ${formatNightlyRate(selectedHomestayObj.price_per_night)}`
                               : "Select a homestay"}
                           </span>
                         </SelectTrigger>
@@ -271,8 +272,7 @@ export default function BookingSection() {
                               value={homestay.id.toString()}
                               className="whitespace-normal break-words"
                             >
-                              {homestay.name} - RM{homestay.price_per_night}
-                              /night
+                              {homestay.name} - {formatNightlyRate(homestay.price_per_night)}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -459,7 +459,7 @@ export default function BookingSection() {
                               animate={{ scale: 1 }}
                               transition={{ type: "spring", stiffness: 300 }}
                             >
-                              RM{calculateTotal()}
+                              {formatINR(calculateTotal())}
                             </motion.span>
                           </div>
                         </div>
