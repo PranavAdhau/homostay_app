@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "./ui/button";
 import { useResolvedWhatsAppLink } from "../lib/whatsapp";
-import hostPropertyPlaceholder from "../assets/host-property-placeholder.svg";
+const hostPropertyPlaceholder = "/host-property-placeholder.svg";
 import AnimatedSection from "./AnimatedSection";
 
 type HostPropertySectionProps = {

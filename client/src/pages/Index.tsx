@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
@@ -57,28 +57,22 @@ export default function Index() {
   const [homestaysLoading, setHomestaysLoading] = useState(true);
   const [filteredHomestaysLoading, setFilteredHomestaysLoading] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const handleNavigation = () => {
       if (location.hash) {
         const id = location.hash.replace('#', '');
-        setTimeout(() => {
-          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
+        document.getElementById(id)?.scrollIntoView({ behavior: 'auto', block: 'start' });
       } else if (location.pathname === '/homestays') {
-        setTimeout(() => {
-          document.getElementById('homestays')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
+        document.getElementById('homestays')?.scrollIntoView({ behavior: 'auto', block: 'start' });
       } else if (location.pathname === '/bookings') {
-        setTimeout(() => {
-          document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
+        document.getElementById('booking')?.scrollIntoView({ behavior: 'auto', block: 'start' });
       } else if (location.pathname === '/') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'auto' });
       }
     };
 
     handleNavigation();
-  }, [location]);
+  }, [location, homestaysLoading]);
 
   const fetchHomestays = useCallback(async (searchFilters: SearchFilters) => {
     const response = await api.get('/homestays', {

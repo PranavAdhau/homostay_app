@@ -257,7 +257,7 @@ export default function PropertyDetailPage() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF5F2' }}>
       <div style={{ textAlign: 'center' }}>
         <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 16, color: '#173A39' }}>Stay not found</h2>
-        <button onClick={() => navigate('/')} style={{ padding: '10px 24px', background: '#1F8A84', color: '#fff', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600 }}>Back to Homestays</button>
+        <button onClick={() => navigate('/#homestays')} style={{ padding: '10px 24px', background: '#1F8A84', color: '#fff', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600 }}>Back to Homestays</button>
       </div>
     </div>
   );
@@ -288,7 +288,7 @@ export default function PropertyDetailPage() {
       <Header />
 
       <div className="pdp-page-body">
-        <button className="pdp-back" onClick={() => navigate('/')}>
+        <button className="pdp-back" onClick={() => navigate('/#homestays')}>
           <ArrowLeft style={{ width: 15, height: 15 }} />
           Back to Homestays
         </button>

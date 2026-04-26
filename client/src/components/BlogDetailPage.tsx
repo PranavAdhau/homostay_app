@@ -32,7 +32,8 @@ export default function BlogDetailPage() {
 
     const fetchBlog = async () => {
       try {
-        const response = await api.get(`/blogs/${id}`);
+        const numericId = id.split('-')[0];
+        const response = await api.get(`/blogs/${numericId}`);
         if (response.data.success) {
           setBlog(response.data.data);
         }
@@ -109,19 +110,19 @@ export default function BlogDetailPage() {
         <Header />
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-12 md:py-16">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/#blogs')}
             className="text-sm text-[#73867A] mb-6 hover:text-[#1F8A84] hover:underline"
           >
-            ← Back to Home
+            ← Back to Blogs
           </button>
           <div className="text-center py-16">
             <h1 className="text-3xl text-[#173A39] mb-4">Blog not found</h1>
             <p className="text-[#4F5F5B] mb-6">This article is unavailable or may no longer be published.</p>
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/#blogs')}
               className="text-sm text-[#73867A] hover:text-[#1F8A84] hover:underline"
             >
-              ← Back to Home
+              ← Back to Blogs
             </button>
           </div>
         </div>
@@ -143,10 +144,10 @@ export default function BlogDetailPage() {
       <main className="min-h-screen bg-white">
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-12">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/#blogs')}
             className="text-sm text-[#73867A] mb-6 hover:text-[#1F8A84] hover:underline"
           >
-            ← Back to Home
+            ← Back to Blogs
           </button>
 
           <article>

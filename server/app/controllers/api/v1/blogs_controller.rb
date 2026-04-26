@@ -19,7 +19,15 @@ class Api::V1::BlogsController < Api::V1::BaseController
   private
 
   def set_blog
-    @blog = Blog.published.includes(image_attachment: :blob).find(params[:id])
+    param_id = params[:id].to_s
+    if param_id.match?(/^\d+$/)
+      @blog = Blog.published.includes(image_attachment: :blob).find(params[:id])
+    else
+      @blog = Blog.published.includes(image_attachment: :blob).to_a.find do |b|
+        b.slug == param_id
+      end
+      raise ActiveRecord::RecordNotFound unless @blog
+    end
   rescue ActiveRecord::RecordNotFound
     render_error(message: "Blog not found", status: :not_found)
   end
@@ -27,6 +35,7 @@ class Api::V1::BlogsController < Api::V1::BaseController
   def serialize_blog(blog)
     {
       id: blog.id,
+      slug: blog.slug,
       title: blog.title,
       content: blog.content.to_s,
       image_url: blog.image.attached? ? url_for(blog.image) : nil,

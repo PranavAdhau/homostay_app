@@ -49,7 +49,7 @@ function HomestaysSection({
   const resolvedLoading = isControlled ? Boolean(prefetchedLoading) : loading;
 
   return (
-    <section id="homestays" className="py-20 bg-[#FAF5F2]">
+    <section id="homestays" className="py-20 bg-[#FAF5F2] scroll-mt-16 md:scroll-mt-24">
       <div className="container mx-auto px-4">
         <AnimatedSection className="text-center mb-12">
           <motion.h2 

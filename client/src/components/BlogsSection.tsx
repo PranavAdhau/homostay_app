@@ -21,6 +21,11 @@ const previewText = (content: string) => {
   return `${normalized.slice(0, 117).trimEnd()}...`;
 };
 
+export const generateBlogSlug = (id: number, title: string) => {
+  const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return `${id}-${cleanTitle}`;
+};
+
 function BlogCardSkeleton() {
   return (
     <div className="bg-white border border-[#E5ECE6] rounded-xl overflow-hidden shadow-sm w-full">
@@ -128,7 +133,7 @@ function BlogsSection() {
   }, []);
 
   return (
-    <section id="blogs" className="py-20 bg-white">
+    <section id="blogs" className="py-20 bg-white scroll-mt-16 md:scroll-mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Heading */}
         <AnimatedSection className="text-center mb-12">
@@ -183,7 +188,7 @@ function BlogsSection() {
                   >
                     <BlogCard
                       blog={blog}
-                      onNavigate={() => navigate(`/blogs/${blog.id}`)}
+                      onNavigate={() => navigate(`/blogs/${generateBlogSlug(blog.id, blog.title)}`)}
                     />
                   </motion.div>
                 ))}
@@ -200,7 +205,7 @@ function BlogsSection() {
                   >
                     <BlogCard
                       blog={blog}
-                      onNavigate={() => navigate(`/blogs/${blog.id}`)}
+                      onNavigate={() => navigate(`/blogs/${generateBlogSlug(blog.id, blog.title)}`)}
                     />
                   </motion.div>
                 ))}
@@ -217,7 +222,7 @@ function BlogsSection() {
                   >
                     <BlogCard
                       blog={blog}
-                      onNavigate={() => navigate(`/blogs/${blog.id}`)}
+                      onNavigate={() => navigate(`/blogs/${generateBlogSlug(blog.id, blog.title)}`)}
                     />
                   </motion.div>
                 ))}
