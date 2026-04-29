@@ -20,6 +20,7 @@ import api from "../lib/axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
 import { formatINR, formatNightlyRate } from "../lib/currency";
+import { toast } from "sonner@2.0.3";
 
 interface Homestay {
   id: number;
@@ -149,7 +150,16 @@ export default function BookingSection() {
       }
     } catch (error: any) {
       console.error("Error submitting booking:", error);
-      alert(error.response?.data?.message || "Failed to submit booking");
+      const message = error?.response?.data?.message;
+      const isConflict =
+        error?.response?.status === 409 ||
+        (typeof message === "string" &&
+          /not available|conflict|already booked/i.test(message));
+      toast.error(
+        isConflict
+          ? "Selected dates are not available. Please choose different dates."
+          : message || "Failed to submit booking",
+      );
     } finally {
       setSubmitting(false);
     }

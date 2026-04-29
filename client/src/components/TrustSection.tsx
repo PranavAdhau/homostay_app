@@ -81,6 +81,7 @@ export default function TrustSection({ images = [] }: TrustSectionProps) {
                     <ImageWithFallback
                       src={image}
                       alt={placeholder.title}
+                      loading="lazy"
                       className="h-full w-full object-cover"
                     />
                   ) : (

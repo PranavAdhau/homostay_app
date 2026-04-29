@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_27_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_30_002200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -167,6 +167,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_27_000000) do
     t.index ["is_active"], name: "index_homestays_on_is_active"
     t.index ["latitude", "longitude"], name: "index_homestays_on_latitude_and_longitude"
     t.index ["slug"], name: "index_homestays_on_slug", unique: true
+  end
+
+  create_table "host_profiles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "role", null: false
+    t.string "name", null: false
+    t.text "bio", null: false
+    t.string "contact", null: false
+    t.index ["role"], name: "index_host_profiles_on_role", unique: true
+  end
+
+  create_table "site_contents", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "site_settings", force: :cascade do |t|

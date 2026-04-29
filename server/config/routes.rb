@@ -19,6 +19,8 @@ Rails.application.routes.draw do
       end
       resources :bookings, only: [:create, :show]
       resource :site_settings, only: [:show], controller: "site_settings"
+      resource :host_profile, only: [:show]
+      resource :site_content, only: [:show]
     end
   end
 
@@ -38,6 +40,8 @@ Rails.application.routes.draw do
         end
         resources :amenities, only: [:index]
         resource :site_setting, only: [:show, :update]
+        resource :host_profile, only: [:show, :update]
+        resource :site_content, only: [:show, :update]
         get 'dashboard/stats', to: 'dashboard#stats'
       end
     end

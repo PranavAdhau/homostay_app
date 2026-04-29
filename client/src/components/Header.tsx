@@ -57,7 +57,7 @@ export default function Header() {
 
   return (
     <motion.header
-      className="sticky top-0 bg-white shadow-md"
+      className="sticky top-0 bg-white/70 shadow-sm backdrop-blur-md"
       style={{ zIndex: 1000 }}
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -77,27 +77,25 @@ export default function Header() {
             >
               <div className="flex items-center gap-2">
                 {didLogoError ? (
-                  <>
-                    <span
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1F8A84] text-lg font-semibold text-white"
-                      aria-hidden="true"
-                    >
-                      SH
-                    </span>
-                    <h1 className="text-xl font-semibold text-[#173A39] lg:text-2xl">
-                      Sacred Homes
-                    </h1>
-                  </>
+                  <span
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1F8A84] text-lg font-semibold text-white"
+                    aria-hidden="true"
+                  >
+                    SH
+                  </span>
                 ) : (
                   <span className="flex h-12 w-12 items-center justify-center lg:h-14 lg:w-14" aria-hidden="true">
                     <img
                       src={sacredHomesLogo}
-                      alt="Sacred Homes"
+                      alt="Sacred Homes logo"
                       className="h-full w-full object-contain"
                       onError={() => setDidLogoError(true)}
                     />
                   </span>
                 )}
+                <h1 className="text-xl font-semibold text-[#173A39] lg:text-2xl">
+                  Sacred Homes
+                </h1>
               </div>
             </button>
           </motion.div>
@@ -131,14 +129,15 @@ export default function Header() {
             </nav>
 
             {settings?.phone ? (
-              <motion.div
-                className="hidden items-center gap-2 text-sm text-[#73867A] lg:flex"
+              <motion.a
+                href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
+                className="hidden items-center gap-2 text-sm font-medium text-[#1F8A84] lg:flex"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
                 <Phone className="h-4 w-4" />
-                <span>{settings.phone}</span>
-              </motion.div>
+                <span>Call Now</span>
+              </motion.a>
             ) : null}
           </div>
 
@@ -146,11 +145,11 @@ export default function Header() {
             {settings?.phone ? (
               <motion.a
                 href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
-                className="flex items-center gap-1.5 text-sm text-[#73867A]"
+                className="flex items-center gap-1.5 text-sm font-medium text-[#1F8A84]"
                 whileHover={{ scale: 1.05 }}
               >
                 <Phone className="h-4 w-4" />
-                <span>{settings.phone}</span>
+                <span>Call Now</span>
               </motion.a>
             ) : null}
             <motion.button
@@ -219,10 +218,10 @@ export default function Header() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
                   >
-                    <div className="flex items-center space-x-2 text-sm text-[#73867A]">
+                    <a href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`} className="flex items-center space-x-2 text-sm font-medium text-[#1F8A84]">
                       <Phone className="h-4 w-4" />
-                      <span>{settings.phone}</span>
-                    </div>
+                      <span>Call Now</span>
+                    </a>
                   </motion.div>
                 ) : null}
               </div>

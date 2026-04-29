@@ -51,6 +51,7 @@ export default function HomestayCard({
             src={image}
             alt={name}
             className="w-full h-48 object-cover"
+            loading="lazy"
           />
           <motion.div
             className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"
@@ -132,7 +133,7 @@ export default function HomestayCard({
           </motion.div>
 
           <motion.div
-            className="flex items-center justify-between"
+            className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
@@ -141,16 +142,16 @@ export default function HomestayCard({
               <span className="text-2xl text-[#1F8A84]">{price}</span>
               <span className="text-[#73867A]"> / night</span>
             </div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[210px]">
               <Button
                 variant="outline"
-                className="flex-1"
+                className="w-full"
                 onClick={() => navigate(`/properties/${slug}`)}
               >
                 Details
               </Button>
               <Button
-                className="bg-[#1F8A84] hover:bg-[#264948] flex-1"
+                className="bg-[#1F8A84] hover:bg-[#264948] w-full"
                 onClick={handleBookNow}
               >
                 Book Now

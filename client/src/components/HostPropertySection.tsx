@@ -47,6 +47,14 @@ export default function HostPropertySection({
     };
   }, [primaryImage]);
 
+  const handleImageLoad = () => {
+    setImageResolved(true);
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
   return (
     <section className="relative overflow-hidden bg-white py-16 md:py-24">
       {/* TOP WHITE SECTION */}
@@ -145,7 +153,8 @@ export default function HostPropertySection({
                   <img
                     src={displayedImage}
                     alt="Host your property"
-                    onLoad={() => setImageResolved(true)}
+                    loading="lazy"
+                    onLoad={handleImageLoad}
                     className={`relative aspect-[0.8] w-full object-cover ${
                       imageResolved ? "opacity-100" : "opacity-0"
                     }`}

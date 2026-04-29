@@ -1,4 +1,5 @@
 import { MessageCircle } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { useSiteSettings } from "./SiteSettingsProvider";
 
 type WhatsAppFloatProps = {
@@ -15,6 +16,9 @@ export default function WhatsAppFloat({
   defaultMessage = "Hello, I have a question about your homestay.",
 }: WhatsAppFloatProps) {
   const { settings } = useSiteSettings();
+  const location = useLocation();
+
+  if (location.pathname.startsWith("/admin")) return null;
 
   const rawNumber = phoneNumber || settings?.whatsapp_number || "";
   const normalized = normalizePhoneNumber(rawNumber);

@@ -16,6 +16,8 @@ import dayjs, { Dayjs } from "dayjs";
 import { Button } from "./ui/button";
 import { formatINR } from "../lib/currency";
 import { applySeoMetadata, buildAbsoluteUrl, setJsonLd } from "../lib/seo";
+import { toast } from "sonner@2.0.3";
+import { useContent } from "./ContentProvider";
 import "./PropertyDetailPage.css";
 
 interface Homestay {
@@ -65,6 +67,7 @@ export default function PropertyDetailPage() {
   const [guestEmail, setGuestEmail] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const { siteContent } = useContent();
 
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
@@ -105,8 +108,14 @@ export default function PropertyDetailPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!homestay || nights <= 0) return alert('Please select valid check-in and check-out dates.');
-    if (!guestName || !guestEmail || !guestPhone) return alert('Please complete the guest details before submitting.');
+    if (!homestay || nights <= 0) {
+      toast.info('Please select valid check-in and check-out dates.');
+      return;
+    }
+    if (!guestName || !guestEmail || !guestPhone) {
+      toast.info('Please complete the guest details before submitting.');
+      return;
+    }
     setSubmitting(true);
     try {
       const r = await api.post('/bookings', {
@@ -121,7 +130,16 @@ export default function PropertyDetailPage() {
         setTimeout(() => { setSuccess(false); navigate('/'); }, 3000);
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Unable to submit your booking right now. Please try again.');
+      const message = err?.response?.data?.message;
+      const isConflict =
+        err?.response?.status === 409 ||
+        (typeof message === 'string' &&
+          /not available|conflict|already booked/i.test(message));
+      toast.error(
+        isConflict
+          ? 'Selected dates are not available. Please choose different dates.'
+          : message || 'Unable to submit your booking right now. Please try again.',
+      );
     } finally { setSubmitting(false); }
   };
 
@@ -386,23 +404,23 @@ export default function PropertyDetailPage() {
                   Check In time: <strong>2PM</strong>, Check out time: <strong>11AM</strong>.
                   Early check in and late check out is subject to availability.
                 </p>
-                <div className="flex flex-wrap gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
                   <Button
                     asChild
                     variant="outline"
-                    className="h-11 rounded-full border-[#1F8A84] px-5 text-sm font-semibold tracking-[0.08em] text-[#1F8A84] hover:bg-[#F3F7F4]"
+                    className="h-11 w-full sm:w-auto rounded-full border-[#1F8A84] px-0 sm:px-5 text-[12px] sm:text-sm font-semibold tracking-wide text-[#1F8A84] hover:bg-[#F3F7F4] flex items-center justify-center whitespace-nowrap"
                   >
-                    <a href="/assets/house-rules.pdf" download>
-                      Download House Rules
+                    <a href={siteContent?.house_rules_pdf_url || "/assets/house-rules.pdf"} download>
+                      House Rules
                     </a>
                   </Button>
                   <Button
                     asChild
                     variant="outline"
-                    className="h-11 rounded-full border-[#1F8A84] px-5 text-sm font-semibold tracking-[0.08em] text-[#1F8A84] hover:bg-[#F3F7F4]"
+                    className="h-11 w-full sm:w-auto rounded-full border-[#1F8A84] px-0 sm:px-5 text-[12px] sm:text-sm font-semibold tracking-wide text-[#1F8A84] hover:bg-[#F3F7F4] flex items-center justify-center whitespace-nowrap"
                   >
-                    <a href="/assets/cancellation-policy.pdf" download>
-                      Download Cancellation Policy
+                    <a href={siteContent?.cancellation_policy_pdf_url || "/assets/cancellation-policy.pdf"} download>
+                      Cancel Policy
                     </a>
                   </Button>
                 </div>

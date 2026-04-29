@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Building2, Calendar, LogOut, Menu, X, Settings, NotebookText } from 'lucide-react';
+import { Home, Building2, Calendar, LogOut, Menu, X, Settings, NotebookText, Users, FileImage } from 'lucide-react';
 import { Button } from '../ui/button';
 import axios from 'axios';
 import { resolveAppBaseUrl } from '../../lib/apiBaseUrl';
@@ -28,6 +28,8 @@ export default function AdminLayout() {
     { icon: NotebookText, label: 'Blogs', path: '/admin/blogs' },
     { icon: Building2, label: 'Homestays', path: '/admin/homestays' },
     { icon: Calendar, label: 'Bookings', path: '/admin/bookings' },
+    { icon: Users, label: 'Host Profile', path: '/admin/host-profile' },
+    { icon: FileImage, label: 'Site Content', path: '/admin/site-content' },
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
   const isActive = (path: string) => {

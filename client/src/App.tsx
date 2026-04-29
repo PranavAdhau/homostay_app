@@ -17,13 +17,17 @@ import AdminAuthGuard from "./components/admin/AdminAuthGuard";
 import SettingsPage from "./components/admin/SettingsPage";
 import { SiteSettingsProvider } from "./components/SiteSettingsProvider";
 import SeoManager from "./components/SeoManager";
+import { ContentProvider } from "./components/ContentProvider";
+import HostProfilePage from "./components/admin/HostProfilePage";
+import SiteContentPage from "./components/admin/SiteContentPage";
 
 export default function App() {
   return (
     <SiteSettingsProvider>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <SeoManager />
-        <Routes>
+      <ContentProvider>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <SeoManager />
+          <Routes>
           {/* PUBLIC ROUTES */}
           <Route path="/" element={<Index />} />
           <Route path="/homestays" element={<Index />} />
@@ -50,14 +54,17 @@ export default function App() {
             <Route path="homestays/:id/edit" element={<HomestayForm />} />
             <Route path="bookings" element={<BookingList />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="host-profile" element={<HostProfilePage />} />
+            <Route path="site-content" element={<SiteContentPage />} />
           </Route>
 
           {/* 404 ROUTE */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-      <WhatsAppFloat />
-      <Toaster position="top-right" richColors />
+          </Routes>
+          <WhatsAppFloat />
+        </BrowserRouter>
+        <Toaster position="top-right" richColors />
+      </ContentProvider>
     </SiteSettingsProvider>
   );
 }

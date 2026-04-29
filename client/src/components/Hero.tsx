@@ -119,46 +119,45 @@ export default function Hero({ searchUi }: HeroProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <motion.h1
-              className="mb-4 text-4xl md:text-6xl"
+            <motion.div
+              className="mb-4"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <motion.span
+              <motion.p
                 className="mb-2 block text-sm uppercase tracking-[0.3em] text-[#F4EBD7] md:text-base"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.5 }}
               >
-                Sacred Homes
-              </motion.span>
-              <motion.span
-                className="block"
+                SACRED HOMES
+              </motion.p>
+              <motion.h1
+                className="block text-4xl md:text-6xl"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.7 }}
               >
-                Sacred Homes – Varanasi
-              </motion.span>
-            </motion.h1>
+                Homestays in Varanasi
+              </motion.h1>
+            </motion.div>
 
-            <motion.p
+            <motion.h2
               className="mx-auto mb-6 max-w-3xl text-lg md:text-2xl"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              Stay close to the ghats, temples, and timeless spirit of Kashi.
-            </motion.p>
+              Stay close to the ghats, temples, and timeless spirit of Kashi
+            </motion.h2>
             <motion.p
               className="mx-auto mb-8 max-w-3xl text-base text-[#F8F8F8] md:text-lg"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
             >
-              Discover thoughtfully designed homestays in the heart of Varanasi.
-              Experience authentic Benaras hospitality with modern comfort.
+              Discover thoughtfully designed homestays in the heart of Varanasi, blending authentic hospitality with modern comfort for a stay that feels warm, relaxing, and unforgettable.
             </motion.p>
 
             <motion.div

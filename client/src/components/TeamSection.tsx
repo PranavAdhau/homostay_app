@@ -1,37 +1,31 @@
 import { motion } from 'motion/react';
-import { Mail, MessageCircle, Instagram } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
-
-const hosts = [
-  {
-    name: 'Sahej Kohli',
-    role: 'Host · Sacred Homes Varanasi',
-    city: 'Varanasi, Uttar Pradesh',
-    image: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&q=80',
-    bio: 'I have been hosting guests in Varanasi for over 4 years, creating comfortable and memorable stays rooted in local culture. I focus on offering a peaceful, well-maintained space along with thoughtful hospitality so guests can truly experience the essence of this ancient city.',
-    education: 'Business Consultant · Christ University, Bangalore',
-    languages: 'English, Hindi',
-    yearsHosting: '4+ years hosting',
-    whatsapp: '919999999991',
-    email: 'sahej@sacredhomes.in',
-    instagram: '@sahej.sacredhomes',
-  },
-  {
-    name: 'Raman',
-    role: 'Co-Host · Sacred Homes Varanasi',
-    city: 'Varanasi, Uttar Pradesh',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80',
-    bio: 'Cooking, storytelling, and creating warm memories for our guests is what drives me. I ensure every stay feels personal, comfortable, and well taken care of with attention to detail and a welcoming approach.',
-    education: 'Hospitality & Guest Experience Specialist',
-    languages: 'English, Hindi',
-    yearsHosting: '4+ years hosting',
-    whatsapp: '919999999992',
-    email: 'raman@sacredhomes.in',
-    instagram: '@raman.sacredhomes',
-  },
-];
+import { useContent } from './ContentProvider';
 
 export default function TeamSection() {
+  const { hostProfile } = useContent();
+  const hosts = [
+    {
+      name: hostProfile?.host_name,
+      role: "Host · Sacred Homes Varanasi",
+      image: hostProfile?.host_image_url,
+      bio: hostProfile?.host_bio,
+      contact: hostProfile?.host_contact,
+      isSuperhost: true,
+    },
+    {
+      name: hostProfile?.co_host_name,
+      role: "Co-Host · Sacred Homes Varanasi",
+      image: hostProfile?.co_host_image_url,
+      bio: hostProfile?.co_host_bio,
+      contact: hostProfile?.co_host_contact,
+      isSuperhost: false,
+    },
+  ].filter(host => host.name && host.image && host.bio);
+
+  if (hosts.length === 0) return null;
+
   return (
     <section id="hosts" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -57,11 +51,11 @@ export default function TeamSection() {
           </motion.p>
         </AnimatedSection>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {hosts.map((host, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 justify-center">
+          {hosts.map((host) => (
             <div
-              key={host.email}
-              className="bg-white border border-[#E5ECE6] rounded-xl shadow-sm p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1"
+              key={host.name}
+              className="bg-white border border-[#E5ECE6] rounded-xl shadow-sm p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1 w-full max-w-md mx-auto"
             >
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
@@ -72,6 +66,7 @@ export default function TeamSection() {
                 <img
                   src={host.image}
                   alt={host.name}
+                  loading="lazy"
                   className="w-32 h-32 rounded-2xl object-cover shadow-sm border border-[#E5ECE6]"
                 />
 
@@ -79,9 +74,8 @@ export default function TeamSection() {
                   {host.name}
                 </h3>
 
-                {/* FIXED: Reserved space for badge */}
                 <div className="h-6 flex items-center justify-center mt-2">
-                  {index === 0 && (
+                  {host.isSuperhost && (
                     <span className="text-xs bg-[#E6F4F1] text-[#1F8A84] px-2 py-1 rounded-full">
                       Superhost
                     </span>
@@ -92,43 +86,20 @@ export default function TeamSection() {
                   {host.role}
                 </p>
 
-                {/* FIXED: Equal bio height */}
                 <p className="text-sm text-[#4F5F5B] mt-3 leading-relaxed max-w-sm min-h-[120px]">
                   {host.bio}
                 </p>
 
-                {/* Divider */}
                 <div className="w-12 h-[1px] bg-[#E5ECE6] my-4"></div>
-
-                {/* FIXED: Equal info height */}
-                <div className="mt-1 text-xs text-[#73867A] space-y-1 leading-relaxed min-h-[72px]">
-                  <p>{host.education}</p>
-                  <p>{host.languages}</p>
-                  <p>{host.yearsHosting}</p>
-                </div>
 
                 <div className="mt-4 flex gap-4 justify-center">
                   <a
-                    href={`https://wa.me/${host.whatsapp}`}
+                    href={`mailto:${host.contact}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#73867A] hover:text-[#22C55E] transition-all hover:scale-110"
-                  >
-                    <MessageCircle className="w-5 h-5" />
-                  </a>
-
-                  <a
-                    href={`mailto:${host.email}`}
                     className="text-[#73867A] hover:text-[#1F8A84] transition-all hover:scale-110"
                   >
                     <Mail className="w-5 h-5" />
-                  </a>
-
-                  <a
-                    href="#"
-                    className="text-[#73867A] hover:text-[#264948] transition-all hover:scale-110"
-                  >
-                    <Instagram className="w-5 h-5" />
                   </a>
                 </div>
               </motion.div>

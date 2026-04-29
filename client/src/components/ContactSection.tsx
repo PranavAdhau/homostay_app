@@ -16,36 +16,40 @@ export default function ContactSection() {
     message: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const { settings } = useSiteSettings();
+  const { settings, loading, error } = useSiteSettings();
+  const fallbackSettings = {
+    phone: "+91 00000 00000",
+    email: "hello@thesacredhomes.com",
+    address: "Varanasi, Uttar Pradesh, India",
+  };
+  const resolvedSettings = settings ?? fallbackSettings;
 
-  const contactInfo = settings
-    ? [
-        {
-          icon: Phone,
-          title: "Phone",
-          details: [settings.phone],
-          action: `tel:${settings.phone}`,
-        },
-        {
-          icon: Mail,
-          title: "Email",
-          details: [settings.email],
-          action: `mailto:${settings.email}`,
-        },
-        {
-          icon: MapPin,
-          title: "Location",
-          details: [settings.address || "Varanasi, Uttar Pradesh, India"],
-          action: null,
-        },
-        {
-          icon: Clock,
-          title: "Check-in Hours",
-          details: ["Check-in: 3:00 PM", "Check-out: 11:00 AM"],
-          action: null,
-        },
-      ]
-    : [];
+  const contactInfo = [
+    {
+      icon: Phone,
+      title: "Phone",
+      details: [resolvedSettings.phone],
+      action: `tel:${resolvedSettings.phone}`,
+    },
+    {
+      icon: Mail,
+      title: "Email",
+      details: [resolvedSettings.email],
+      action: `mailto:${resolvedSettings.email}`,
+    },
+    {
+      icon: MapPin,
+      title: "Location",
+      details: [resolvedSettings.address || fallbackSettings.address],
+      action: null,
+    },
+    {
+      icon: Clock,
+      title: "Check-in Hours",
+      details: ["Check-in: 3:00 PM", "Check-out: 11:00 AM"],
+      action: null,
+    },
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +101,14 @@ export default function ContactSection() {
             transition={{ duration: 0.6 }}
           >
             <h3 className="text-2xl mb-6">Contact Information</h3>
+            {loading ? (
+              <p className="mb-4 text-sm text-[#73867A]">Loading contact details...</p>
+            ) : null}
+            {error ? (
+              <p className="mb-4 text-sm text-[#73867A]">
+                We could not fetch live contact details. Showing default information.
+              </p>
+            ) : null}
             <motion.div 
               className="space-y-6"
               variants={{

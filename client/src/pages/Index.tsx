@@ -18,6 +18,7 @@ import {
   DEFAULT_SEARCH_FILTERS,
   type SearchFilters,
 } from '../lib/searchFilters';
+import { useContent } from '../components/ContentProvider';
 
 function buildHomestaySearchParams(filters: SearchFilters) {
   const params: Record<string, string> = {};
@@ -56,6 +57,7 @@ export default function Index() {
   const [visibleHomestays, setVisibleHomestays] = useState<PublicHomestay[]>([]);
   const [homestaysLoading, setHomestaysLoading] = useState(true);
   const [filteredHomestaysLoading, setFilteredHomestaysLoading] = useState(false);
+  const { siteContent } = useContent();
 
   useLayoutEffect(() => {
     const handleNavigation = () => {
@@ -221,6 +223,9 @@ export default function Index() {
   );
 
   const hostPropertyImageCandidates = useMemo(() => {
+    if (siteContent?.host_property_image_urls?.length) {
+      return siteContent.host_property_image_urls;
+    }
     const firstHomestay = allHomestays[0];
 
     if (!firstHomestay) {
@@ -228,15 +233,19 @@ export default function Index() {
     }
 
     return [firstHomestay.featured_image, firstHomestay.images[0]];
-  }, [allHomestays]);
+  }, [allHomestays, siteContent]);
 
   const trustSectionImages = useMemo(
-    () =>
-      allHomestays
+    () => {
+      if (siteContent?.little_more_image_urls?.length) {
+        return siteContent.little_more_image_urls.slice(0, 4);
+      }
+      return allHomestays
         .flatMap((homestay) => [homestay.featured_image, homestay.images[0]])
         .filter((image): image is string => Boolean(image))
-        .slice(0, 4),
-    [allHomestays],
+        .slice(0, 4);
+    },
+    [allHomestays, siteContent],
   );
 
   return (
