@@ -199,7 +199,7 @@ export default function BookingSection() {
       <div className="container mx-auto px-4">
         <AnimatedSection className="text-center mb-12">
           <motion.h2
-            className="text-4xl mb-4"
+            className="text-3xl sm:text-4xl mb-4"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -208,7 +208,7 @@ export default function BookingSection() {
             Book Your <span className="text-[#1F8A84]">Stay</span>
           </motion.h2>
           <motion.p
-            className="text-xl text-[#4F5F5B] max-w-2xl mx-auto"
+            className="text-base sm:text-xl text-[#4F5F5B] max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -226,7 +226,7 @@ export default function BookingSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <Card className="shadow-xl">
+            <Card className="rounded-[24px] border-[#E5ECE6]/60 shadow-[0_12px_40px_rgba(23,58,57,0.08)] overflow-hidden">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Calendar className="h-6 w-6 text-[#1F8A84]" />
@@ -449,7 +449,7 @@ export default function BookingSection() {
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="bg-[#FAF5F2] p-4 rounded-lg"
+                        className="bg-[#F4F7F6] p-4 rounded-lg"
                       >
                         <h4 className="text-lg mb-2">Booking Summary</h4>
                         <div className="space-y-1 text-sm text-[#4F5F5B]">

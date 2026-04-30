@@ -3,10 +3,14 @@ import api from "./axios";
 export type HostProfile = {
   host_name: string;
   host_bio: string;
+  host_description?: string | null;
   host_contact: string;
+  host_phone?: string | null;
   co_host_name: string;
   co_host_bio: string;
+  co_host_description?: string | null;
   co_host_contact: string;
+  co_host_phone?: string | null;
   host_image_url: string | null;
   co_host_image_url: string | null;
 };

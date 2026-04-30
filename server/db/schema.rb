@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_30_002200) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_30_033000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -176,6 +176,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_30_002200) do
     t.string "name", null: false
     t.text "bio", null: false
     t.string "contact", null: false
+    t.string "phone"
+    t.text "description"
     t.index ["role"], name: "index_host_profiles_on_role", unique: true
   end
 

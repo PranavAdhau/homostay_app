@@ -26,6 +26,8 @@ export default function HomestayCard({
   rating, capacity, rooms, amenities, isGlamping = false
 }: HomestayCardProps) {
   const navigate = useNavigate();
+  const visibleAmenities = amenities.slice(0, 4);
+  const remainingAmenities = Math.max(0, amenities.length - visibleAmenities.length);
 
   // ✅ Use navigate() so React Router's useSearchParams reacts immediately
   const handleBookNow = () => {
@@ -38,19 +40,19 @@ export default function HomestayCard({
 
   return (
     <motion.div
-      whileHover={{ y: -8, scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      whileHover={{ y: -4, scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 260, damping: 24 }}
     >
-      <Card className="overflow-hidden h-full shadow-lg hover:shadow-2xl transition-shadow duration-300">
+      <Card className="overflow-hidden h-full shadow-[0_2px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_32px_rgba(0,0,0,0.10)] transition-shadow duration-300">
         <motion.div
           className="relative overflow-hidden"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.3 }}
+          whileHover={{ scale: 1.03 }}
+          transition={{ duration: 0.25 }}
         >
           <ImageWithFallback
             src={image}
             alt={name}
-            className="w-full h-48 object-cover"
+            className="w-full h-44 sm:h-48 object-cover"
             loading="lazy"
           />
           <motion.div
@@ -71,24 +73,23 @@ export default function HomestayCard({
             </motion.div>
           )}
           <motion.div
-            className="absolute top-3 right-3 bg-white rounded-full px-2 py-1 flex items-center space-x-1"
+            className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1 shadow-sm"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", delay: 0.2 }}
-            whileHover={{ scale: 1.1 }}
           >
             <Star className="h-4 w-4 text-[#1F8A84] fill-current" />
-            <span className="text-sm">{rating}</span>
+            <span className="text-xs font-medium text-[#173A39]">{rating}</span>
           </motion.div>
         </motion.div>
 
-        <CardContent className="p-6">
+        <CardContent className="p-5 sm:p-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <h3 className="text-xl mb-2">{name}</h3>
+            <h3 className="text-xl font-semibold mb-2 line-clamp-1">{name}</h3>
             <p className="text-[#4F5F5B] mb-4 line-clamp-2">{description}</p>
           </motion.div>
 
@@ -114,22 +115,26 @@ export default function HomestayCard({
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            {amenities.map((amenity, index) => {
+            {visibleAmenities.map((amenity, index) => {
               const IconComponent = getAmenityIcon(amenity);
               return (
                 <motion.div
                   key={amenity}
-                  className="flex items-center space-x-1 text-sm text-[#4F5F5B] bg-[#F8F8F8] px-2 py-1 rounded"
+                  className="flex items-center space-x-1 text-xs text-[#4F5F5B] bg-[#F8F8F8] px-2 py-1 rounded-md"
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.4 + index * 0.1 }}
-                  whileHover={{ scale: 1.1 }}
                 >
                   {IconComponent && <IconComponent className="h-3 w-3" />}
                   <span>{amenity}</span>
                 </motion.div>
               );
             })}
+            {remainingAmenities > 0 && (
+              <span className="flex items-center text-xs text-[#4F5F5B] bg-[#F8F8F8] px-2 py-1 rounded-md">
+                +{remainingAmenities} more
+              </span>
+            )}
           </motion.div>
 
           <motion.div
@@ -144,14 +149,14 @@ export default function HomestayCard({
             </div>
             <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[210px]">
               <Button
-                variant="outline"
-                className="w-full"
+                variant="ghost"
+                className="h-11 w-full border border-[#D8E3DE] text-[#173A39] hover:bg-[#F4F7F6]"
                 onClick={() => navigate(`/properties/${slug}`)}
               >
                 Details
               </Button>
               <Button
-                className="bg-[#1F8A84] hover:bg-[#264948] w-full"
+                className="h-11 w-full bg-[#1F8A84] hover:bg-[#264948]"
                 onClick={handleBookNow}
               >
                 Book Now

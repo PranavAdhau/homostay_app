@@ -188,7 +188,7 @@ export default function Hero({ searchUi }: HeroProps) {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full border-white bg-black/50 text-white backdrop-blur-sm hover:bg-[#FAF5F2] hover:text-[#173A39] sm:w-auto"
+                  className="w-full border-white bg-black/50 text-white backdrop-blur-sm hover:bg-[#F4F7F6] hover:text-[#173A39] sm:w-auto"
                   asChild
                 >
                   <Link to="/homestays">Explore Homestays</Link>

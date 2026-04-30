@@ -263,7 +263,7 @@ export default function PropertyDetailPage() {
   }, [homestay, images, slug]);
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF5F2' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F4F7F6' }}>
       <div style={{ textAlign: 'center' }}>
         <div className="animate-spin rounded-full h-12 w-12 border-2 border-[#1F8A84] border-t-transparent mx-auto" />
         <p style={{ marginTop: 16, color: '#73867A', fontSize: 14 }}>Loading stay...</p>
@@ -272,7 +272,7 @@ export default function PropertyDetailPage() {
   );
 
   if (!homestay) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF5F2' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F4F7F6' }}>
       <div style={{ textAlign: 'center' }}>
         <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 16, color: '#173A39' }}>Stay not found</h2>
         <button onClick={() => navigate('/#homestays')} style={{ padding: '10px 24px', background: '#1F8A84', color: '#fff', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600 }}>Back to Homestays</button>
@@ -302,7 +302,7 @@ export default function PropertyDetailPage() {
       : null;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FAF5F2', fontFamily: 'inherit', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: '#F4F7F6', fontFamily: 'inherit', display: 'flex', flexDirection: 'column' }}>
       <Header />
 
       <div className="pdp-page-body">
@@ -538,7 +538,7 @@ export default function PropertyDetailPage() {
       {success && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.48)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }}>
           <div style={{ background: '#fff', borderRadius: 20, padding: 36, maxWidth: 360, width: '100%', textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,0.25)' }}>
-            <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#FAF5F2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
+            <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#F4F7F6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
               <CheckCircle style={{ width: 42, height: 42, color: '#1F8A84' }} />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: '#173A39', marginBottom: 8 }}>Booking Confirmed!</h2>
@@ -719,7 +719,7 @@ function ReservationForm({
         </div>
 
         {nights > 0 && (
-          <div style={{ background: '#FAF5F2', borderRadius: 10, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: '#F4F7F6', borderRadius: 10, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 13, color: '#73867A' }}>
               {formatINR(homestay.price_per_night)} × {nights} {nights === 1 ? 'night' : 'nights'}
             </span>

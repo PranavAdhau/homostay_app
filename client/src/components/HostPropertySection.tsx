@@ -27,63 +27,32 @@ export default function HostPropertySection({
   const [imageResolved, setImageResolved] = useState(false);
   const timeoutRef = useRef<number | null>(null);
 
-  useEffect(() => {
+  if (primaryImage !== displayedImage) {
     setDisplayedImage(primaryImage);
     setImageResolved(false);
+  }
 
-    if (primaryImage !== hostPropertyPlaceholder) {
+  useEffect(() => {
+    if (displayedImage !== hostPropertyPlaceholder && !imageResolved) {
       timeoutRef.current = window.setTimeout(() => {
-        timeoutRef.current = null;
         setDisplayedImage(hostPropertyPlaceholder);
-        setImageResolved(false);
       }, IMAGE_TIMEOUT_MS);
     }
 
     return () => {
       if (timeoutRef.current) {
         window.clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
       }
     };
-  }, [primaryImage]);
+  }, [displayedImage, imageResolved]);
 
   const handleImageLoad = () => {
     setImageResolved(true);
-    if (timeoutRef.current) {
-      window.clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
   };
 
   return (
-    <section className="relative overflow-hidden bg-white py-16 md:py-24">
-      {/* TOP WHITE SECTION */}
-      <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-        <AnimatedSection className="mb-10 text-center lg:mb-12">
-          <motion.h2
-            className="text-4xl mb-4"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            Host Your <span className="text-[#1F8A84]">Property</span>
-          </motion.h2>
-
-          <motion.p
-            className="text-xl text-[#4F5F5B] max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-          >
-            From setup to support, we make hosting simple, seamless, and rewarding
-          </motion.p>
-        </AnimatedSection>
-      </div>
-
-      {/* FULL WIDTH BROWN SECTION */}
-      <div className="relative bg-[#FAF5F2] py-14">
+    <section className="relative overflow-hidden bg-[#F4F7F6] py-16 md:py-24">
+      <div className="relative">
 
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
@@ -143,7 +112,7 @@ export default function HostPropertySection({
               className="order-1 mx-auto flex w-full max-w-[22rem] justify-center lg:order-2 lg:max-w-[26rem] lg:justify-end"
             >
               <div className="relative isolate w-full">
-                <div className="absolute bottom-5 right-0 h-[68%] w-[72%] rounded-[2rem] bg-[#AFC0AF] lg:bottom-[-1.75rem] lg:right-[-1.5rem]" />
+                <div className="absolute bottom-3 right-2 h-[56%] w-[64%] rounded-[1.5rem] bg-[#AFC0AF]/70 sm:bottom-5 sm:right-0 sm:h-[68%] sm:w-[72%] sm:rounded-[2rem] sm:bg-[#AFC0AF] lg:bottom-[-1.75rem] lg:right-[-1.5rem]" />
 
                 <div className="relative mx-auto w-[78%] overflow-hidden rounded-t-[999px] bg-[#E9DFD8] shadow-[0_24px_60px_rgba(46,87,86,0.16)] lg:mx-0 lg:ml-auto">
                   {!imageResolved && (

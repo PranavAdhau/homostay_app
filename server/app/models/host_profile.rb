@@ -3,6 +3,8 @@ class HostProfile < ApplicationRecord
 
   validates :role, presence: true, uniqueness: true, inclusion: { in: %w[host co_host] }
   validates :name, :bio, :contact, presence: true
+  validates :phone, length: { maximum: 30 }, format: { with: /\A[+\d\s()-]*\z/, message: "is invalid" }, allow_blank: true
+  validates :description, length: { maximum: 2000 }, allow_blank: true
 
   # Helper method to get or initialize the hosts to ensure they always exist for API payloads
   def self.ensure_exists(role)

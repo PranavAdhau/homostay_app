@@ -73,6 +73,7 @@ export default function Header() {
             <button
               aria-label="Go to home section"
               onClick={() => handleScrollNav('home')}
+              className="min-h-11 min-w-11 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
               <div className="flex items-center gap-2">
@@ -93,9 +94,9 @@ export default function Header() {
                     />
                   </span>
                 )}
-                <h1 className="text-xl font-semibold text-[#173A39] lg:text-2xl">
+                <span className="text-xl font-semibold text-[#173A39] lg:text-2xl">
                   Sacred Homes
-                </h1>
+                </span>
               </div>
             </button>
           </motion.div>
@@ -113,7 +114,7 @@ export default function Header() {
                 >
                   <button
                     onClick={() => handleItemClick(item)}
-                    className="text-[#4F5F5B] transition-colors hover:text-[#1F8A84]"
+                    className="min-h-11 rounded-md px-2 text-[#4F5F5B] transition-colors hover:text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', fontSize: '1rem' }}
                   >
                     {item.label}
@@ -131,7 +132,7 @@ export default function Header() {
             {settings?.phone ? (
               <motion.a
                 href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
-                className="hidden items-center gap-2 text-sm font-medium text-[#1F8A84] lg:flex"
+                className="hidden min-h-11 items-center gap-2 rounded-md px-2 text-sm font-medium text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2 lg:flex"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
@@ -145,7 +146,7 @@ export default function Header() {
             {settings?.phone ? (
               <motion.a
                 href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
-                className="flex items-center gap-1.5 text-sm font-medium text-[#1F8A84]"
+                className="flex min-h-11 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
                 whileHover={{ scale: 1.05 }}
               >
                 <Phone className="h-4 w-4" />
@@ -155,6 +156,7 @@ export default function Header() {
             <motion.button
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
               whileTap={{ scale: 0.95 }}
             >
               <AnimatePresence mode="wait">
@@ -204,7 +206,7 @@ export default function Header() {
                   >
                     <button
                       onClick={() => handleItemClick(item)}
-                      className="w-full border-b border-[#E5ECE6] py-2 text-left text-[#4F5F5B] transition-colors hover:text-[#1F8A84]"
+                      className="w-full rounded-md border-b border-[#E5ECE6] py-3 text-left text-[#4F5F5B] transition-colors hover:text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
                       style={{ background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6', cursor: 'pointer', padding: '8px 0', font: 'inherit', fontSize: '1rem', width: '100%', textAlign: 'left' }}
                     >
                       {item.label}
@@ -218,7 +220,7 @@ export default function Header() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
                   >
-                    <a href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`} className="flex items-center space-x-2 text-sm font-medium text-[#1F8A84]">
+                    <a href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`} className="flex min-h-11 items-center space-x-2 rounded-md px-2 text-sm font-medium text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2">
                       <Phone className="h-4 w-4" />
                       <span>Call Now</span>
                     </a>

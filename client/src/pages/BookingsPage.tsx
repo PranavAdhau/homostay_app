@@ -6,9 +6,9 @@ export default function BookingsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <div className="flex-grow pt-20"> 
+      <main className="flex-grow pt-24 md:pt-28"> 
         <BookingSection />
-      </div>
+      </main>
       <Footer />
     </div>
   );

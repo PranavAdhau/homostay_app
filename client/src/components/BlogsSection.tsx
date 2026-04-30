@@ -1,6 +1,6 @@
 import { memo, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { ImageWithFallback } from './figma/ImageWithFallback';
@@ -28,9 +28,9 @@ export const generateBlogSlug = (id: number, title: string) => {
 
 function BlogCardSkeleton() {
   return (
-    <div className="bg-white border border-[#E5ECE6] rounded-xl overflow-hidden shadow-sm w-full">
-      <div className="w-full h-48 animate-pulse bg-[#F8F8F8]" />
-      <div className="p-5 space-y-3">
+    <article className="bg-white rounded-xl overflow-hidden shadow-[0_2px_16px_rgba(0,0,0,0.06)] w-full h-full">
+      <div className="relative w-full pt-[56.25%] animate-pulse bg-[#F8F8F8]" />
+      <div className="p-5 sm:px-6 sm:py-5 space-y-3">
         <div className="h-3 w-20 animate-pulse rounded bg-[#F8F8F8]" />
         <div className="h-5 w-3/4 animate-pulse rounded bg-[#F8F8F8]" />
         <div className="h-5 w-1/2 animate-pulse rounded bg-[#F8F8F8]" />
@@ -41,70 +41,61 @@ function BlogCardSkeleton() {
         </div>
         <div className="h-4 w-24 animate-pulse rounded bg-[#F8F8F8] pt-2" />
       </div>
-    </div>
+    </article>
   );
 }
 
-function BlogCard({
-  blog,
-  onNavigate,
-}: {
-  blog: Blog;
-  onNavigate: () => void;
-}) {
+function BlogCard({ blog }: { blog: Blog }) {
+  const blogPath = `/blogs/${generateBlogSlug(blog.id, blog.title)}`;
   return (
-    <div
-      className="group bg-white border border-[#E5ECE6] rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col h-full cursor-pointer"
-      onClick={onNavigate}
-    >
-      {/* Image */}
-      <div className="overflow-hidden shrink-0">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
+      <div className="relative w-full pt-[56.25%] overflow-hidden shrink-0">
         <ImageWithFallback
           src={blog.image_url || BLOG_PLACEHOLDER_IMAGE}
           alt={blog.title}
-          className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
 
-      {/* Body */}
-      <div className="p-5 flex flex-col flex-1">
-        {/* Date */}
-        <p className="text-xs text-[#73867A] uppercase tracking-[0.18em] mb-2">
+      <div className="flex flex-1 flex-col p-5 sm:px-6 sm:py-5">
+        <time
+          dateTime={new Date(blog.created_at).toISOString()}
+          className="text-[0.75rem] text-[#2D9B8A] uppercase tracking-[0.05em] mb-2"
+        >
           {new Date(blog.created_at).toLocaleDateString(undefined, {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
           })}
-        </p>
+        </time>
 
-        {/* Title */}
-        <h3 className="text-[#173A39] text-lg font-semibold leading-snug line-clamp-2 mb-2">
-          {blog.title}
+        <h3 className="mb-2 text-[1.125rem] font-semibold leading-snug text-[#173A39] line-clamp-2">
+          <Link
+            to={blogPath}
+            className="rounded-sm transition-colors hover:text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
+          >
+            {blog.title}
+          </Link>
         </h3>
 
-        {/* Excerpt */}
-        <p className="text-[#4F5F5B] text-sm leading-relaxed line-clamp-3 flex-1 mb-5">
+        <p className="text-[#6A7A76] text-[0.875rem] leading-relaxed line-clamp-3">
           {previewText(blog.content)}
         </p>
 
-        {/* Read More — left-aligned inline, NOT full-width */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onNavigate();
-          }}
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#173A39] hover:text-[#1F8A84] hover:underline w-fit"
+        <Link
+          to={blogPath}
+          className="mt-auto inline-flex min-h-11 w-fit items-center gap-1.5 rounded-sm pt-4 text-sm font-semibold text-[#2D9B8A] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
         >
           Read More
           <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-        </button>
+        </Link>
       </div>
-    </div>
+    </article>
   );
 }
 
 function BlogsSection() {
-  const navigate = useNavigate();
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -133,12 +124,12 @@ function BlogsSection() {
   }, []);
 
   return (
-    <section id="blogs" className="py-20 bg-white scroll-mt-16 md:scroll-mt-24">
+    <section id="blogs" className="py-20 bg-[#F4F7F6] scroll-mt-16 md:scroll-mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Heading */}
         <AnimatedSection className="text-center mb-12">
           <motion.h2
-            className="text-4xl mb-4"
+            className="text-3xl sm:text-4xl mb-4"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -147,7 +138,7 @@ function BlogsSection() {
             From The <span className="text-[#1F8A84]">Journal</span>
           </motion.h2>
           <motion.p
-            className="text-xl text-[#4F5F5B] max-w-2xl mx-auto"
+            className="text-base sm:text-xl text-[#4F5F5B] max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -165,7 +156,7 @@ function BlogsSection() {
           transition={{ duration: 0.3 }}
         >
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-6">
               {Array.from({ length: 3 }).map((_, i) => (
                 <BlogCardSkeleton key={i} />
               ))}
@@ -175,59 +166,18 @@ function BlogsSection() {
               <p className="text-[#73867A]">No journal entries are available right now.</p>
             </div>
           ) : (
-            <>
-              {/* Mobile: 1 card snap-scroll */}
-              <div className="flex sm:hidden gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hidden pb-4 -mx-4 px-4">
-                {blogs.map((blog, index) => (
-                  <motion.div
-                    key={blog.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.06, duration: 0.35 }}
-                    className="snap-center flex-shrink-0 w-[82vw]"
-                  >
-                    <BlogCard
-                      blog={blog}
-                      onNavigate={() => navigate(`/blogs/${generateBlogSlug(blog.id, blog.title)}`)}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Tablet: 2 cols */}
-              <div className="hidden sm:grid xl:hidden grid-cols-2 gap-6">
-                {blogs.map((blog, index) => (
-                  <motion.div
-                    key={blog.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.06, duration: 0.35 }}
-                  >
-                    <BlogCard
-                      blog={blog}
-                      onNavigate={() => navigate(`/blogs/${generateBlogSlug(blog.id, blog.title)}`)}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Desktop: 3 cols */}
-              <div className="hidden xl:grid grid-cols-3 gap-6">
-                {blogs.map((blog, index) => (
-                  <motion.div
-                    key={blog.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.06, duration: 0.35 }}
-                  >
-                    <BlogCard
-                      blog={blog}
-                      onNavigate={() => navigate(`/blogs/${generateBlogSlug(blog.id, blog.title)}`)}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            </>
+            <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-6">
+              {blogs.map((blog, index) => (
+                <motion.div
+                  key={blog.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.06, duration: 0.35 }}
+                >
+                  <BlogCard blog={blog} />
+                </motion.div>
+              ))}
+            </div>
           )}
         </motion.div>
       </div>

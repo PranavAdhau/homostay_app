@@ -85,7 +85,7 @@ export default function Footer() {
                 <motion.a
                   key={social.label}
                   href={social.href}
-                  className="text-[#D4DDD5] hover:text-[#F4EBD7] transition-colors"
+                  className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-[#D4DDD5] transition-colors hover:text-[#F4EBD7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4EBD7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#173A39]"
                   whileHover={{ scale: 1.2, y: -2 }}
                   whileTap={{ scale: 0.9 }}
                   initial={{ opacity: 0, scale: 0 }}
@@ -122,7 +122,7 @@ export default function Footer() {
                   >
                     <button
                       onClick={() => handleItemClick(link)}
-                      className="text-[#F8F8F8] hover:text-[#F4EBD7] transition-colors text-sm"
+                      className="min-h-11 rounded-md px-2 text-sm text-[#F8F8F8] transition-colors hover:text-[#F4EBD7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4EBD7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#173A39]"
                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', textAlign: 'left' }}
                     >
                       {link.label}
@@ -186,21 +186,26 @@ export default function Footer() {
             <p className="text-[#F8F8F8] mb-4 text-sm">
               Subscribe to get special offers and updates about our homestays.
             </p>
-            <div className="space-y-2">
+            <form className="space-y-2" onSubmit={(event) => event.preventDefault()}>
+              <label htmlFor="footer-newsletter-email" className="sr-only">
+                Email address
+              </label>
               <input
+                id="footer-newsletter-email"
                 type="email"
                 placeholder="Your email"
-                className="w-full px-3 py-2 bg-[#264948] text-white rounded border border-[#A1B2A4] focus:border-[#F4EBD7] focus:outline-none text-sm"
+                className="w-full min-h-11 rounded border border-[#A1B2A4] bg-[#264948] px-3 py-2 text-sm text-white focus:border-[#F4EBD7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F4EBD7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#173A39]"
               />
               <motion.button
-                className="w-full bg-[#1F8A84] hover:bg-[#264948] text-white px-3 py-2 rounded text-sm transition-colors"
+                type="submit"
+                className="w-full min-h-11 rounded bg-[#1F8A84] px-3 py-2 text-sm text-white transition-colors hover:bg-[#264948] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4EBD7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#173A39]"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
                 Subscribe
               </motion.button>
-            </div>
+            </form>
           </motion.div>
         </div>
 
@@ -240,7 +245,7 @@ export default function Footer() {
                 {/* Privacy/Terms are real routes, not scroll sections */}
                 <Link
                   to="/privacy"
-                  className="text-[#D4DDD5] hover:text-[#F4EBD7] transition-colors"
+                  className="min-h-11 rounded-md px-2 text-[#D4DDD5] transition-colors hover:text-[#F4EBD7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4EBD7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#173A39]"
                   style={{ textDecoration: 'none' }}
                 >
                   Privacy Policy
@@ -252,7 +257,7 @@ export default function Footer() {
               >
                 <Link
                   to="/terms"
-                  className="text-[#D4DDD5] hover:text-[#F4EBD7] transition-colors"
+                  className="min-h-11 rounded-md px-2 text-[#D4DDD5] transition-colors hover:text-[#F4EBD7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4EBD7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#173A39]"
                   style={{ textDecoration: 'none' }}
                 >
                   Terms of Service

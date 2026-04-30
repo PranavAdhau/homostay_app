@@ -19,6 +19,8 @@ export default function HostProfilePage() {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [bio, setBio] = useState("");
+  const [phone, setPhone] = useState("");
+  const [description, setDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
@@ -30,6 +32,8 @@ export default function HostProfilePage() {
           setName(data.host_name || "");
           setContact(data.host_contact || "");
           setBio(data.host_bio || "");
+          setPhone(data.host_phone || "");
+          setDescription(data.host_description || "");
         }
       } catch (error) {
         console.error("Failed to load host profile", error);
@@ -47,10 +51,14 @@ export default function HostProfilePage() {
       setName(profile.host_name || "");
       setContact(profile.host_contact || "");
       setBio(profile.host_bio || "");
+      setPhone(profile.host_phone || "");
+      setDescription(profile.host_description || "");
     } else {
       setName(profile.co_host_name || "");
       setContact(profile.co_host_contact || "");
       setBio(profile.co_host_bio || "");
+      setPhone(profile.co_host_phone || "");
+      setDescription(profile.co_host_description || "");
     }
   }, [role, profile]);
 
@@ -62,6 +70,12 @@ export default function HostProfilePage() {
     if (!name.trim()) return toast.error("Name is required");
     if (!contact.trim()) return toast.error("Contact is required");
     if (!bio.trim()) return toast.error("Bio is required");
+    if (phone.trim() && !/^[+\d\s()-]{7,20}$/.test(phone.trim())) {
+      return toast.error("Mobile number format looks invalid");
+    }
+    if (description.trim().length > 2000) {
+      return toast.error("Description must be 2000 characters or fewer");
+    }
     
     setSaving(true);
     try {
@@ -70,6 +84,8 @@ export default function HostProfilePage() {
       formData.append("host_profile[name]", name);
       formData.append("host_profile[contact]", contact);
       formData.append("host_profile[bio]", bio);
+      formData.append("host_profile[phone]", phone);
+      formData.append("host_profile[description]", description);
       if (image) formData.append("host_profile[image]", image);
 
       const updated = await updateAdminHostProfile(formData);
@@ -120,6 +136,24 @@ export default function HostProfilePage() {
             <div className="space-y-2">
               <Label htmlFor="bio">Bio</Label>
               <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Mobile Number</Label>
+              <Input
+                id="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Enter host mobile number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Write a longer host introduction (optional)"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="image">Profile Image</Label>

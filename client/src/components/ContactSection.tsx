@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
@@ -13,14 +11,16 @@ export default function ContactSection() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     message: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const { settings, loading, error } = useSiteSettings();
+  const { settings, loading } = useSiteSettings();
+
   const fallbackSettings = {
-    phone: "+91 00000 00000",
-    email: "hello@thesacredhomes.com",
-    address: "Varanasi, Uttar Pradesh, India",
+    phone: "+919743340477",
+    email: "pranavadhau2003@gmail.com",
+    address: "Varanasi, India",
   };
   const resolvedSettings = settings ?? fallbackSettings;
 
@@ -28,25 +28,29 @@ export default function ContactSection() {
     {
       icon: Phone,
       title: "Phone",
-      details: [resolvedSettings.phone],
-      action: `tel:${resolvedSettings.phone}`,
+      value: resolvedSettings.phone,
+      subValues: null as string[] | null,
+      action: "tel:" + resolvedSettings.phone.replace(/[^\d+]/g, ''),
     },
     {
       icon: Mail,
       title: "Email",
-      details: [resolvedSettings.email],
-      action: `mailto:${resolvedSettings.email}`,
+      value: resolvedSettings.email,
+      subValues: null as string[] | null,
+      action: "mailto:" + resolvedSettings.email,
     },
     {
       icon: MapPin,
       title: "Location",
-      details: [resolvedSettings.address || fallbackSettings.address],
+      value: resolvedSettings.address || fallbackSettings.address,
+      subValues: null as string[] | null,
       action: null,
     },
     {
       icon: Clock,
       title: "Check-in Hours",
-      details: ["Check-in: 3:00 PM", "Check-out: 11:00 AM"],
+      value: null as string | null,
+      subValues: ["Check-in: 3:00 PM", "Check-out: 11:00 AM"],
       action: null,
     },
   ];
@@ -56,246 +60,234 @@ export default function ContactSection() {
     setIsSubmitted(true);
     setTimeout(() => {
       setIsSubmitted(false);
-      setFormData({ name: '', email: '', message: '' });
+      setFormData({ name: '', email: '', phone: '', message: '' });
     }, 3000);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const isFormValid = !!(formData.name.trim() && formData.email.trim() && formData.message.trim());
+
   return (
-    <section id="contact" className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <AnimatedSection className="text-center mb-12">
-          <motion.h2 
-            className="text-4xl mb-4"
-            initial={{ opacity: 0, y: 30 }}
+    <section
+      id="contact"
+      aria-labelledby="contact-title"
+      className="pt-16 pb-28 sm:py-20 bg-white"
+    >
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+
+        <AnimatedSection className="text-center mb-10 sm:mb-12">
+          <motion.h2
+            id="contact-title"
+            className="text-3xl sm:text-4xl mb-3 text-[#173A39]"
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
           >
             Get in <span className="text-[#1F8A84]">Touch</span>
           </motion.h2>
-          <motion.p 
-            className="text-xl text-[#4F5F5B] max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
+          <motion.p
+            className="text-sm sm:text-base text-[#4F5F5B] max-w-md mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
           >
-            Have questions about our homestays in Varanasi? Need help with your booking? 
-            We're here to help you plan a peaceful stay close to the ghats and temples.
+            Have questions about our Varanasi homestays? We typically respond within a few hours.
           </motion.p>
         </AnimatedSection>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* Contact Information */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h3 className="text-2xl mb-6">Contact Information</h3>
-            {loading ? (
-              <p className="mb-4 text-sm text-[#73867A]">Loading contact details...</p>
-            ) : null}
-            {error ? (
-              <p className="mb-4 text-sm text-[#73867A]">
-                We could not fetch live contact details. Showing default information.
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="grid grid-cols-1 gap-5 sm:gap-6 lg:gap-0 lg:grid-cols-[2fr_3fr]"
+        >
+
+          {/* ── Left / Top panel (teal) ── */}
+          <div className="relative bg-[#1F8A84] overflow-hidden rounded-2xl border border-[#E8EFEA] shadow-[0_4px_32px_rgba(0,0,0,0.07)] lg:rounded-r-none lg:border-r-0">
+            <div className="relative z-10 px-6 py-7 sm:px-8 sm:py-10">
+
+              <h3 className="text-base sm:text-[1.05rem] font-semibold text-white">
+                Contact Information
+              </h3>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-white/60">
+                Reach out anytime — we're happy to help.
               </p>
-            ) : null}
-            <motion.div 
-              className="space-y-6"
-              variants={{
-                visible: {
-                  transition: {
-                    staggerChildren: 0.1
-                  }
-                }
-              }}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              {contactInfo.map((info, index) => (
-                <motion.div
-                  key={info.title}
-                  variants={{
-                    hidden: { opacity: 0, y: 20 },
-                    visible: { opacity: 1, y: 0 }
-                  }}
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <Card className="hover:shadow-lg transition-shadow duration-300">
-                    <CardContent className="p-6">
-                      <div className="flex items-start space-x-4">
-                        <motion.div
-                          className="bg-[#FAF5F2] p-3 rounded-full"
-                          whileHover={{ rotate: 360 }}
-                          transition={{ duration: 0.5 }}
-                        >
-                          <info.icon className="h-6 w-6 text-[#1F8A84]" />
-                        </motion.div>
-                        <div className="flex-1">
-                          <h4 className="text-lg mb-2">{info.title}</h4>
-                          {info.details.map((detail, i) => (
-                            <motion.p
-                              key={i}
-                              className="text-[#4F5F5B] hover:text-[#1F8A84] transition-colors"
-                              whileHover={{ x: 5 }}
-                              transition={{ type: "spring", stiffness: 300 }}
-                            >
-                              {info.action ? (
-                                <a href={info.action} className="hover:underline">
-                                  {detail}
-                                </a>
-                              ) : (
-                                detail
-                              )}
-                            </motion.p>
+
+              {loading && (
+                <p className="mt-2 text-[11px] text-white/40">Loading…</p>
+              )}
+
+              {/* Always single-column list — no cramped 2-col on mobile */}
+              <address className="not-italic mt-6 space-y-4">
+                {contactInfo.map((info, i) => (
+                  <motion.div
+                    key={info.title}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.3, delay: 0.1 + i * 0.06 }}
+                    className="flex items-start gap-3.5"
+                  >
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15">
+                      <info.icon className="h-3.5 w-3.5 text-white" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.11em] text-white/45 mb-0.5">
+                        {info.title}
+                      </p>
+                      {info.subValues ? (
+                        <div>
+                          {info.subValues.map((sv, j) => (
+                            <p key={j} className="text-[13px] text-white/85 leading-snug">{sv}</p>
                           ))}
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.div>
-
-          {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <Card className="shadow-xl">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Send className="h-6 w-6 text-[#1F8A84]" />
-                  <span>Send us a Message</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="mt-2"
-                      required
-                    />
+                      ) : info.action ? (
+                        <a
+                          href={info.action}
+                          className="text-[13px] text-white/85 hover:text-white transition-colors leading-snug"
+                          style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+                        >
+                          {info.value}
+                        </a>
+                      ) : (
+                        <p className="text-[13px] text-white/85 leading-snug">{info.value}</p>
+                      )}
+                    </div>
                   </motion.div>
+                ))}
+              </address>
+            </div>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="mt-2"
-                      required
-                    />
-                  </motion.div>
+            {/* Decorative circles — visible on desktop, subtle on mobile */}
+            <div className="hidden sm:block absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-white/5 pointer-events-none" />
+            <div className="hidden sm:block absolute bottom-4 right-4 h-14 w-14 rounded-full bg-white/8 pointer-events-none" />
+          </div>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      className="mt-2 min-h-[120px]"
-                      placeholder="Tell us about your inquiry or booking requirements..."
-                      required
-                    />
-                  </motion.div>
+          {/* ── Right / Bottom panel (form) ── */}
+          <div className="bg-white px-6 py-7 sm:px-8 sm:py-10 rounded-2xl border border-[#E8EFEA] shadow-[0_4px_32px_rgba(0,0,0,0.07)] lg:rounded-l-none lg:border-l-0">
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#1F8A84]/10">
+                <Send className="h-3 w-3 text-[#1F8A84]" />
+              </div>
+              <h3 className="text-[0.95rem] font-semibold text-[#173A39]">
+                Send us a Message
+              </h3>
+            </div>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <Button
-                      type="submit"
-                      className="w-full bg-[#1F8A84] hover:bg-[#264948]"
-                      disabled={!formData.name || !formData.email || !formData.message}
-                    >
-                      <motion.div
-                        className="flex items-center space-x-2"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <Send className="h-4 w-4" />
-                        <span>Send Message</span>
-                      </motion.div>
-                    </Button>
-                  </motion.div>
-                </form>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="name" className="text-[12.5px] font-medium text-[#2E3F3B]">
+                  Full Name
+                </Label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="mt-1.5"
+                  placeholder="Your full name"
+                  required
+                />
+              </div>
 
-        {/* Success Animation */}
-        <AnimatePresence>
-          {isSubmitted && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-            >
-              <motion.div
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -50, opacity: 0 }}
-                className="bg-white p-8 rounded-lg shadow-2xl text-center max-w-md mx-4"
+              <div>
+                <Label htmlFor="email" className="text-[12.5px] font-medium text-[#2E3F3B]">
+                  Email Address
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="mt-1.5"
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone" className="text-[12.5px] font-medium text-[#2E3F3B]">
+                  Phone
+                  <span className="ml-1 text-[11px] font-normal text-[#96A89E]">(optional)</span>
+                </Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="mt-1.5"
+                  placeholder="+91 00000 00000"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="message" className="text-[12.5px] font-medium text-[#2E3F3B]">
+                  Message
+                </Label>
+                <Textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleInputChange}
+                  className="mt-1.5 min-h-[110px] resize-none"
+                  placeholder="Tell us about your inquiry or booking requirements…"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!isFormValid}
+                className="w-full h-12 rounded-lg flex items-center justify-center gap-2 text-[14px] font-medium text-white transition-opacity duration-200"
+                style={{
+                  backgroundColor: '#1F8A84',
+                  opacity: isFormValid ? 1 : 0.45,
+                  cursor: isFormValid ? 'pointer' : 'not-allowed',
+                }}
               >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
-                >
-                  <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                </motion.div>
-                <h3 className="text-2xl mb-2 text-green-600">Message Sent!</h3>
-                <p className="text-[#4F5F5B]">Thank you for contacting us. We'll get back to you soon!</p>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <Send className="h-3.5 w-3.5" />
+                Send Message
+              </button>
+            </form>
+          </div>
+
+        </motion.div>
       </div>
+
+      {/* Success overlay */}
+      <AnimatePresence>
+        {isSubmitted && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="bg-white rounded-2xl p-8 shadow-2xl text-center w-full max-w-sm"
+            >
+              <CheckCircle className="h-12 w-12 text-[#1F8A84] mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-[#173A39] mb-2">Message Sent!</h3>
+              <p className="text-[13.5px] text-[#4F5F5B] leading-relaxed">
+                Thank you for reaching out. We'll get back to you within a few hours.
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

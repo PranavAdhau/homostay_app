@@ -49,11 +49,11 @@ function HomestaysSection({
   const resolvedLoading = isControlled ? Boolean(prefetchedLoading) : loading;
 
   return (
-    <section id="homestays" className="py-20 bg-[#FAF5F2] scroll-mt-16 md:scroll-mt-24">
+    <section id="homestays" className="py-20 bg-[#F4F7F6] scroll-mt-16 md:scroll-mt-24">
       <div className="container mx-auto px-4">
         <AnimatedSection className="text-center mb-12">
           <motion.h2 
-            className="text-4xl mb-4"
+            className="text-3xl sm:text-4xl mb-4"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -62,7 +62,7 @@ function HomestaysSection({
             Our <span className="text-[#1F8A84]">Homestays</span>
           </motion.h2>
           <motion.p 
-            className="text-xl text-[#4F5F5B] max-w-2xl mx-auto"
+            className="text-base sm:text-xl text-[#4F5F5B] max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

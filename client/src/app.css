@@ -9,11 +9,11 @@
   --popover-foreground: #173A39;
   --primary: #1F8A84;
   --primary-foreground: #ffffff;
-  --secondary: #FAF5F2;
+  --secondary: #F4F7F6;
   --secondary-foreground: #173A39;
   --muted: #F8F8F8;
   --muted-foreground: #73867A;
-  --accent: #FAF5F2;
+  --accent: #F4F7F6;
   --accent-foreground: #173A39;
   --destructive: #d4183d;
   --destructive-foreground: #ffffff;
@@ -34,7 +34,7 @@
   --sidebar-foreground: #173A39;
   --sidebar-primary: #1F8A84;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #FAF5F2;
+  --sidebar-accent: #F4F7F6;
   --sidebar-accent-foreground: #173A39;
   --sidebar-border: #E5ECE6;
   --sidebar-ring: #1F8A84;

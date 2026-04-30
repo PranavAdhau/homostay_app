@@ -82,11 +82,11 @@ function ReviewsSection() {
   };
 
   return (
-    <section id="reviews" className="py-20 bg-[#FAF5F2]">
+    <section id="reviews" className="py-20 bg-[#F4F7F6]">
       <div className="container mx-auto px-4">
         <AnimatedSection className="text-center mb-12">
           <motion.h2 
-            className="text-4xl mb-4"
+            className="text-3xl sm:text-4xl mb-4"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -95,7 +95,7 @@ function ReviewsSection() {
             What Our <span className="text-[#1F8A84]">Guests Say</span>
           </motion.h2>
           <motion.p 
-            className="text-xl text-[#4F5F5B] max-w-2xl mx-auto"
+            className="text-base sm:text-xl text-[#4F5F5B] max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -141,7 +141,7 @@ function ReviewsSection() {
               }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Card className="h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <Card className="h-full rounded-2xl border-[#E5ECE6]/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(23,58,57,0.08)] hover:-translate-y-1 transition-all duration-500 bg-white">
                 <CardContent className="p-6">
                   <motion.div
                     className="flex items-center mb-4"

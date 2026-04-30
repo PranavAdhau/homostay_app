@@ -6,9 +6,9 @@ export default function HomestaysPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <div className="flex-grow pt-20"> 
+      <main className="flex-grow pt-24 md:pt-28"> 
         <HomestaysSection />
-      </div>
+      </main>
       <Footer />
     </div>
   );

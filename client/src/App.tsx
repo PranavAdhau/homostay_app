@@ -34,7 +34,6 @@ export default function App() {
           <Route path="/bookings" element={<Index />} />
           <Route path="/blogs/:id" element={<BlogDetailPage />} />
           <Route path="/properties/:slug" element={<PropertyDetailPage />} />
-          <Route path="/properties/:slug" element={<PropertyDetailPage />} />
 
           {/* ADMIN ROUTES */}
           <Route

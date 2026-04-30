@@ -36,7 +36,7 @@ export default function TrustSection({ images = [] }: TrustSectionProps) {
         {/* HEADING SECTION */}
         <AnimatedSection className="mb-12 text-center">
           <motion.h2
-            className="text-4xl mb-4"
+            className="text-3xl sm:text-4xl mb-4"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -46,7 +46,7 @@ export default function TrustSection({ images = [] }: TrustSectionProps) {
           </motion.h2>
 
           <motion.p
-            className="text-xl text-[#4F5F5B] max-w-2xl mx-auto"
+            className="text-base sm:text-xl text-[#4F5F5B] max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

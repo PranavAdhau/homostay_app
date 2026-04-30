@@ -26,17 +26,21 @@ class Admin::Api::V1::HostProfilesController < Admin::Api::V1::BaseController
   private
 
   def host_profile_params
-    params.require(:host_profile).permit(:name, :bio, :contact, :image)
+    params.require(:host_profile).permit(:name, :bio, :contact, :phone, :description, :image)
   end
 
   def serialize(host, co_host)
     {
       host_name: host.name,
       host_bio: host.bio,
+      host_description: host.description,
       host_contact: host.contact,
+      host_phone: host.phone,
       co_host_name: co_host.name,
       co_host_bio: co_host.bio,
+      co_host_description: co_host.description,
       co_host_contact: co_host.contact,
+      co_host_phone: co_host.phone,
       host_image_url: blob_url(host.image),
       co_host_image_url: blob_url(co_host.image)
     }

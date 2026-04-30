@@ -29,6 +29,8 @@ export function GuestDropdown({
         type="button"
         className={`pdp-cal-trigger${open ? " open" : ""}`}
         onClick={() => setOpen(p => !p)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
       >
         <span style={{ fontSize: 13, fontWeight: 500}}>
           {value} {value === "1" ? "Guest" : "Guests"}
@@ -40,6 +42,8 @@ export function GuestDropdown({
         <div
           className="pdp-dropdown-popover"
           style={{ padding: 6, zIndex: 60, minWidth: "100%" }}
+          role="listbox"
+          aria-label="Select number of guests"
         >
           {Array.from({ length: max }, (_, i) => i + 1).map(n => (
             <button
@@ -59,6 +63,8 @@ export function GuestDropdown({
                 cursor: "pointer",
                 fontSize: 13,
               }}
+              role="option"
+              aria-selected={n === Number(value)}
             >
               {n} {n === 1 ? "Guest" : "Guests"}
             </button>
