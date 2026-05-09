@@ -51,7 +51,7 @@ class Admin::Api::V1::HomestaysController < Admin::Api::V1::BaseController
   end
 
   def homestay_params
-    params.require(:homestay).permit(
+    raw_params = params.require(:homestay).permit(
       :name,
       :description,
       :capacity,
@@ -59,14 +59,42 @@ class Admin::Api::V1::HomestaysController < Admin::Api::V1::BaseController
       :size,
       :price_per_night,
       :is_active,
+      :seo_summary,
+      :seo_locality_focus,
       :airbnb_ical_url,
       :calendar_sync_enabled,
       :latitude,
       :longitude,
       :address,
       :google_maps_url,
+      :locality_tags_text,
+      :nearby_landmark_tags_text,
+      :faq_entries_text,
+      :featured_image,
+      related_blog_ids: [],
+      related_homestay_ids: [],
       images: [],
-      featured_image: []
+    )
+
+    permitted_hash = raw_params.to_h.deep_symbolize_keys
+
+    permitted_hash.merge(
+      Seo::ManagedContentParser.extract(
+        {
+          seo_summary: permitted_hash[:seo_summary],
+          locality_tags_text: permitted_hash[:locality_tags_text],
+          nearby_landmark_tags_text: permitted_hash[:nearby_landmark_tags_text],
+          faq_entries_text: permitted_hash[:faq_entries_text],
+        },
+        reject_homestay_id: @homestay&.id,
+      ),
+    ).tap do |attrs|
+      attrs[:related_blog_ids] = raw_params[:related_blog_ids]
+      attrs[:related_homestay_ids] = raw_params[:related_homestay_ids]
+    end.except(
+      :locality_tags_text,
+      :nearby_landmark_tags_text,
+      :faq_entries_text,
     )
   end
 
@@ -124,6 +152,13 @@ class Admin::Api::V1::HomestaysController < Admin::Api::V1::BaseController
       latitude: homestay.latitude,
       longitude: homestay.longitude,
       address: homestay.address,
+      seo_summary: homestay.seo_summary,
+      seo_locality_focus: homestay.seo_locality_focus,
+      locality_tags: homestay.normalized_locality_tags,
+      nearby_landmark_tags: homestay.normalized_nearby_landmark_tags,
+      related_blog_ids: homestay.normalized_related_blog_ids.map(&:to_i),
+      related_homestay_ids: homestay.normalized_related_homestay_ids.map(&:to_i),
+      faq_entries: homestay.normalized_faq_entries,
       amenities: homestay.amenities.map { |a| { id: a.id, name: a.name, icon_name: a.icon_name } },
       images: homestay.images.map { |img| rails_blob_url(img, only_path: false) },
       featured_image: homestay.featured_image.attached? ? rails_blob_url(homestay.featured_image, only_path: false) : nil

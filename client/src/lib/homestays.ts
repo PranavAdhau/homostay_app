@@ -19,4 +19,11 @@ export interface PublicHomestay {
   longitude?: number | null;
   address?: string | null;
   amenities: HomestayAmenity[];
+  seo_summary?: string | null;
+  seo_locality_focus?: string | null;
+  locality_tags?: string[];
+  nearby_landmark_tags?: string[];
+  related_blog_ids?: number[];
+  related_homestay_ids?: number[];
+  faq_entries?: Array<{ question: string; answer: string }>;
 }

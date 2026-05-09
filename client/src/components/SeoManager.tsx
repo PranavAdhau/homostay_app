@@ -3,65 +3,16 @@ import { useLocation } from "react-router-dom";
 import { useSiteSettings } from "./SiteSettingsProvider";
 import {
   SEO_DEFAULT_DESCRIPTION,
-  SEO_DEFAULT_TITLE,
   SEO_SITE_NAME,
   applySeoMetadata,
+  buildBreadcrumbJsonLd,
   buildAbsoluteUrl,
+  buildRouteMetadata,
+  buildWebPageJsonLd,
+  isDynamicSeoRoute,
+  normalizeCanonicalPath,
   setJsonLd,
 } from "../lib/seo";
-
-function buildRouteMetadata(pathname: string) {
-  if (pathname.startsWith("/admin")) {
-    return {
-      title: "Sacred Homes Admin",
-      description: "Sacred Homes Varanasi administration panel.",
-      canonicalPath: pathname,
-      robots: "noindex,nofollow",
-    };
-  }
-
-  if (pathname === "/homestays") {
-    return {
-      title: "Homestays in Varanasi | Sacred Homes",
-      description:
-        "Explore Sacred Homes homestays in Varanasi with peaceful stays near the ghats, temples, and the old city.",
-      canonicalPath: "/homestays",
-    };
-  }
-
-  if (pathname === "/bookings") {
-    return {
-      title: "Book Your Varanasi Homestay | Sacred Homes",
-      description:
-        "Reserve your Sacred Homes Varanasi stay with an easy booking flow for premium homestays near the ghats and temples.",
-      canonicalPath: "/bookings",
-    };
-  }
-
-  if (pathname.startsWith("/properties/")) {
-    return {
-      title: "Homestay in Varanasi | Sacred Homes",
-      description:
-        "View stay details, amenities, and booking information for a Sacred Homes Varanasi homestay near the city's iconic ghats and temples.",
-      canonicalPath: pathname,
-    };
-  }
-
-  if (pathname.startsWith("/blogs/")) {
-    return {
-      title: "Sacred Homes Journal | Varanasi Travel Stories",
-      description:
-        "Read travel notes, local stories, and thoughtful guidance from Sacred Homes Varanasi.",
-      canonicalPath: pathname,
-    };
-  }
-
-  return {
-    title: SEO_DEFAULT_TITLE,
-    description: SEO_DEFAULT_DESCRIPTION,
-    canonicalPath: "/",
-  };
-}
 
 export default function SeoManager() {
   const location = useLocation();
@@ -73,16 +24,21 @@ export default function SeoManager() {
   );
 
   useEffect(() => {
-    applySeoMetadata(routeMetadata);
-  }, [routeMetadata]);
+    if (!isDynamicSeoRoute(location.pathname)) {
+      applySeoMetadata(routeMetadata);
+    }
+  }, [location.pathname, routeMetadata]);
 
   useEffect(() => {
     if (location.pathname.startsWith("/admin")) {
       setJsonLd("sacred-homes-organization-jsonld", null);
       setJsonLd("sacred-homes-lodging-jsonld", null);
+      setJsonLd("sacred-homes-webpage-jsonld", null);
+      setJsonLd("sacred-homes-route-breadcrumb-jsonld", null);
       return;
     }
 
+    const canonicalPath = normalizeCanonicalPath(location.pathname);
     const contactPoint =
       settings?.phone && settings.phone.trim().length > 0
         ? [
@@ -130,8 +86,30 @@ export default function SeoManager() {
         addressRegion: "Uttar Pradesh",
         addressCountry: "IN",
       },
+      areaServed: ["Varanasi", "Banaras", "Kashi"],
     });
-  }, [location.pathname, settings]);
+
+    setJsonLd(
+      "sacred-homes-webpage-jsonld",
+      buildWebPageJsonLd(canonicalPath),
+    );
+
+    if (!canonicalPath.startsWith("/properties/") && !canonicalPath.startsWith("/blogs/")) {
+      const breadcrumbName =
+        routeMetadata.title.split("|")[0]?.trim() || SEO_SITE_NAME;
+      setJsonLd(
+        "sacred-homes-route-breadcrumb-jsonld",
+        buildBreadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          ...(canonicalPath === "/"
+            ? []
+            : [{ name: breadcrumbName, path: canonicalPath }]),
+        ]),
+      );
+    } else {
+      setJsonLd("sacred-homes-route-breadcrumb-jsonld", null);
+    }
+  }, [location.pathname, routeMetadata.title, settings]);
 
   return null;
 }

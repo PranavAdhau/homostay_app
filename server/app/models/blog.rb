@@ -1,4 +1,6 @@
 class Blog < ApplicationRecord
+  include SeoContentFields
+
   has_one_attached :image, dependent: :purge_later
 
   validates :title, presence: true
@@ -16,5 +18,13 @@ class Blog < ApplicationRecord
     else
       base_slug
     end
+  end
+
+  def published_related_blogs
+    Blog.published.where(id: normalized_related_blog_ids)
+  end
+
+  def active_related_homestays
+    Homestay.active.where(id: normalized_related_homestay_ids)
   end
 end

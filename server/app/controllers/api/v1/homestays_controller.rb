@@ -105,6 +105,13 @@ class Api::V1::HomestaysController < Api::V1::BaseController
       latitude: homestay.latitude,
       longitude: homestay.longitude,
       address: homestay.address,
+      seo_summary: homestay.seo_summary,
+      seo_locality_focus: homestay.seo_locality_focus,
+      locality_tags: homestay.normalized_locality_tags,
+      nearby_landmark_tags: homestay.normalized_nearby_landmark_tags,
+      related_blog_ids: homestay.normalized_related_blog_ids.map(&:to_i),
+      related_homestay_ids: homestay.normalized_related_homestay_ids.map(&:to_i),
+      faq_entries: homestay.normalized_faq_entries,
       amenities: homestay.amenities.map { |a| { id: a.id, name: a.name, icon_name: a.icon_name } },
       images: homestay.images.map { |img| rails_blob_url(img, only_path: false) },
       featured_image: homestay.featured_image.attached? ? rails_blob_url(homestay.featured_image, only_path: false) : nil

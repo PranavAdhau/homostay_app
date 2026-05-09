@@ -47,17 +47,45 @@ class Admin::Api::V1::BlogsController < Admin::Api::V1::BaseController
   end
 
   def blog_params
-    params.require(:blog).permit(:title, :content, :is_published, :image)
+    raw_params = params.require(:blog).permit(
+      :title,
+      :content,
+      :is_published,
+      :image,
+      :seo_summary,
+      :featured_locality,
+      :locality_tags_text,
+      :nearby_landmark_tags_text,
+      :faq_entries_text,
+      related_homestay_ids: [],
+      related_blog_ids: [],
+    )
+
+    raw_params.to_h.symbolize_keys.merge(
+      Seo::ManagedContentParser.extract(raw_params.to_h.symbolize_keys, reject_blog_id: @blog&.id),
+    ).except(
+      :locality_tags_text,
+      :nearby_landmark_tags_text,
+      :faq_entries_text,
+    )
   end
 
   def serialize_blog(blog, include_details: false)
     data = {
       id: blog.id,
+      slug: blog.slug,
       title: blog.title,
       content: blog.content.to_s,
       image_url: blog.image.attached? ? url_for(blog.image) : nil,
       is_published: blog.is_published,
-      created_at: blog.created_at
+      created_at: blog.created_at,
+      seo_summary: blog.seo_summary,
+      featured_locality: blog.featured_locality,
+      locality_tags: blog.normalized_locality_tags,
+      nearby_landmark_tags: blog.normalized_nearby_landmark_tags,
+      related_homestay_ids: blog.normalized_related_homestay_ids.map(&:to_i),
+      related_blog_ids: blog.normalized_related_blog_ids.map(&:to_i),
+      faq_entries: blog.normalized_faq_entries,
     }
 
     if include_details

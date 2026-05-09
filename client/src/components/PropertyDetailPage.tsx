@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { lazy, Suspense, useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Users, Maximize2, ChevronLeft, ChevronRight,
   Check, CheckCircle, Calendar, Clock, BedDouble,
@@ -10,15 +10,31 @@ import Footer from './Footer';
 import api from '../lib/axios';
 import { GuestDropdown } from "./ui/ReservationForm";
 import SharedCalendar from "./SharedCalendar";
-import PropertyMap from "./PropertyMap";
 import { getAmenityIcon } from "../lib/amenityIcons";
 import dayjs, { Dayjs } from "dayjs";
 import { Button } from "./ui/button";
 import { formatINR } from "../lib/currency";
-import { applySeoMetadata, buildAbsoluteUrl, setJsonLd } from "../lib/seo";
+import {
+  applySeoMetadata,
+  buildBreadcrumbJsonLd,
+  buildBlogPath,
+  buildFaqJsonLd,
+  buildManagedInternalLinks,
+  buildPropertyImageAlt,
+  buildPropertySeo,
+  inferVaranasiLocality,
+  normalizeFaqEntries,
+  normalizeNumericIds,
+  resolveItemsByIds,
+  setJsonLd,
+} from "../lib/seo";
 import { toast } from "sonner@2.0.3";
 import { useContent } from "./ContentProvider";
+import { fetchPublicBlogs, fetchPublicHomestays, type PublicBlog } from "../lib/publicContent";
+import type { PublicHomestay } from "../lib/homestays";
 import "./PropertyDetailPage.css";
+
+const PropertyMap = lazy(() => import("./PropertyMap"));
 
 interface Homestay {
   id: number;
@@ -35,6 +51,13 @@ interface Homestay {
    latitude?: number | null;
    longitude?: number | null;
    address?: string | null;
+  seo_summary?: string | null;
+  seo_locality_focus?: string | null;
+  locality_tags?: string[];
+  nearby_landmark_tags?: string[];
+  related_blog_ids?: number[];
+  related_homestay_ids?: number[];
+  faq_entries?: Array<{ question: string; answer: string }>;
 }
 
 interface AvailabilityData {
@@ -67,6 +90,9 @@ export default function PropertyDetailPage() {
   const [guestEmail, setGuestEmail] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [relatedHomestays, setRelatedHomestays] = useState<PublicHomestay[]>([]);
+  const [relatedBlogs, setRelatedBlogs] = useState<PublicBlog[]>([]);
+  const [managedLocalityLinks, setManagedLocalityLinks] = useState<ReturnType<typeof buildManagedInternalLinks>>([]);
   const { siteContent } = useContent();
 
   const touchStartX = useRef<number>(0);
@@ -84,12 +110,21 @@ export default function PropertyDetailPage() {
         : [];
   }, [homestay]);
 
-  
-
   useEffect(() => {
     if (!slug) return;
     api.get(`/homestays/${slug}`)
-      .then(r => { if (r.data.success) setHomestay(r.data.data); })
+      .then(r => {
+        if (r.data.success) {
+          const data = r.data.data;
+          // Fix: normalize related ID arrays to numbers on hydration
+          setHomestay({
+            ...data,
+            id: Number(data.id),
+            related_blog_ids: normalizeNumericIds(data.related_blog_ids ?? []),
+            related_homestay_ids: normalizeNumericIds(data.related_homestay_ids ?? []),
+          });
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
     const s = new Date().toISOString().split('T')[0];
@@ -191,76 +226,110 @@ export default function PropertyDetailPage() {
       return;
     }
 
-    const imageUrl = images[0] || homestay.featured_image || "/sacred-homes-logo-circle.svg";
-    const metaDescription = `${homestay.description} Stay near ${
-      homestay.address || "Varanasi's ghats and temples"
-    } with Sacred Homes Varanasi.`;
-
-    applySeoMetadata({
-      title: `${homestay.name} | Homestay in Varanasi | Sacred Homes`,
-      description: metaDescription,
-      canonicalPath: `/properties/${slug}`,
-      image: imageUrl,
-    });
-
-    setJsonLd("sacred-homes-property-jsonld", {
-      "@context": "https://schema.org",
-      "@type": "LodgingBusiness",
+    const propertySeo = buildPropertySeo({
+      slug,
       name: homestay.name,
       description: homestay.description,
-      url: buildAbsoluteUrl(`/properties/${slug}`),
-      image: buildAbsoluteUrl(imageUrl),
-      telephone: undefined,
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: homestay.address || "Varanasi, Uttar Pradesh, India",
-        addressLocality: "Varanasi",
-        addressRegion: "Uttar Pradesh",
-        addressCountry: "IN",
-      },
-      numberOfRooms: homestay.rooms,
-      occupancy: {
-        "@type": "QuantitativeValue",
-        maxValue: homestay.capacity,
-      },
-      amenityFeature: homestay.amenities.map((amenity) => ({
-        "@type": "LocationFeatureSpecification",
-        name: amenity.name,
-        value: true,
-      })),
-      priceRange: formatINR(homestay.price_per_night),
+      seoSummary: homestay.seo_summary,
+      seoLocalityFocus: homestay.seo_locality_focus,
+      localityTags: homestay.locality_tags,
+      nearbyLandmarkTags: homestay.nearby_landmark_tags,
+      faqEntries: homestay.faq_entries,
+      address: homestay.address,
+      images,
+      featuredImage: homestay.featured_image,
+      amenities: homestay.amenities,
+      capacity: homestay.capacity,
+      rooms: homestay.rooms,
+      pricePerNight: homestay.price_per_night,
+      latitude: homestay.latitude,
+      longitude: homestay.longitude,
     });
 
-    setJsonLd("sacred-homes-breadcrumb-jsonld", {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "Home",
-          item: buildAbsoluteUrl("/"),
-        },
-        {
-          "@type": "ListItem",
-          position: 2,
-          name: "Homestays",
-          item: buildAbsoluteUrl("/homestays"),
-        },
-        {
-          "@type": "ListItem",
-          position: 3,
-          name: homestay.name,
-          item: buildAbsoluteUrl(`/properties/${slug}`),
-        },
-      ],
-    });
+    applySeoMetadata(propertySeo.metadata);
+    setJsonLd("sacred-homes-property-jsonld", propertySeo.schema);
+    setJsonLd("sacred-homes-faq-jsonld", buildFaqJsonLd(propertySeo.faqEntries));
+    setJsonLd(
+      "sacred-homes-breadcrumb-jsonld",
+      buildBreadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Homestays", path: "/homestays" },
+        { name: homestay.name, path: `/properties/${slug}` },
+      ]),
+    );
 
     return () => {
       setJsonLd("sacred-homes-property-jsonld", null);
+      setJsonLd("sacred-homes-faq-jsonld", null);
       setJsonLd("sacred-homes-breadcrumb-jsonld", null);
     };
   }, [homestay, images, slug]);
+
+  useEffect(() => {
+    if (!homestay) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadRelatedSeoContent = async () => {
+      try {
+        const [homestays, blogs] = await Promise.all([
+          fetchPublicHomestays(),
+          fetchPublicBlogs(20),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        setManagedLocalityLinks(
+          buildManagedInternalLinks(
+            [
+              homestay.seo_locality_focus,
+              ...(homestay.locality_tags ?? []),
+              ...(homestay.nearby_landmark_tags ?? []),
+            ],
+            4,
+          ),
+        );
+        setRelatedHomestays(
+          resolveItemsByIds(homestay.related_homestay_ids ?? [], homestays)
+            .filter((property) => property.slug !== homestay.slug)
+            .slice(0, 3),
+        );
+        console.log({
+          resolvedRelatedHomestays: resolveItemsByIds(
+            homestay.related_homestay_ids ?? [],
+            homestays,
+          ),
+        });
+        setRelatedBlogs(
+          resolveItemsByIds(homestay.related_blog_ids ?? [], blogs).slice(0, 3),
+        );
+        console.log({
+          homestay,
+          blogs,
+          homestays,
+          relatedBlogIds: homestay.related_blog_ids,
+          relatedHomestayIds: homestay.related_homestay_ids,
+        });
+      } catch (error) {
+        console.error("Error fetching related property SEO content:", error);
+        if (!cancelled) {
+          setManagedLocalityLinks([]);
+          setRelatedHomestays([]);
+          setRelatedBlogs([]);
+        }
+      }
+    };
+
+    loadRelatedSeoContent();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [homestay]);
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F4F7F6' }}>
@@ -300,12 +369,15 @@ export default function PropertyDetailPage() {
     lat !== null && lng !== null
       ? `https://www.google.com/maps?q=${lat},${lng}`
       : null;
+  const localityLabel =
+    inferVaranasiLocality(homestay.address, homestay.name)?.label || "the ghats";
+  const faqEntries = normalizeFaqEntries(homestay.faq_entries);
 
   return (
     <div style={{ minHeight: '100vh', background: '#F4F7F6', fontFamily: 'inherit', display: 'flex', flexDirection: 'column' }}>
       <Header />
 
-      <div className="pdp-page-body">
+      <main className="pdp-page-body">
         <button className="pdp-back" onClick={() => navigate('/#homestays')}>
           <ArrowLeft style={{ width: 15, height: 15 }} />
           Back to Homestays
@@ -332,8 +404,13 @@ export default function PropertyDetailPage() {
                           {Math.abs(i - imgIndex) <= 1 ? (
                             <ImageWithFallback
                               src={img}
-                              alt={`${homestay.name} - ${i + 1}`}
+                              alt={buildPropertyImageAlt(homestay.name, localityLabel, i)}
                               className="w-full h-full object-cover"
+                              loading={i === 0 ? "eager" : "lazy"}
+                              decoding="async"
+                              fetchPriority={i === 0 ? "high" : "auto"}
+                              width={1600}
+                              height={900}
                             />
                           ) : (
                             <div style={{ background: '#e2e8f0' }} />
@@ -369,7 +446,15 @@ export default function PropertyDetailPage() {
                       onClick={() => setImgIndex(i)}
                       aria-label={`View image ${i + 1}`}
                     >
-                      <ImageWithFallback src={img} alt={`thumb-${i}`} className="w-full h-full object-cover" />
+                      <ImageWithFallback
+                        src={img}
+                        alt={buildPropertyImageAlt(homestay.name, localityLabel, i)}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        width={240}
+                        height={160}
+                      />
                     </button>
                   ))}
                 </div>
@@ -511,7 +596,19 @@ export default function PropertyDetailPage() {
             </p>
 
             <div style={{ marginTop: 12 }}>
-              <PropertyMap lat={displayLat} lng={displayLng} />
+              <Suspense
+                fallback={
+                  <div
+                    style={{
+                      minHeight: 280,
+                      borderRadius: 16,
+                      background: "#EAF0EC",
+                    }}
+                  />
+                }
+              >
+                <PropertyMap lat={displayLat} lng={displayLng} />
+              </Suspense>
             </div>
 
             {mapsUrl && (
@@ -533,7 +630,131 @@ export default function PropertyDetailPage() {
             )}
           </div>
         )}
-      </div>
+
+        {managedLocalityLinks.length > 0 && (
+          <section className="pdp-map-section" aria-labelledby="nearby-links-heading">
+            <h2
+              id="nearby-links-heading"
+              style={{ fontSize: 15, fontWeight: 600, color: "#173A39", marginBottom: 10, marginTop: 0 }}
+            >
+              Explore related locality pages
+            </h2>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              {managedLocalityLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: "#1F8A84",
+                    textDecoration: "none",
+                    border: "1px solid #CFE1D8",
+                    borderRadius: 999,
+                    padding: "8px 14px",
+                    background: "#fff",
+                  }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {relatedHomestays.length > 0 && (
+          <section className="pdp-map-section" aria-labelledby="related-stays-heading">
+            <h2
+              id="related-stays-heading"
+              style={{ fontSize: 15, fontWeight: 600, color: "#173A39", marginBottom: 10, marginTop: 0 }}
+            >
+              Related Sacred Homes stays
+            </h2>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              {relatedHomestays.map((property) => (
+                <Link
+                  key={property.slug}
+                  to={`/properties/${property.slug}`}
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: "#1F8A84",
+                    textDecoration: "none",
+                    border: "1px solid #CFE1D8",
+                    borderRadius: 999,
+                    padding: "8px 14px",
+                    background: "#fff",
+                  }}
+                >
+                  {property.name}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {relatedBlogs.length > 0 && (
+          <section className="pdp-map-section" aria-labelledby="related-guides-heading">
+            <h2
+              id="related-guides-heading"
+              style={{ fontSize: 15, fontWeight: 600, color: "#173A39", marginBottom: 10, marginTop: 0 }}
+            >
+              Related local guides
+            </h2>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              {relatedBlogs.map((blog) => (
+                <Link
+                  key={blog.id}
+                  to={buildBlogPath(blog)}
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: "#1F8A84",
+                    textDecoration: "none",
+                    border: "1px solid #CFE1D8",
+                    borderRadius: 999,
+                    padding: "8px 14px",
+                    background: "#fff",
+                  }}
+                >
+                  {blog.title}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {faqEntries.length > 0 && (
+          <section className="pdp-map-section" aria-labelledby="property-faq-heading">
+            <h2
+              id="property-faq-heading"
+              style={{ fontSize: 15, fontWeight: 600, color: "#173A39", marginBottom: 10, marginTop: 0 }}
+            >
+              Frequently asked questions
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {faqEntries.map((faqEntry, index) => (
+                <details
+                  key={`${faqEntry.question}-${index}`}
+                  style={{
+                    border: "1px solid #E5ECE6",
+                    borderRadius: 16,
+                    padding: "14px 16px",
+                    background: "#fff",
+                  }}
+                >
+                  <summary style={{ cursor: "pointer", color: "#173A39", fontWeight: 600 }}>
+                    {faqEntry.question}
+                  </summary>
+                  <p style={{ marginTop: 12, color: "#4F5F5B", lineHeight: 1.7 }}>
+                    {faqEntry.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
 
       {success && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.48)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }}>

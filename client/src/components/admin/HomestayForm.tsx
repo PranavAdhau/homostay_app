@@ -5,16 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Checkbox } from '../ui/checkbox';
 import { Switch } from '../ui/switch';
+import { Textarea } from '../ui/textarea';
 import api from '../../lib/adminAxios';
+import { normalizeNumericIds } from '../../lib/seo';
+
 interface Amenity {
   id: number;
   name: string;
   icon_name?: string;
 }
-interface Homestay {
+
+interface HomestayFormData {
   id?: number;
   name: string;
   description: string;
@@ -34,32 +37,93 @@ interface Homestay {
   longitude?: number | null;
   address?: string;
   google_maps_url?: string;
+  seo_summary: string;
+  seo_locality_focus: string;
+  locality_tags_text: string;
+  nearby_landmark_tags_text: string;
+  faq_entries_text: string;
+  related_blog_ids: number[];
+  related_homestay_ids: number[];
 }
+
+interface AdminBlogOption {
+  id: number;
+  title: string;
+}
+
+interface AdminHomestayOption {
+  id: number;
+  name: string;
+}
+
 export default function HomestayForm() {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
   const isEditing = !!id;
-  const [homestay, setHomestay] = useState<Homestay>({
+  const [homestay, setHomestay] = useState<HomestayFormData>({
+    name: '',
+    description: '',
+    capacity: 1,
     rooms: 1,
+    size: '',
     price_per_night: null,
-    is_active: true, amenity_ids: [],
+    is_active: true,
+    amenity_ids: [],
     airbnb_ical_url: '',
     calendar_sync_enabled: false,
+    seo_summary: '',
+    seo_locality_focus: '',
+    locality_tags_text: '',
+    nearby_landmark_tags_text: '',
+    faq_entries_text: '',
+    related_blog_ids: [],
+    related_homestay_ids: [],
   });
   const [amenities, setAmenities] = useState<Amenity[]>([]);
+  const [blogOptions, setBlogOptions] = useState<AdminBlogOption[]>([]);
+  const [homestayOptions, setHomestayOptions] = useState<AdminHomestayOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+
   useEffect(() => {
     fetchAmenities();
+    fetchSeoOptions();
     if (isEditing && id) fetchHomestay();
   }, [id, isEditing]);
+
   const fetchAmenities = async () => {
     try {
       const response = await api.get('/amenities');
       if (response.data.success) setAmenities(response.data.data);
     } catch (error) { console.error('Error fetching amenities:', error); }
   };
+
+  const fetchSeoOptions = async () => {
+    try {
+      const [blogResponse, homestayResponse] = await Promise.all([
+        api.get('/blogs'),
+        api.get('/homestays'),
+      ]);
+
+      if (blogResponse.data.success) {
+        setBlogOptions(blogResponse.data.data.map((item: AdminBlogOption) => ({
+          id: Number(item.id),
+          title: item.title,
+        })));
+      }
+
+      if (homestayResponse.data.success) {
+        setHomestayOptions(homestayResponse.data.data.map((item: AdminHomestayOption) => ({
+          id: Number(item.id),
+          name: item.name,
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching SEO options for homestay form:', error);
+    }
+  };
+
   const fetchHomestay = async () => {
     if (!id) return;
     setLoading(true);
@@ -67,26 +131,92 @@ export default function HomestayForm() {
       const response = await api.get(`/homestays/${id}`);
       if (response.data.success) {
         const data = response.data.data;
+
         setHomestay({
-          name: data.name, description: data.description,
-          capacity: data.capacity, rooms: data.rooms ?? 1, size: data.size || '',
+          id: Number(data.id),
+
+          name: data.name,
+          description: data.description,
+
+          capacity: data.capacity,
+          rooms: data.rooms ?? 1,
+          size: data.size || '',
+
           price_per_night: data.price_per_night,
+
           is_active: data.is_active,
-          amenity_ids: data.amenities.map((a: Amenity) => a.id),
+
+          amenity_ids: data.amenities.map((a: Amenity) =>
+            Number(a.id),
+          ),
+
           airbnb_ical_url: data.airbnb_ical_url || '',
+
           calendar_sync_enabled: !!data.calendar_sync_enabled,
+
           last_calendar_sync_at: data.last_calendar_sync_at,
-          last_calendar_sync_success_at: data.last_calendar_sync_success_at,
+
+          last_calendar_sync_success_at:
+            data.last_calendar_sync_success_at,
+
           sync_error_count: data.sync_error_count,
-          last_calendar_sync_error: data.last_calendar_sync_error,
-          latitude: typeof data.latitude === 'number' ? data.latitude : data.latitude ? Number(data.latitude) : null,
-          longitude: typeof data.longitude === 'number' ? data.longitude : data.longitude ? Number(data.longitude) : null,
+
+          last_calendar_sync_error:
+            data.last_calendar_sync_error,
+
+          latitude:
+            typeof data.latitude === 'number'
+              ? data.latitude
+              : data.latitude
+                ? Number(data.latitude)
+                : null,
+
+          longitude:
+            typeof data.longitude === 'number'
+              ? data.longitude
+              : data.longitude
+                ? Number(data.longitude)
+                : null,
+
           address: data.address || '',
+
+          google_maps_url: data.google_maps_url || '',
+
+          seo_summary: data.seo_summary || '',
+
+          seo_locality_focus:
+            data.seo_locality_focus || '',
+
+          locality_tags_text:
+            (data.locality_tags || []).join(', '),
+
+          nearby_landmark_tags_text:
+            (data.nearby_landmark_tags || []).join(', '),
+
+          faq_entries_text: (data.faq_entries || [])
+            .map(
+              (entry: {
+                question: string;
+                answer: string;
+              }) =>
+                `${entry.question} | ${entry.answer}`,
+            )
+            .join('\n'),
+
+          related_blog_ids: normalizeNumericIds(
+            data.related_blog_ids || [],
+          ),
+
+          related_homestay_ids:
+            normalizeNumericIds(
+              data.related_homestay_ids || [],
+            ),
         });
       }
     } catch (error) { console.error('Error fetching homestay:', error); }
     finally { setLoading(false); }
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -104,6 +234,8 @@ export default function HomestayForm() {
           if (value === undefined || value === null) return;
           if (key === 'amenity_ids') {
             (value as number[]).forEach((amenityId) => formData.append('homestay[amenity_ids][]', String(amenityId)));
+          } else if (key === 'related_blog_ids' || key === 'related_homestay_ids') {
+            (value as number[]).forEach((relatedId) => formData.append(`homestay[${key}][]`, String(relatedId)));
           } else { formData.append(`homestay[${key}]`, String(value)); }
         });
         imageFiles.forEach((file) => formData.append('homestay[images][]', file));
@@ -120,17 +252,35 @@ export default function HomestayForm() {
       alert(error.response?.data?.message || 'Failed to save homestay');
     } finally { setSubmitting(false); }
   };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setImageFiles(Array.from(e.target.files || []));
   };
+
   const toggleAmenity = (amenityId: number) => {
+    const numericId = Number(amenityId);
     setHomestay(prev => ({
       ...prev,
-      amenity_ids: prev.amenity_ids.includes(amenityId)
-        ? prev.amenity_ids.filter(id => id !== amenityId)
-        : [...prev.amenity_ids, amenityId]
+      amenity_ids: prev.amenity_ids.includes(numericId)
+        ? prev.amenity_ids.filter(id => id !== numericId)
+        : [...prev.amenity_ids, numericId]
     }));
   };
+
+  const toggleRelatedId = (
+    field: 'related_blog_ids' | 'related_homestay_ids',
+    itemId: number,
+  ) => {
+    // Fix: ensure itemId is always a number before comparing
+    const numericItemId = Number(itemId);
+    setHomestay((current) => ({
+      ...current,
+      [field]: current[field].includes(numericItemId)
+        ? current[field].filter((existingId) => existingId !== numericItemId)
+        : [...current[field], numericItemId],
+    }));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -168,12 +318,57 @@ export default function HomestayForm() {
               </div>
               <div>
                 <Label htmlFor="description">Description</Label>
-                <textarea
+                <Textarea
                   id="description"
                   value={homestay.description}
                   onChange={(e) => setHomestay({ ...homestay, description: e.target.value })}
                   rows={5}
-                  className="mt-1.5 w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label htmlFor="seo_summary">SEO Summary</Label>
+                <Textarea
+                  id="seo_summary"
+                  value={homestay.seo_summary}
+                  onChange={(e) => setHomestay((prev) => ({ ...prev, seo_summary: e.target.value }))}
+                  rows={3}
+                  className="mt-1.5"
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Optional short summary used for metadata and structured content alignment.
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="seo_locality_focus">SEO Locality Focus</Label>
+                <Input
+                  id="seo_locality_focus"
+                  value={homestay.seo_locality_focus}
+                  onChange={(e) => setHomestay((prev) => ({ ...prev, seo_locality_focus: e.target.value }))}
+                  placeholder="e.g. Assi Ghat or Kashi Vishwanath"
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label htmlFor="locality_tags_text">Locality Tags</Label>
+                <Textarea
+                  id="locality_tags_text"
+                  value={homestay.locality_tags_text}
+                  onChange={(e) => setHomestay((prev) => ({ ...prev, locality_tags_text: e.target.value }))}
+                  rows={2}
+                  className="mt-1.5"
+                  placeholder="Assi Ghat, Banaras, Old City"
+                />
+              </div>
+              <div>
+                <Label htmlFor="nearby_landmark_tags_text">Nearby Landmark Tags</Label>
+                <Textarea
+                  id="nearby_landmark_tags_text"
+                  value={homestay.nearby_landmark_tags_text}
+                  onChange={(e) => setHomestay((prev) => ({ ...prev, nearby_landmark_tags_text: e.target.value }))}
+                  rows={2}
+                  className="mt-1.5"
+                  placeholder="Kashi Vishwanath Temple, Dashashwamedh Ghat"
                 />
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -342,7 +537,7 @@ export default function HomestayForm() {
                     <div key={amenity.id} className="flex items-center gap-2">
                       <Checkbox
                         id={`amenity-${amenity.id}`}
-                        checked={homestay.amenity_ids.includes(amenity.id)}
+                        checked={homestay.amenity_ids.includes(Number(amenity.id))}
                         onCheckedChange={() => toggleAmenity(amenity.id)}
                       />
                       <Label htmlFor={`amenity-${amenity.id}`} className="cursor-pointer text-sm">{amenity.name}</Label>
@@ -433,6 +628,61 @@ export default function HomestayForm() {
                     </div>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+            <Card className="border-border">
+              <CardHeader className="px-6 pt-6 pb-4">
+                <CardTitle className="text-base font-semibold">Related SEO Content</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6 px-6 pb-6">
+                <div>
+                  <Label htmlFor="faq_entries_text">FAQ Entries</Label>
+                  <Textarea
+                    id="faq_entries_text"
+                    value={homestay.faq_entries_text}
+                    onChange={(e) => setHomestay((prev) => ({ ...prev, faq_entries_text: e.target.value }))}
+                    rows={5}
+                    className="mt-1.5"
+                    placeholder="Question | Answer"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Use one FAQ per line in the format <code>Question | Answer</code>.
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">Related Guides / Blogs</Label>
+                  <div className="mt-3 space-y-2 rounded-xl border border-border p-4 max-h-56 overflow-y-auto">
+                    {blogOptions.map((option) => (
+                      <label key={option.id} className="flex items-center gap-3 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={homestay.related_blog_ids.includes(Number(option.id))}
+                          onChange={() => toggleRelatedId('related_blog_ids', option.id)}
+                        />
+                        <span>{option.title}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">Related Homestays</Label>
+                  <div className="mt-3 space-y-2 rounded-xl border border-border p-4 max-h-56 overflow-y-auto">
+                  {homestayOptions
+                    .filter((option) => Number(option.id) !== Number(homestay.id))
+                    .map((option) => (
+                      <label key={option.id} className="flex items-center gap-3 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={homestay.related_homestay_ids.includes(Number(option.id))}
+                          onChange={() => toggleRelatedId('related_homestay_ids', option.id)}
+                        />
+                        <span>{option.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

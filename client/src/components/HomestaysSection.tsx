@@ -2,9 +2,9 @@ import { memo, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import HomestayCard from './HomestayCard';
 import AnimatedSection from './AnimatedSection';
-import api from '../lib/axios';
 import type { PublicHomestay } from '../lib/homestays';
 import { formatINR } from '../lib/currency';
+import { fetchPublicHomestays } from '../lib/publicContent';
 
 type HomestaysSectionProps = {
   homestays?: PublicHomestay[] | null;
@@ -31,12 +31,7 @@ function HomestaysSection({
 
   const fetchHomestays = async () => {
     try {
-      const response = await api.get('/homestays');
-      if (response.data?.success && Array.isArray(response.data?.data)) {
-        setHomestays(response.data.data);
-      } else {
-        setHomestays([]);
-      }
+      setHomestays(await fetchPublicHomestays());
     } catch (error) {
       console.error('Error fetching homestays:', error);
       setHomestays([]);

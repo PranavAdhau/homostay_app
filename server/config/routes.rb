@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   root "spa#index"
   get "spa/index"
+  get "/sitemap.xml", to: "sitemaps#show", defaults: { format: :xml }
 
   get "up" => "rails/health#show", as: :rails_health_check
 

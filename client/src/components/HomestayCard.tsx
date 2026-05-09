@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Star, Users, BedDouble } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
@@ -54,6 +54,10 @@ export default function HomestayCard({
             alt={name}
             className="w-full h-44 sm:h-48 object-cover"
             loading="lazy"
+            decoding="async"
+            width={1200}
+            height={800}
+            sizes="(min-width: 1024px) 33vw, (min-width: 460px) 50vw, 100vw"
           />
           <motion.div
             className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"
@@ -149,11 +153,13 @@ export default function HomestayCard({
             </div>
             <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[210px]">
               <Button
+                asChild
                 variant="ghost"
                 className="h-11 w-full border border-[#D8E3DE] text-[#173A39] hover:bg-[#F4F7F6]"
-                onClick={() => navigate(`/properties/${slug}`)}
               >
-                Details
+                <Link to={`/properties/${slug}`} aria-label={`View details for ${name}`}>
+                  Details
+                </Link>
               </Button>
               <Button
                 className="h-11 w-full bg-[#1F8A84] hover:bg-[#264948]"

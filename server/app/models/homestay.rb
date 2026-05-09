@@ -1,4 +1,5 @@
 class Homestay < ApplicationRecord
+  include SeoContentFields
 
   has_many :bookings, dependent: :destroy
   has_many :availability_slots, dependent: :destroy
@@ -87,6 +88,14 @@ class Homestay < ApplicationRecord
       .with_min_capacity(filters[:guests])
       .with_min_rooms(filters[:rooms])
       .excluding_conflicts(filters[:check_in], filters[:check_out])
+  end
+
+  def published_related_blogs
+    Blog.published.where(id: normalized_related_blog_ids)
+  end
+
+  def active_related_homestays
+    Homestay.active.where(id: normalized_related_homestay_ids).where.not(id: id)
   end
 
   private

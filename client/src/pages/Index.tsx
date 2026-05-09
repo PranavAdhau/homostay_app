@@ -19,6 +19,7 @@ import {
   type SearchFilters,
 } from '../lib/searchFilters';
 import { useContent } from '../components/ContentProvider';
+import { LOCALITY_ROUTE_CONTENT } from '../lib/seo';
 
 function buildHomestaySearchParams(filters: SearchFilters) {
   const params: Record<string, string> = {};
@@ -65,6 +66,12 @@ export default function Index() {
         const id = location.hash.replace('#', '');
         document.getElementById(id)?.scrollIntoView({ behavior: 'auto', block: 'start' });
       } else if (location.pathname === '/homestays') {
+        document.getElementById('homestays')?.scrollIntoView({ behavior: 'auto', block: 'start' });
+      } else if (
+        location.pathname !== '/' &&
+        location.pathname !== '/bookings' &&
+        Boolean(LOCALITY_ROUTE_CONTENT[location.pathname])
+      ) {
         document.getElementById('homestays')?.scrollIntoView({ behavior: 'auto', block: 'start' });
       } else if (location.pathname === '/bookings') {
         document.getElementById('booking')?.scrollIntoView({ behavior: 'auto', block: 'start' });

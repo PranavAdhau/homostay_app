@@ -5,25 +5,13 @@ import { ArrowRight } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { BLOG_PLACEHOLDER_IMAGE } from '../lib/blogPlaceholder';
-import { resolveApiBaseUrl } from '../lib/apiBaseUrl';
-
-interface Blog {
-  id: number;
-  title: string;
-  content: string;
-  image_url: string | null;
-  created_at: string;
-}
+import { fetchPublicBlogs, type PublicBlog } from '../lib/publicContent';
+import { buildBlogPath } from '../lib/seo';
 
 const previewText = (content: string) => {
   const normalized = content.replace(/\s+/g, ' ').trim();
   if (normalized.length <= 120) return normalized;
   return `${normalized.slice(0, 117).trimEnd()}...`;
-};
-
-export const generateBlogSlug = (id: number, title: string) => {
-  const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  return `${id}-${cleanTitle}`;
 };
 
 function BlogCardSkeleton() {
@@ -45,8 +33,8 @@ function BlogCardSkeleton() {
   );
 }
 
-function BlogCard({ blog }: { blog: Blog }) {
-  const blogPath = `/blogs/${generateBlogSlug(blog.id, blog.title)}`;
+function BlogCard({ blog }: { blog: PublicBlog }) {
+  const blogPath = buildBlogPath(blog);
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
       <div className="relative w-full pt-[56.25%] overflow-hidden shrink-0">
@@ -54,6 +42,10 @@ function BlogCard({ blog }: { blog: Blog }) {
           src={blog.image_url || BLOG_PLACEHOLDER_IMAGE}
           alt={blog.title}
           loading="lazy"
+          decoding="async"
+          width={1200}
+          height={675}
+          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
@@ -96,31 +88,35 @@ function BlogCard({ blog }: { blog: Blog }) {
 }
 
 function BlogsSection() {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [blogs, setBlogs] = useState<PublicBlog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchBlogs = async () => {
       try {
-        const baseURL = resolveApiBaseUrl();
-        const response = await fetch(`${baseURL}/api/v1/blogs`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const data = await response.json();
-        if (data.success && Array.isArray(data.data)) {
-          setBlogs(data.data);
-        } else {
-          setBlogs([]);
+        const data = await fetchPublicBlogs(10);
+        if (!cancelled) {
+          setBlogs(data);
         }
       } catch (error) {
         console.error('Error fetching blogs:', error);
-        setBlogs([]);
+        if (!cancelled) {
+          setBlogs([]);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
+
     fetchBlogs();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_30_033000) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_09_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -107,6 +107,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_30_033000) do
     t.boolean "is_published", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "seo_summary"
+    t.string "featured_locality"
+    t.text "locality_tags"
+    t.text "nearby_landmark_tags"
+    t.text "related_homestay_ids"
+    t.text "related_blog_ids"
+    t.text "faq_entries"
     t.index ["created_at"], name: "index_blogs_on_created_at"
     t.index ["is_published"], name: "index_blogs_on_is_published"
   end
@@ -164,6 +171,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_30_033000) do
     t.decimal "longitude", precision: 10, scale: 6
     t.string "address"
     t.integer "rooms", default: 1, null: false
+    t.text "seo_summary"
+    t.string "seo_locality_focus"
+    t.text "locality_tags"
+    t.text "nearby_landmark_tags"
+    t.text "related_blog_ids"
+    t.text "related_homestay_ids"
+    t.text "faq_entries"
     t.index ["is_active"], name: "index_homestays_on_is_active"
     t.index ["latitude", "longitude"], name: "index_homestays_on_latitude_and_longitude"
     t.index ["slug"], name: "index_homestays_on_slug", unique: true
