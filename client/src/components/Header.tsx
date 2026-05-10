@@ -117,7 +117,7 @@ export default function Header() {
                 <img
                   src={sacredHomesLogo}
                   alt="Sacred Homes"
-                  className="h-11 w-auto shrink-0 lg:h-[56px] xl:h-[60px]"
+                  className="h-[46px] w-auto shrink-0 md:h-11 lg:h-[56px] xl:h-[60px]"
                   style={{ display: 'block' }}
                   onError={() => setDidLogoError(true)}
                 />
@@ -174,18 +174,18 @@ export default function Header() {
           </div>
 
           {/* ── Mobile controls (logo is col-1 above, this is the right side) ── */}
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-2 md:hidden -mt-[1px]">
             {settings?.phone ? (
               <motion.a
                 href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
                 aria-label={`Call ${settings.phone}`}
-                className="flex h-9 items-center gap-1.5 rounded-full border border-[#DDEBE8] bg-white px-3 text-sm font-medium text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#DDEBE8] bg-white text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2 md:h-9 md:w-auto md:gap-1.5 md:px-3"
                 whileHover={{ scale: 1.04 }}
                 transition={{ type: "spring", stiffness: 320, damping: 22 }}
               >
-                <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <Phone className="h-3 w-3 shrink-0 md:h-3.5 md:w-3.5" aria-hidden="true" />
                 {/* Always show "Call" — even on 320px the word fits next to the icon */}
-                <span>Call</span>
+                <span className="hidden md:inline">Call</span>
               </motion.a>
             ) : null}
 
