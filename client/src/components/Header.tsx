@@ -27,7 +27,6 @@ export default function Header() {
       window.scrollTo(0, 0);
       return;
     }
-
     handleScrollNav(item.id);
   };
 
@@ -57,171 +56,192 @@ export default function Header() {
 
   return (
     <motion.header
-      className="sticky top-0 bg-white/70 shadow-sm backdrop-blur-md"
-      style={{ zIndex: 1000 }}
+      className="sticky top-0 z-50 border-b border-[#E8EFEC] bg-white/80 backdrop-blur-md"
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="mx-auto max-w-7xl overflow-visible px-4 py-3 sm:px-6">
-        <div className="flex items-center justify-between gap-4">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+
+        {/* ── Main row ── */}
+        <div className="flex h-[72px] items-center justify-between sm:h-[76px] lg:h-[72px]">
+
+          {/* ── Logo ── */}
           <motion.div
             className="shrink-0"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            whileHover={{ opacity: 0.85 }}
+            transition={{ duration: 0.15 }}
           >
             <button
               aria-label="Go to home section"
               onClick={() => handleScrollNav('home')}
-              className="min-h-11 min-w-11 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
+              className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
-              <div className="flex items-center gap-2">
-                {didLogoError ? (
-                  <span
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1F8A84] text-lg font-semibold text-white"
-                    aria-hidden="true"
-                  >
-                    SH
-                  </span>
-                ) : (
-                  <span className="flex h-12 w-12 items-center justify-center lg:h-14 lg:w-14" aria-hidden="true">
-                    <img
-                      src={sacredHomesLogo}
-                      alt="Sacred Homes logo"
-                      className="h-full w-full object-contain"
-                      onError={() => setDidLogoError(true)}
-                    />
-                  </span>
-                )}
-                <span className="text-xl font-semibold text-[#173A39] lg:text-2xl">
-                  Sacred Homes
+              {didLogoError ? (
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1F8A84] text-base font-semibold text-white lg:h-11 lg:w-11">
+                  SH
                 </span>
-              </div>
+              ) : (
+                /*
+                 * Logo sizing:
+                 *  Mobile/tablet (< 1024px): 60px via inline style — integer px avoids
+                 *    fractional rem rounding that causes subpixel blur on mobile browsers.
+                 *  Desktop (1024px+): overridden to 52px via lg:h-[52px] Tailwind class —
+                 *    proportionate inside the 72px bar without looking oversized.
+                 *
+                 * SVGs are vectors: they render crisp at any whole-pixel size.
+                 * w-auto lets aspect ratio breathe freely (important for circle logos).
+                 * No scale() transform on hover = no GPU-promoted blur.
+                 */
+                <img
+                  src={sacredHomesLogo}
+                  alt="Sacred Homes"
+                  className="w-auto shrink-0 lg:h-[52px]"
+                  style={{ display: 'block', height: '60px' }}
+                  onError={() => setDidLogoError(true)}
+                />
+              )}
             </button>
           </motion.div>
 
-          <div className="hidden items-center gap-6 md:flex">
-            <nav className="flex items-center gap-6">
-              {menuItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  className="relative shrink-0"
-                  whileHover={{ y: -2 }}
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+          {/* ── Desktop nav (md and up) ── */}
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
+            {menuItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                className="relative"
+                initial={{ opacity: 0, y: -16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.08, duration: 0.4, ease: "easeOut" }}
+              >
+                <button
+                  onClick={() => handleItemClick(item)}
+                  className="group relative flex h-9 items-center rounded-md px-3 text-sm font-medium text-[#4F5F5B] transition-colors duration-150 hover:text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2 lg:px-4 lg:text-[0.9375rem]"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                 >
-                  <button
-                    onClick={() => handleItemClick(item)}
-                    className="min-h-11 rounded-md px-2 text-[#4F5F5B] transition-colors hover:text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', fontSize: '1rem' }}
-                  >
-                    {item.label}
-                  </button>
-                  <motion.div
-                    className="absolute bottom-0 left-0 h-0.5 w-full bg-[#1F8A84]"
+                  {item.label}
+                  <motion.span
+                    className="absolute bottom-0.5 left-3 right-3 h-px rounded-full bg-[#1F8A84] lg:left-4 lg:right-4"
                     initial={{ scaleX: 0 }}
                     whileHover={{ scaleX: 1 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.18 }}
                   />
-                </motion.div>
-              ))}
-            </nav>
+                </button>
+              </motion.div>
+            ))}
+          </nav>
 
+          {/* ── Desktop CTA ── */}
+          {settings?.phone ? (
+            <motion.a
+              href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
+              className="hidden h-9 items-center gap-2 rounded-full border border-[#DDEBE8] bg-white px-4 text-sm font-medium text-[#1F8A84] transition-colors duration-150 hover:bg-[#F4FAF9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2 lg:flex"
+              whileHover={{ scale: 1.04 }}
+              transition={{ type: "spring", stiffness: 320, damping: 22 }}
+            >
+              <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span>Call Now</span>
+            </motion.a>
+          ) : (
+            <div className="hidden lg:block lg:w-[104px]" />
+          )}
+
+          {/* ── Mobile controls ── */}
+          <div className="flex items-center gap-2 md:hidden">
             {settings?.phone ? (
               <motion.a
                 href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
-                className="hidden min-h-11 items-center gap-2 rounded-md px-2 text-sm font-medium text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2 lg:flex"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                aria-label={`Call ${settings.phone}`}
+                className="flex h-9 items-center gap-1.5 rounded-full border border-[#DDEBE8] bg-white px-3 text-sm font-medium text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
+                whileHover={{ scale: 1.04 }}
+                transition={{ type: "spring", stiffness: 320, damping: 22 }}
               >
-                <Phone className="h-4 w-4" />
-                <span>Call Now</span>
+                <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="hidden sm:inline">Call</span>
               </motion.a>
             ) : null}
-          </div>
 
-          <div className="flex items-center gap-4 md:hidden">
-            {settings?.phone ? (
-              <motion.a
-                href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
-                className="flex min-h-11 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
-                whileHover={{ scale: 1.05 }}
-              >
-                <Phone className="h-4 w-4" />
-                <span>Call Now</span>
-              </motion.a>
-            ) : null}
             <motion.button
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="flex min-h-11 min-w-11 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
-              whileTap={{ scale: 0.95 }}
+              className="flex h-9 w-9 items-center justify-center rounded-md text-[#4F5F5B] transition-colors hover:bg-[#F4FAF9] hover:text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
+              whileTap={{ scale: 0.92 }}
             >
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" initial={false}>
                 {isMenuOpen ? (
-                  <motion.div
+                  <motion.span
                     key="close"
                     initial={{ rotate: -90, opacity: 0 }}
                     animate={{ rotate: 0, opacity: 1 }}
                     exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.18 }}
+                    className="flex items-center justify-center"
                   >
-                    <X className="h-6 w-6" />
-                  </motion.div>
+                    <X className="h-5 w-5" aria-hidden="true" />
+                  </motion.span>
                 ) : (
-                  <motion.div
+                  <motion.span
                     key="menu"
                     initial={{ rotate: 90, opacity: 0 }}
                     animate={{ rotate: 0, opacity: 1 }}
                     exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.18 }}
+                    className="flex items-center justify-center"
                   >
-                    <Menu className="h-6 w-6" />
-                  </motion.div>
+                    <Menu className="h-5 w-5" aria-hidden="true" />
+                  </motion.span>
                 )}
               </AnimatePresence>
             </motion.button>
           </div>
-        </div>
 
-        <AnimatePresence>
+        </div>{/* end main row */}
+
+        {/* ── Mobile drawer ── */}
+        <AnimatePresence initial={false}>
           {isMenuOpen && (
             <motion.nav
-              className="mt-4 pb-4 md:hidden"
+              id="mobile-menu"
+              aria-label="Mobile navigation"
+              className="overflow-hidden md:hidden"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
             >
-              <div className="flex flex-col space-y-4">
+              <div className="flex flex-col pb-3 pt-1">
                 {menuItems.map((item, index) => (
                   <motion.div
                     key={item.id}
-                    initial={{ x: -20, opacity: 0 }}
+                    initial={{ x: -12, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ x: 10 }}
+                    transition={{ delay: index * 0.06, duration: 0.22 }}
                   >
                     <button
                       onClick={() => handleItemClick(item)}
-                      className="w-full rounded-md border-b border-[#E5ECE6] py-3 text-left text-[#4F5F5B] transition-colors hover:text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
-                      style={{ background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6', cursor: 'pointer', padding: '8px 0', font: 'inherit', fontSize: '1rem', width: '100%', textAlign: 'left' }}
+                      style={{ background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6', cursor: 'pointer', font: 'inherit', width: '100%', textAlign: 'left', padding: '10px 0' }}
+                      className="w-full text-sm font-medium text-[#4F5F5B] transition-colors hover:text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
                     >
                       {item.label}
                     </button>
                   </motion.div>
                 ))}
+
                 {settings?.phone ? (
                   <motion.div
-                    className="pt-4"
+                    className="pt-3"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
+                    transition={{ delay: menuItems.length * 0.06 + 0.05 }}
                   >
-                    <a href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`} className="flex min-h-11 items-center space-x-2 rounded-md px-2 text-sm font-medium text-[#1F8A84] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2">
-                      <Phone className="h-4 w-4" />
+                    <a
+                      href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#DDEBE8] bg-white px-4 py-2 text-sm font-medium text-[#1F8A84] transition-colors hover:bg-[#F4FAF9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
+                    >
+                      <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                       <span>Call Now</span>
                     </a>
                   </motion.div>
@@ -230,6 +250,7 @@ export default function Header() {
             </motion.nav>
           )}
         </AnimatePresence>
+
       </div>
     </motion.header>
   );
