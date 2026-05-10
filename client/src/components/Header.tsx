@@ -63,10 +63,32 @@ export default function Header() {
     >
       <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
 
-        {/* ── Main row ── */}
-        <div className="flex h-[72px] items-center justify-between sm:h-[76px] lg:h-[72px]">
+        {/*
+          ── LAYOUT STRATEGY ──────────────────────────────────────────────
+          Mobile  (<md): simple flex row — logo left, controls right.
+          Desktop (≥md): CSS grid with 3 equal-flex columns:
+            [logo]  [nav - centred]  [CTA - right-aligned]
+          Grid ensures nav is always geometrically centred between logo
+          and CTA regardless of their individual widths. justify-between
+          was the root cause of the off-centre nav and floating CTA gap.
 
-          {/* ── Logo ── */}
+          Bar + logo height scale (bar = logo + 20px vertical breathing):
+            mobile  : logo 44px → bar 64px  (h-16)
+            md      : logo 44px → bar 64px  (h-16)
+            lg      : logo 52px → bar 72px  (h-[72px])
+            xl      : logo 56px → bar 76px  (h-[76px])
+          ─────────────────────────────────────────────────────────────────
+        */}
+        <div
+          className="
+            flex h-14 items-center justify-between
+            md:grid md:h-15 md:grid-cols-[auto_1fr_auto] md:items-center
+            lg:h-[64px]
+            xl:h-[68px]
+          "
+        >
+
+          {/* ── COL 1 : Logo ── */}
           <motion.div
             className="shrink-0"
             whileHover={{ opacity: 0.85 }}
@@ -79,34 +101,35 @@ export default function Header() {
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
               {didLogoError ? (
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1F8A84] text-base font-semibold text-white lg:h-11 lg:w-11">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#1F8A84] text-sm font-semibold text-white lg:h-[52px] lg:w-[52px] xl:h-14 xl:w-14">
                   SH
                 </span>
               ) : (
                 /*
-                 * Logo sizing:
-                 *  Mobile/tablet (< 1024px): 60px via inline style — integer px avoids
-                 *    fractional rem rounding that causes subpixel blur on mobile browsers.
-                 *  Desktop (1024px+): overridden to 52px via lg:h-[52px] Tailwind class —
-                 *    proportionate inside the 72px bar without looking oversized.
-                 *
-                 * SVGs are vectors: they render crisp at any whole-pixel size.
-                 * w-auto lets aspect ratio breathe freely (important for circle logos).
-                 * No scale() transform on hover = no GPU-promoted blur.
-                 */
+                  Logo sizes chosen so the SVG's internal brand text ("SACRED HOMES")
+                  is legible at every breakpoint — the logo asset includes both the
+                  icon mark AND the wordmark, so it needs to be tall enough to read.
+
+                  mobile/md : 44px — clear, not dominating the compact bar
+                  lg        : 52px — premium feel on laptop / 1024–1279px
+                  xl        : 56px — fills the 76px bar proportionally on desktop+
+                */
                 <img
                   src={sacredHomesLogo}
                   alt="Sacred Homes"
-                  className="w-auto shrink-0 lg:h-[52px]"
-                  style={{ display: 'block', height: '60px' }}
+                  className="h-11 w-auto shrink-0 lg:h-[56px] xl:h-[60px]"
+                  style={{ display: 'block' }}
                   onError={() => setDidLogoError(true)}
                 />
               )}
             </button>
           </motion.div>
 
-          {/* ── Desktop nav (md and up) ── */}
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
+          {/* ── COL 2 : Desktop nav — centred inside its grid cell ── */}
+          <nav
+            className="hidden items-center justify-center gap-1 md:flex"
+            aria-label="Main navigation"
+          >
             {menuItems.map((item, index) => (
               <motion.div
                 key={item.id}
@@ -132,22 +155,25 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* ── Desktop CTA ── */}
-          {settings?.phone ? (
-            <motion.a
-              href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
-              className="hidden h-9 items-center gap-2 rounded-full border border-[#DDEBE8] bg-white px-4 text-sm font-medium text-[#1F8A84] transition-colors duration-150 hover:bg-[#F4FAF9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2 lg:flex"
-              whileHover={{ scale: 1.04 }}
-              transition={{ type: "spring", stiffness: 320, damping: 22 }}
-            >
-              <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-              <span>Call Now</span>
-            </motion.a>
-          ) : (
-            <div className="hidden lg:block lg:w-[104px]" />
-          )}
+          {/* ── COL 3 : Desktop CTA — right-aligned inside its grid cell ── */}
+          <div className="hidden items-center justify-end md:flex">
+            {settings?.phone ? (
+              <motion.a
+                href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
+                className="flex h-9 items-center gap-2 rounded-full border border-[#DDEBE8] bg-white px-4 text-sm font-medium text-[#1F8A84] transition-colors duration-150 hover:bg-[#F4FAF9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F8A84] focus-visible:ring-offset-2"
+                whileHover={{ scale: 1.04 }}
+                transition={{ type: "spring", stiffness: 320, damping: 22 }}
+              >
+                <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>Call Now</span>
+              </motion.a>
+            ) : (
+              /* Invisible spacer keeps grid balanced even without a phone number */
+              <div className="h-9 w-[104px]" aria-hidden="true" />
+            )}
+          </div>
 
-          {/* ── Mobile controls ── */}
+          {/* ── Mobile controls (logo is col-1 above, this is the right side) ── */}
           <div className="flex items-center gap-2 md:hidden">
             {settings?.phone ? (
               <motion.a
@@ -158,7 +184,8 @@ export default function Header() {
                 transition={{ type: "spring", stiffness: 320, damping: 22 }}
               >
                 <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span className="hidden sm:inline">Call</span>
+                {/* Always show "Call" — even on 320px the word fits next to the icon */}
+                <span>Call</span>
               </motion.a>
             ) : null}
 
