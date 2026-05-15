@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
+
 Disallow: /admin
 Disallow: /sidekiq
 
-Sitemap: https://sacredhomes.in/sitemap.xml
+Sitemap: https://thesacredhomes.com/sitemap.xml
