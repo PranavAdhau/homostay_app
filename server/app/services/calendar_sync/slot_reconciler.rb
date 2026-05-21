@@ -16,7 +16,7 @@ module CalendarSync
         expected_slots = expected_slots_for_booking
 
         existing_map = map_by_range(existing_slots)
-        expected_map = map_by_range(expected_slots, persisted: false)
+        expected_map = map_by_range(expected_slots)
 
         to_create_keys = expected_map.keys - existing_map.keys
         to_delete_keys = existing_map.keys - expected_map.keys
@@ -39,16 +39,17 @@ module CalendarSync
           booking_id: booking.id,
           start_datetime: date.beginning_of_day,
           end_datetime: date.end_of_day,
-          is_blocked: false
+          is_blocked: false,
+          block_source: nil
         )
       end
 
       slots
     end
 
-    def map_by_range(slots, persisted: true)
+    def map_by_range(slots)
       slots.each_with_object({}) do |slot, acc|
-        key = [slot.start_datetime, slot.end_datetime]
+        key = slot.start_datetime.to_date
         acc[key] = slot
       end
     end
@@ -64,6 +65,7 @@ module CalendarSync
           start_datetime: slot.start_datetime,
           end_datetime: slot.end_datetime,
           is_blocked: false,
+          block_source: nil,
           created_at: Time.current,
           updated_at: Time.current
         }

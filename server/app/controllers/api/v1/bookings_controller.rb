@@ -2,9 +2,10 @@ class Api::V1::BookingsController < Api::V1::BaseController
   before_action :set_booking, only: [:show]
 
   def create
-    booking = Booking.new(booking_params)
+    service = BookingLifecycle::CreatePendingBooking.new(booking_params)
 
-    if booking.save
+    if service.call
+      booking = service.booking
       render_success(
         data: serialize_booking(booking),
         message: "Booking request submitted successfully",
@@ -12,9 +13,9 @@ class Api::V1::BookingsController < Api::V1::BaseController
       )
     else
       render_error(
-        message: "Failed to create booking",
-        errors: booking.errors.full_messages,
-        status: :unprocessable_entity
+        message: service.error_message || "Unable to submit your booking right now. Please try again.",
+        errors: service.booking&.errors&.full_messages,
+        status: service.status || :unprocessable_entity
       )
     end
   end

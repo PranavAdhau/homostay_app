@@ -3,6 +3,8 @@ class Homestay < ApplicationRecord
 
   has_many :bookings, dependent: :destroy
   has_many :availability_slots, dependent: :destroy
+  has_many :external_calendar_blocks, dependent: :destroy
+  has_many :reservation_holds, dependent: :destroy
   has_many :homestay_amenities, dependent: :destroy
   has_many :amenities, through: :homestay_amenities
 
@@ -51,6 +53,7 @@ class Homestay < ApplicationRecord
 
     where.not(id: conflicting_booking_homestay_ids(check_in, check_out))
       .where.not(id: conflicting_slot_homestay_ids(check_in, check_out))
+      .where.not(id: conflicting_hold_homestay_ids(check_in, check_out))
   }
 
   # -------------------------------------------------
@@ -74,7 +77,11 @@ class Homestay < ApplicationRecord
       slot.start_datetime.to_date
     end
 
-    requested_dates - unavailable_dates
+    held_dates = reservation_holds.active.overlapping(start_date, end_date).flat_map do |hold|
+      (hold.check_in_date...hold.check_out_date).to_a
+    end
+
+    requested_dates - unavailable_dates - held_dates
   end
 
   # Hour-based booking removed
@@ -122,6 +129,17 @@ class Homestay < ApplicationRecord
       .select(:homestay_id)
   end
 
+  def self.conflicting_hold_homestay_ids(check_in, check_out)
+    ReservationHold
+      .active
+      .where(
+        "check_in_date < ? AND check_out_date > ?",
+        check_out,
+        check_in
+      )
+      .select(:homestay_id)
+  end
+
   # -------------------------------------------------
   # AIRBNB CALENDAR VALIDATIONS
   # -------------------------------------------------
@@ -135,9 +153,18 @@ class Homestay < ApplicationRecord
   def airbnb_ical_must_be_ics
     return if airbnb_ical_url.blank?
 
-    unless airbnb_ical_url.to_s.strip.downcase.ends_with?(".ics")
-      errors.add(:airbnb_ical_url, "must end with .ics")
+    uri = URI.parse(airbnb_ical_url.to_s.strip)
+    host = uri.host.to_s.downcase
+    path = uri.path.to_s
+
+    unless uri.is_a?(URI::HTTPS) &&
+           host.in?(%w[airbnb.com www.airbnb.com]) &&
+           path.start_with?("/calendar/ical/") &&
+           path.downcase.ends_with?(".ics")
+      errors.add(:airbnb_ical_url, "must be a valid Airbnb iCal URL")
     end
+  rescue URI::InvalidURIError
+    errors.add(:airbnb_ical_url, "must be a valid Airbnb iCal URL")
   end
 
   # -------------------------------------------------

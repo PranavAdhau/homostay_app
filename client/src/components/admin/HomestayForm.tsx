@@ -10,6 +10,7 @@ import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 import api from '../../lib/adminAxios';
 import { normalizeNumericIds } from '../../lib/seo';
+import { toast } from 'sonner@2.0.3';
 
 interface Amenity {
   id: number;
@@ -33,6 +34,9 @@ interface HomestayFormData {
   last_calendar_sync_success_at?: string | null;
   sync_error_count?: number;
   last_calendar_sync_error?: string | null;
+  sync_state?: string;
+  sync_state_label?: string;
+  sync_state_message?: string;
   latitude?: number | null;
   longitude?: number | null;
   address?: string;
@@ -84,6 +88,7 @@ export default function HomestayForm() {
   const [homestayOptions, setHomestayOptions] = useState<AdminHomestayOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [syncSubmitting, setSyncSubmitting] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   useEffect(() => {
@@ -164,6 +169,12 @@ export default function HomestayForm() {
           last_calendar_sync_error:
             data.last_calendar_sync_error,
 
+          sync_state: data.sync_state,
+
+          sync_state_label: data.sync_state_label,
+
+          sync_state_message: data.sync_state_message,
+
           latitude:
             typeof data.latitude === 'number'
               ? data.latitude
@@ -221,7 +232,7 @@ export default function HomestayForm() {
     e.preventDefault();
 
     if (homestay.calendar_sync_enabled && !homestay.airbnb_ical_url?.trim()) {
-      alert('Airbnb iCal URL is required when calendar sync is enabled.');
+      toast.error('Airbnb iCal URL is required when calendar sync is enabled.');
       return;
     }
 
@@ -249,8 +260,32 @@ export default function HomestayForm() {
       navigate('/admin/homestays');
     } catch (error: any) {
       console.error('Error saving homestay:', error);
-      alert(error.response?.data?.message || 'Failed to save homestay');
+      toast.error(error.response?.data?.message || 'Failed to save homestay');
     } finally { setSubmitting(false); }
+  };
+
+  const handleRetrySync = async () => {
+    if (!id) return;
+
+    setSyncSubmitting(true);
+    try {
+      const response = await api.post(`/homestays/${id}/sync_calendar`);
+      if (response.data.success) {
+        if (response.data.data) {
+          setHomestay((current) => ({
+            ...current,
+            ...response.data.data,
+          }));
+        }
+        toast.success(response.data.message || 'Calendar sync started');
+        await fetchHomestay();
+      }
+    } catch (error: any) {
+      console.error('Error retrying calendar sync:', error);
+      toast.error(error.response?.data?.message || 'Unable to retry calendar sync');
+    } finally {
+      setSyncSubmitting(false);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -592,14 +627,43 @@ export default function HomestayForm() {
                     Paste the Airbnb calendar export (.ics) URL to keep this property synced with Airbnb bookings.
                   </p>
                 </div>
-                {(homestay.last_calendar_sync_at ||
+                {(homestay.calendar_sync_enabled ||
+                  homestay.last_calendar_sync_at ||
                   homestay.last_calendar_sync_success_at ||
                   typeof homestay.sync_error_count === 'number' ||
                   homestay.last_calendar_sync_error) && (
-                  <div className="pt-1 border-t border-border/60 mt-2">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">
-                      Sync status (read-only)
-                    </p>
+                  <div className="pt-3 border-t border-border/60 mt-2 space-y-3">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Sync status
+                        </p>
+                        {homestay.sync_state_label && (
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
+                            <span className="inline-flex rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-foreground">
+                              {homestay.sync_state_label}
+                            </span>
+                          </div>
+                        )}
+                        {homestay.sync_state_message && (
+                          <p className="mt-2 break-words text-xs text-muted-foreground">
+                            {homestay.sync_state_message}
+                          </p>
+                        )}
+                      </div>
+                      {isEditing && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="w-full sm:w-auto"
+                          disabled={syncSubmitting || homestay.sync_state === 'syncing'}
+                          onClick={handleRetrySync}
+                        >
+                          {syncSubmitting ? 'Starting…' : 'Retry Sync'}
+                        </Button>
+                      )}
+                    </div>
                     <div className="space-y-1.5 text-xs text-muted-foreground">
                       {homestay.last_calendar_sync_at && (
                         <div>

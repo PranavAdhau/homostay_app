@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_09_090000) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_22_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -94,8 +94,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_09_090000) do
     t.boolean "is_blocked", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "block_source"
     t.index ["booking_id"], name: "index_availability_slots_on_booking_id"
     t.index ["end_datetime"], name: "index_availability_slots_on_end_datetime"
+    t.index ["homestay_id", "block_source"], name: "index_availability_slots_on_homestay_and_block_source"
+    t.index ["homestay_id", "is_blocked", "block_source", "start_datetime", "end_datetime"], name: "index_availability_slots_on_inventory_overlap"
     t.index ["homestay_id", "start_datetime", "end_datetime"], name: "index_availability_slots_unique", unique: true
     t.index ["homestay_id"], name: "index_availability_slots_on_homestay_id"
     t.index ["start_datetime"], name: "index_availability_slots_on_start_datetime"
@@ -137,8 +140,27 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_09_090000) do
     t.index ["check_in_date"], name: "index_bookings_on_check_in_date"
     t.index ["check_out_date"], name: "index_bookings_on_check_out_date"
     t.index ["homestay_id", "source", "external_event_id"], name: "index_bookings_on_homestay_source_external_event_id", unique: true, where: "(external_event_id IS NOT NULL)"
+    t.index ["homestay_id", "status", "check_in_date", "check_out_date"], name: "index_bookings_on_homestay_status_and_dates"
     t.index ["homestay_id"], name: "index_bookings_on_homestay_id"
     t.index ["status"], name: "index_bookings_on_status"
+  end
+
+  create_table "external_calendar_blocks", force: :cascade do |t|
+    t.bigint "homestay_id", null: false
+    t.string "source", null: false
+    t.string "external_uid", null: false
+    t.date "starts_on", null: false
+    t.date "ends_on", null: false
+    t.string "summary"
+    t.text "description"
+    t.datetime "dtstamp"
+    t.datetime "last_seen_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["homestay_id", "last_seen_at"], name: "index_external_calendar_blocks_on_homestay_and_last_seen_at"
+    t.index ["homestay_id", "source", "external_uid"], name: "index_external_calendar_blocks_on_homestay_source_uid", unique: true
+    t.index ["homestay_id", "starts_on", "ends_on"], name: "index_external_calendar_blocks_on_homestay_and_dates"
+    t.index ["homestay_id"], name: "index_external_calendar_blocks_on_homestay_id"
   end
 
   create_table "homestay_amenities", force: :cascade do |t|
@@ -195,6 +217,23 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_09_090000) do
     t.index ["role"], name: "index_host_profiles_on_role", unique: true
   end
 
+  create_table "reservation_holds", force: :cascade do |t|
+    t.bigint "homestay_id", null: false
+    t.bigint "booking_id"
+    t.date "check_in_date", null: false
+    t.date "check_out_date", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "released_at"
+    t.string "token", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["booking_id"], name: "index_reservation_holds_on_booking_id"
+    t.index ["homestay_id", "check_in_date", "check_out_date"], name: "index_reservation_holds_on_homestay_and_dates"
+    t.index ["homestay_id", "expires_at"], name: "index_reservation_holds_on_homestay_and_expires_at"
+    t.index ["homestay_id"], name: "index_reservation_holds_on_homestay_id"
+    t.index ["token"], name: "index_reservation_holds_on_token", unique: true
+  end
+
   create_table "site_contents", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -215,6 +254,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_09_090000) do
   add_foreign_key "availability_slots", "bookings"
   add_foreign_key "availability_slots", "homestays"
   add_foreign_key "bookings", "homestays"
+  add_foreign_key "external_calendar_blocks", "homestays"
   add_foreign_key "homestay_amenities", "amenities"
   add_foreign_key "homestay_amenities", "homestays"
+  add_foreign_key "reservation_holds", "bookings"
+  add_foreign_key "reservation_holds", "homestays"
 end

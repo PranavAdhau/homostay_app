@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import api from '../../lib/adminAxios';
 import { useNavigate } from 'react-router-dom';
 import { formatINR } from '../../lib/currency';
+import { toast } from 'sonner@2.0.3';
 interface Booking {
   id: number;
   homestay_name: string;
@@ -45,20 +46,22 @@ export default function BookingList() {
   };
   const handleApprove = async (id: number) => {
     try {
-      await api.patch(`/bookings/${id}/approve`, {});
+      const response = await api.patch(`/bookings/${id}/approve`, {});
+      toast.success(response.data.message || 'Booking approved successfully');
       fetchBookings();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error approving booking:', error);
-      alert('Failed to approve booking');
+      toast.error(error.response?.data?.message || 'Unable to approve this booking right now');
     }
   };
   const handleReject = async (id: number) => {
     try {
-      await api.patch(`/bookings/${id}/reject`, {});
+      const response = await api.patch(`/bookings/${id}/reject`, {});
+      toast.success(response.data.message || 'Booking rejected successfully');
       fetchBookings();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error rejecting booking:', error);
-      alert('Failed to reject booking');
+      toast.error(error.response?.data?.message || 'Unable to reject this booking right now');
     }
   };
   const statusStyles: Record<string, string> = {

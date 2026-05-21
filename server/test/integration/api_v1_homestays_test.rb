@@ -35,24 +35,25 @@ class ApiV1HomestaysTest < ActionDispatch::IntegrationTest
   test "excludes homestays with overlapping approved bookings for all overlap shapes" do
     blocked = create_homestay!(name: "Blocked Booking Stay", capacity: 4, rooms: 2)
     available = create_homestay!(name: "Available Booking Stay", capacity: 4, rooms: 2)
+    base_date = Date.current + 30.days
 
     blocked.bookings.create!(
       guest_name: "Guest",
       guest_email: "guest@example.com",
       guest_phone: "9999999999",
-      check_in_date: Date.new(2026, 4, 15),
-      check_out_date: Date.new(2026, 4, 20),
+      check_in_date: base_date,
+      check_out_date: base_date + 5.days,
       number_of_guests: 2,
       total_price: 500,
       status: :approved
     )
 
     overlap_ranges = [
-      [Date.new(2026, 4, 16), Date.new(2026, 4, 19)],
-      [Date.new(2026, 4, 14), Date.new(2026, 4, 18)],
-      [Date.new(2026, 4, 18), Date.new(2026, 4, 22)],
-      [Date.new(2026, 4, 15), Date.new(2026, 4, 20)],
-      [Date.new(2026, 4, 10), Date.new(2026, 4, 25)]
+      [base_date + 1.day, base_date + 4.days],
+      [base_date - 1.day, base_date + 3.days],
+      [base_date + 3.days, base_date + 7.days],
+      [base_date, base_date + 5.days],
+      [base_date - 5.days, base_date + 10.days]
     ]
 
     overlap_ranges.each do |check_in, check_out|
@@ -72,22 +73,23 @@ class ApiV1HomestaysTest < ActionDispatch::IntegrationTest
   test "excludes homestays with overlapping blocked or locked availability slots and keeps boundary case available" do
     blocked = create_homestay!(name: "Blocked Slot Stay", capacity: 4, rooms: 2)
     boundary = create_homestay!(name: "Boundary Slot Stay", capacity: 4, rooms: 2)
+    base_date = Date.current + 30.days
 
     blocked.availability_slots.create!(
-      start_datetime: Time.zone.parse("2026-04-15 00:00:00"),
-      end_datetime: Time.zone.parse("2026-04-20 23:59:59"),
+      start_datetime: base_date.beginning_of_day,
+      end_datetime: (base_date + 5.days).end_of_day,
       is_blocked: true
     )
 
     boundary.availability_slots.create!(
-      start_datetime: Time.zone.parse("2026-04-10 00:00:00"),
-      end_datetime: Time.zone.parse("2026-04-15 00:00:00"),
+      start_datetime: (base_date - 5.days).beginning_of_day,
+      end_datetime: base_date.beginning_of_day,
       is_blocked: true
     )
 
     get "/api/v1/homestays", params: {
-      check_in: "2026-04-15",
-      check_out: "2026-04-18"
+      check_in: base_date.iso8601,
+      check_out: (base_date + 3.days).iso8601
     }
 
     assert_response :success

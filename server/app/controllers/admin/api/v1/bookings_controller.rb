@@ -21,10 +21,16 @@ class Admin::Api::V1::BookingsController < Admin::Api::V1::BaseController
   end
 
   def approve
-    if @booking.approve!
+    service = BookingLifecycle::ApproveBooking.new(@booking)
+
+    if service.call
       render_success(data: serialize_booking(@booking), message: "Booking approved successfully")
     else
-      render_error(message: "Failed to approve booking", errors: @booking.errors.full_messages)
+      render_error(
+        message: service.error_message || "Unable to approve this booking right now. Please try again.",
+        errors: @booking.errors.full_messages,
+        status: service.status || :unprocessable_entity
+      )
     end
   end
 

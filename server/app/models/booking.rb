@@ -3,6 +3,7 @@ class Booking < ApplicationRecord
 
   belongs_to :homestay
   has_many :availability_slots, dependent: :destroy
+  has_one :reservation_hold, dependent: :destroy
 
   # ----------------------------
   # VALIDATIONS
@@ -56,6 +57,10 @@ class Booking < ApplicationRecord
     check_out_date.end_of_day
   end
 
+  def finalized?
+    approved? || confirmed?
+  end
+
   private
 
   # ----------------------------
@@ -65,14 +70,12 @@ class Booking < ApplicationRecord
   def dates_must_be_available
     return unless homestay && check_in_date && check_out_date
 
-    conflict = homestay.availability_slots
-      .where(
-        "start_datetime < ? AND end_datetime > ?",
-        check_out_date.end_of_day,
-        check_in_date.beginning_of_day
-      )
-
-    if conflict.exists?
+    if BookingAvailability::OverlapChecker.new(
+      homestay: homestay,
+      check_in_date: check_in_date,
+      check_out_date: check_out_date,
+      booking_to_ignore: self
+    ).conflict?
       errors.add(:base, "Selected dates are already booked")
     end
   end

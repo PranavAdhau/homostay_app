@@ -10,30 +10,23 @@ module CalendarSync
     end
 
     def call
-      start_date = event[:start_time].to_date
-      end_date   = event[:end_time].to_date
+      return if event[:end_on] <= Date.current
 
-      tomorrow = Date.current + 1.day
-      return if start_date < tomorrow
+      block = ExternalCalendarBlock.lock.where(
+        homestay_id: homestay.id,
+        source: "airbnb",
+        external_uid: event[:uid]
+      ).first_or_initialize
 
-      Booking.transaction do
-        booking = Booking.lock.where(
-          homestay_id: homestay.id,
-          source: Booking.sources[:airbnb],
-          external_event_id: event[:uid]
-        ).first_or_initialize
-
-        booking.source = :airbnb
-        booking.check_in_date = start_date
-        booking.check_out_date = end_date
-
-        booking.status = :confirmed
-        booking.external_last_seen_at = Time.current
-
-        booking.save!
-
-        SlotReconciler.call(booking)
-      end
+      block.assign_attributes(
+        starts_on: event[:start_on],
+        ends_on: event[:end_on],
+        summary: event[:summary],
+        description: event[:description],
+        dtstamp: event[:dtstamp],
+        last_seen_at: Time.current
+      )
+      block.save!
     end
 
     private

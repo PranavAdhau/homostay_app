@@ -31,7 +31,11 @@ Rails.application.routes.draw do
     namespace :api do
       namespace :v1 do
         resources :blogs
-        resources :homestays
+        resources :homestays do
+          member do
+            post :sync_calendar
+          end
+        end
         resources :bookings, only: [:index, :show, :update] do
           member do
             patch :approve

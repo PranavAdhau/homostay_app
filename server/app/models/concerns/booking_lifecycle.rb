@@ -10,14 +10,11 @@ module BookingLifecycle
   # ----------------------------
 
   def approve!
-    return false unless pending?
+    service = BookingLifecycle::ApproveBooking.new(self)
+    return true if service.call
 
-    transaction do
-      homestay.with_lock do
-        return false unless validate_availability_for_approval
-        update!(status: :approved)
-      end
-    end
+    errors.add(:base, service.error_message) if service.error_message.present?
+    false
   end
 
   def reject!
@@ -25,7 +22,7 @@ module BookingLifecycle
 
     transaction do
       update_column(:status, :rejected)
-      release_availability_slots
+      release_inventory!
     end
   end
 
@@ -39,7 +36,7 @@ module BookingLifecycle
 
     transaction do
       update_column(:status, :completed)
-      release_availability_slots
+      release_inventory!
     end
   end
 
@@ -50,10 +47,7 @@ module BookingLifecycle
   # ----------------------------
 
   def handle_status_change
-    case status
-    when "approved"
-      create_availability_slots unless availability_slots.exists?
-    end
+    nil
   end
 
   # ----------------------------
@@ -63,10 +57,13 @@ module BookingLifecycle
   def validate_availability_for_approval
     return false unless homestay && check_in_date && check_out_date
 
-    available_dates = homestay.available_dates(check_in_date, check_out_date)
-    requested_dates = (check_in_date...check_out_date).to_a
-
-    (requested_dates - available_dates).empty?
+    !BookingAvailability::OverlapChecker.new(
+      homestay: homestay,
+      check_in_date: check_in_date,
+      check_out_date: check_out_date,
+      booking_to_ignore: self,
+      hold_to_ignore: reservation_hold
+    ).conflict?
   end
 
   # ----------------------------
@@ -77,18 +74,15 @@ module BookingLifecycle
     return unless homestay && check_in_date && check_out_date
     return if availability_slots.exists?
 
-    (check_in_date...check_out_date).each do |date|
-      availability_slots.create!(
-        homestay: homestay,
-        start_datetime: date.beginning_of_day,
-        end_datetime: date.end_of_day,
-        booking: self,
-        is_blocked: false
-      )
-    end
+    CalendarSync::SlotReconciler.call(self)
   end
 
   def release_availability_slots
     availability_slots.update_all(booking_id: nil)
+  end
+
+  def release_inventory!
+    release_availability_slots
+    BookingAvailability::HoldManager.release_for_booking!(self)
   end
 end

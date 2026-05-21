@@ -1,7 +1,7 @@
 class Admin::Api::V1::HomestaysController < Admin::Api::V1::BaseController
   include Rails.application.routes.url_helpers
   
-  before_action :set_homestay, only: [:show, :update, :destroy]
+  before_action :set_homestay, only: [:show, :update, :destroy, :sync_calendar]
 
   def index
     homestays = Homestay.all.includes(:amenities, images_attachments: :blob)
@@ -42,6 +42,28 @@ class Admin::Api::V1::HomestaysController < Admin::Api::V1::BaseController
     else
       render_error(message: "Failed to delete homestay", errors: @homestay.errors.full_messages)
     end
+  end
+
+  def sync_calendar
+    if @homestay.airbnb_ical_url.blank? || !@homestay.calendar_sync_enabled?
+      return render_error(
+        message: "Add a valid Airbnb calendar before retrying sync",
+        status: :unprocessable_entity
+      )
+    end
+
+    if sync_in_progress?(@homestay)
+      return render_success(
+        data: serialize_homestay(@homestay.reload, include_details: true),
+        message: "Calendar sync is already in progress"
+      )
+    end
+
+    CalendarSyncJob.perform_later(@homestay.id, trigger: "manual_retry")
+    render_success(
+      data: serialize_homestay(@homestay.reload, include_details: true),
+      message: "Calendar sync started"
+    )
   end
 
   private
@@ -165,16 +187,60 @@ class Admin::Api::V1::HomestaysController < Admin::Api::V1::BaseController
     }
 
     if include_details
+      sync_state = sync_state_for(homestay)
       data.merge!({
         last_calendar_sync_at: homestay.last_calendar_sync_at,
         last_calendar_sync_success_at: homestay.last_calendar_sync_success_at,
         sync_error_count: homestay.sync_error_count,
         last_calendar_sync_error: homestay.last_calendar_sync_error,
+        sync_state: sync_state,
+        sync_state_label: sync_state_label_for(sync_state),
+        sync_state_message: sync_state_message_for(homestay, sync_state),
         created_at: homestay.created_at,
         updated_at: homestay.updated_at
       })
     end
 
     data
+  end
+
+  def sync_in_progress?(homestay)
+    Infrastructure::RedisLock.exists?(CalendarSync::FreshnessPolicy.sync_lock_key(homestay.id))
+  rescue Redis::BaseError, IOError, SystemCallError
+    false
+  end
+
+  def sync_state_for(homestay)
+    return "syncing" if sync_in_progress?(homestay)
+    return "disabled" unless homestay.calendar_sync_enabled?
+    return "error" if homestay.last_calendar_sync_error.present?
+    return "stale" if CalendarSync::FreshnessPolicy.stale?(homestay)
+
+    "healthy"
+  end
+
+  def sync_state_label_for(sync_state)
+    {
+      "syncing" => "Sync in progress",
+      "error" => "Calendar connection issue",
+      "stale" => "Availability may be outdated",
+      "disabled" => "Sync disabled",
+      "healthy" => "Synced recently"
+    }.fetch(sync_state, "Synced recently")
+  end
+
+  def sync_state_message_for(homestay, sync_state)
+    case sync_state
+    when "syncing"
+      "We’re refreshing Airbnb availability now."
+    when "error"
+      homestay.last_calendar_sync_error.presence || "We couldn’t refresh this calendar recently."
+    when "stale"
+      "Availability may be outdated. Retry sync before confirming bookings."
+    when "disabled"
+      "Airbnb calendar sync is currently turned off."
+    else
+      "Calendar synced successfully."
+    end
   end
 end
