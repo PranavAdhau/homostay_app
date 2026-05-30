@@ -34,6 +34,12 @@ Rails.application.routes.draw do
         resources :homestays do
           member do
             post :sync_calendar
+            get :calendar_inventory
+          end
+          resources :manual_inventory_blocks, only: [:create], controller: "manual_inventory_blocks" do
+            member do
+              patch :unlock
+            end
           end
         end
         resources :bookings, only: [:index, :show, :update] do

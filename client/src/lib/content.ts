@@ -20,6 +20,8 @@ export type SiteContent = {
   cancellation_policy_pdf_url: string | null;
   little_more_image_urls: string[];
   host_property_image_urls: string[];
+  donation_percentage: number | null;
+  total_contribution_amount: number | null;
 };
 
 export async function fetchHostProfile(): Promise<HostProfile | null> {

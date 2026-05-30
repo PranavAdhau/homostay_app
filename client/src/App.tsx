@@ -14,6 +14,7 @@ const BlogForm = lazy(() => import("./components/admin/BlogForm"));
 const BlogList = lazy(() => import("./components/admin/BlogList"));
 const HomestayForm = lazy(() => import("./components/admin/HomestayForm"));
 const HomestayList = lazy(() => import("./components/admin/HomestayList"));
+const HomestayCalendarPage = lazy(() => import("./components/admin/HomestayCalendarPage"));
 const AdminAuthGuard = lazy(() => import("./components/admin/AdminAuthGuard"));
 const SettingsPage = lazy(() => import("./components/admin/SettingsPage"));
 import { SiteSettingsProvider } from "./components/SiteSettingsProvider";
@@ -71,6 +72,7 @@ export default function App() {
               <Route path="homestays" element={<HomestayList />} />
               <Route path="homestays/new" element={<HomestayForm />} />
               <Route path="homestays/:id/edit" element={<HomestayForm />} />
+              <Route path="homestays/:id/calendar" element={<HomestayCalendarPage />} />
               <Route path="bookings" element={<BookingList />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="host-profile" element={<HostProfilePage />} />

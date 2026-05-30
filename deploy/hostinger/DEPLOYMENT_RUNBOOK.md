@@ -209,6 +209,26 @@ Add to root crontab with `sudo crontab -e`:
 15 2 * * * /usr/local/bin/backup_homostay_postgres.sh >> /var/log/homostay_postgres_backup.log 2>&1
 ```
 
+## Calendar Sync Cron
+
+Recurring Airbnb polling is triggered every 5 minutes by cron and processed by
+the existing Sidekiq service.
+
+Add to the deploy user crontab with `crontab -e`:
+
+```cron
+*/5 * * * * cd /var/www/homostay_app/server && /home/deploy/.rbenv/shims/bundle exec rails calendar_sync:enqueue_due RAILS_ENV=production >> /var/log/homostay_app_calendar_sync.log 2>&1
+```
+
+Quick verification:
+
+```bash
+crontab -l | grep calendar_sync:enqueue_due
+sudo systemctl status homostay_app_sidekiq --no-pager
+tail -n 50 /var/log/homostay_app_calendar_sync.log
+journalctl -u homostay_app_sidekiq -n 100 --no-pager
+```
+
 Restore:
 
 ```bash
@@ -231,12 +251,12 @@ A www 82.25.105.149
 Update `/etc/homostay_app.env`:
 
 ```env
-APP_HOSTS=YOUR_DOMAIN.com,www.YOUR_DOMAIN.com,82.25.105.149
+APP_HOSTS=thesacredhomes.com,www.thesacredhomes.com,82.25.105.149
 RAILS_FORCE_SSL=true
-BACKEND_URL=https://YOUR_DOMAIN.com
-FRONTEND_URL=https://YOUR_DOMAIN.com
-VITE_API_BASE_URL=https://YOUR_DOMAIN.com
-ICAL_DOMAIN=YOUR_DOMAIN.com
+BACKEND_URL=https://thesacredhomes.com
+FRONTEND_URL=https://thesacredhomes.com
+VITE_API_BASE_URL=https://thesacredhomes.com
+ICAL_DOMAIN=thesacredhomes.com
 ```
 
 Rebuild frontend and install SSL:

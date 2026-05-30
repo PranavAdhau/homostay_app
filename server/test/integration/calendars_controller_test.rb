@@ -40,11 +40,16 @@ class CalendarsControllerTest < ActionDispatch::IntegrationTest
       status: :pending
     )
 
-    homestay.availability_slots.create!(
-      start_datetime: Time.zone.parse("2026-06-20 00:00:00"),
-      end_datetime: Time.zone.parse("2026-06-20 23:59:59"),
-      is_blocked: true,
-      block_source: "manual"
+    admin = AdminUser.create!(
+      email: "calendar-export-admin-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      password_confirmation: "Password123!"
+    )
+    homestay.manual_inventory_blocks.create!(
+      starts_on: Date.new(2026, 6, 20),
+      ends_on: Date.new(2026, 6, 21),
+      reason: "maintenance",
+      created_by_admin_user: admin
     )
 
     homestay.external_calendar_blocks.create!(
@@ -62,6 +67,7 @@ class CalendarsControllerTest < ActionDispatch::IntegrationTest
       is_blocked: true,
       block_source: "airbnb_sync"
     )
+    CalendarSync::ExternalBlockReconciler.call(homestay)
 
     get "/calendars/#{homestay.id}.ics"
 
@@ -74,6 +80,7 @@ class CalendarsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "SUMMARY:Not available"
     refute_includes response.body, "Pending Guest"
     refute_includes response.body, "airbnb-block-1"
+    assert_includes response.body, "manual-block-"
 
     calendar = Icalendar::Calendar.parse(response.body).first
     assert_equal 2, calendar.events.size

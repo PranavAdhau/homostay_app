@@ -4,6 +4,7 @@ class Homestay < ApplicationRecord
   has_many :bookings, dependent: :destroy
   has_many :availability_slots, dependent: :destroy
   has_many :external_calendar_blocks, dependent: :destroy
+  has_many :manual_inventory_blocks, dependent: :destroy
   has_many :reservation_holds, dependent: :destroy
   has_many :homestay_amenities, dependent: :destroy
   has_many :amenities, through: :homestay_amenities
@@ -52,6 +53,8 @@ class Homestay < ApplicationRecord
     end
 
     where.not(id: conflicting_booking_homestay_ids(check_in, check_out))
+      .where.not(id: conflicting_external_block_homestay_ids(check_in, check_out))
+      .where.not(id: conflicting_manual_block_homestay_ids(check_in, check_out))
       .where.not(id: conflicting_slot_homestay_ids(check_in, check_out))
       .where.not(id: conflicting_hold_homestay_ids(check_in, check_out))
   }
@@ -64,18 +67,7 @@ class Homestay < ApplicationRecord
     return [] unless start_date && end_date
 
     requested_dates = (start_date...end_date).to_a
-
-    unavailable_slots = availability_slots
-      .where(
-        "start_datetime < ? AND end_datetime > ?",
-        end_date.beginning_of_day,
-        start_date.beginning_of_day
-      )
-      .where("booking_id IS NOT NULL OR is_blocked = TRUE")
-
-    unavailable_dates = unavailable_slots.map do |slot|
-      slot.start_datetime.to_date
-    end
+    unavailable_dates = authoritative_unavailable_dates(start_date, end_date)
 
     held_dates = reservation_holds.active.overlapping(start_date, end_date).flat_map do |hold|
       (hold.check_in_date...hold.check_out_date).to_a
@@ -126,6 +118,20 @@ class Homestay < ApplicationRecord
         check_in.beginning_of_day
       )
       .where("booking_id IS NOT NULL OR is_blocked = ?", true)
+      .select(:homestay_id)
+  end
+
+  def self.conflicting_external_block_homestay_ids(check_in, check_out)
+    ExternalCalendarBlock
+      .future_or_current
+      .where("starts_on < ? AND ends_on > ?", check_out, check_in)
+      .select(:homestay_id)
+  end
+
+  def self.conflicting_manual_block_homestay_ids(check_in, check_out)
+    ManualInventoryBlock
+      .active
+      .where("starts_on < ? AND ends_on > ?", check_out, check_in)
       .select(:homestay_id)
   end
 
@@ -184,6 +190,39 @@ class Homestay < ApplicationRecord
     end
 
     self.slug = candidate_slug
+  end
+
+  def authoritative_unavailable_dates(start_date, end_date)
+    dates = []
+
+    bookings.where(status: %i[approved confirmed])
+            .where("check_in_date < ? AND check_out_date > ?", end_date, start_date)
+            .find_each do |booking|
+      dates.concat((booking.check_in_date...booking.check_out_date).to_a)
+    end
+
+    external_calendar_blocks.future_or_current
+                            .where("starts_on < ? AND ends_on > ?", end_date, start_date)
+                            .find_each do |block|
+      dates.concat((block.starts_on...block.ends_on).to_a)
+    end
+
+    manual_inventory_blocks.active
+                           .where("starts_on < ? AND ends_on > ?", end_date, start_date)
+                           .find_each do |block|
+      dates.concat((block.starts_on...block.ends_on).to_a)
+    end
+
+    availability_slots.where(
+      "start_datetime < ? AND end_datetime > ?",
+      end_date.beginning_of_day,
+      start_date.beginning_of_day
+    ).where("booking_id IS NOT NULL OR is_blocked = TRUE")
+      .find_each do |slot|
+        dates << slot.start_datetime.to_date
+      end
+
+    dates.uniq
   end
 
 end

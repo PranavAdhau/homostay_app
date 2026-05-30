@@ -90,4 +90,36 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
     assert_response :service_unavailable
     assert_equal "We couldn’t refresh availability right now. Please try again.", parsed_response["message"]
   end
+
+  test "blocks booking requests when an active manual inventory block exists" do
+    homestay = create_homestay!
+    admin = AdminUser.create!(
+      email: "booking-lock-admin-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      password_confirmation: "Password123!"
+    )
+    homestay.manual_inventory_blocks.create!(
+      starts_on: Date.new(2026, 8, 10),
+      ends_on: Date.new(2026, 8, 12),
+      reason: "maintenance",
+      created_by_admin_user: admin
+    )
+    CalendarSync::ExternalBlockReconciler.call(homestay)
+
+    post "/api/v1/bookings", params: {
+      booking: {
+        homestay_id: homestay.id,
+        guest_name: "Blocked Guest",
+        guest_email: "blocked@example.com",
+        guest_phone: "8888888888",
+        check_in_date: "2026-08-10",
+        check_out_date: "2026-08-12",
+        number_of_guests: 2,
+        total_price: 1000
+      }
+    }
+
+    assert_response :conflict
+    assert_equal "These dates were just booked. Please choose different dates.", parsed_response["message"]
+  end
 end

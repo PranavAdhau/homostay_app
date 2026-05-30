@@ -329,9 +329,16 @@ export default function HomestayForm() {
         <h2 className="text-2xl font-semibold text-foreground">
           {isEditing ? 'Edit Homestay' : 'New Homestay'}
         </h2>
-        <Button variant="outline" onClick={() => navigate('/admin/homestays')}>
-          <X className="h-4 w-4 mr-1.5" />Cancel
-        </Button>
+        <div className="flex gap-2">
+          {isEditing && id && (
+            <Button variant="outline" onClick={() => navigate(`/admin/homestays/${id}/calendar`)}>
+              Manage Calendar
+            </Button>
+          )}
+          <Button variant="outline" onClick={() => navigate('/admin/homestays')}>
+            <X className="h-4 w-4 mr-1.5" />Cancel
+          </Button>
+        </div>
       </div>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

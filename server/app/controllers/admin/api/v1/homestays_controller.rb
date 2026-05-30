@@ -1,7 +1,9 @@
 class Admin::Api::V1::HomestaysController < Admin::Api::V1::BaseController
   include Rails.application.routes.url_helpers
   
-  before_action :set_homestay, only: [:show, :update, :destroy, :sync_calendar]
+  include InventoryCalendarSerialization
+
+  before_action :set_homestay, only: [:show, :update, :destroy, :sync_calendar, :calendar_inventory]
 
   def index
     homestays = Homestay.all.includes(:amenities, images_attachments: :blob)
@@ -64,6 +66,15 @@ class Admin::Api::V1::HomestaysController < Admin::Api::V1::BaseController
       data: serialize_homestay(@homestay.reload, include_details: true),
       message: "Calendar sync started"
     )
+  end
+
+  def calendar_inventory
+    start_date = params[:start_date].present? ? Date.iso8601(params[:start_date]) : Date.current.beginning_of_month
+    end_date = params[:end_date].present? ? Date.iso8601(params[:end_date]) : (start_date.end_of_month + 1.day)
+
+    render_success(data: serialize_calendar_inventory(@homestay, start_date, end_date))
+  rescue ArgumentError
+    render_error(message: "Invalid calendar range", status: :bad_request)
   end
 
   private

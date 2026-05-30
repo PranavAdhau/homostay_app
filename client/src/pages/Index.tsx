@@ -278,7 +278,11 @@ export default function Index() {
         />
         <TeamSection />
         <HostPropertySection imageCandidates={hostPropertyImageCandidates} />
-        <TrustSection images={trustSectionImages} />
+        <TrustSection
+          images={trustSectionImages}
+          donationPercentage={siteContent?.donation_percentage}
+          totalContributionAmount={siteContent?.total_contribution_amount}
+        />
         <BlogsSection />
         <BookingSection />
         <ReviewsSection />

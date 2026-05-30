@@ -22,6 +22,8 @@ class Admin::Api::V1::SiteContentsController < Admin::Api::V1::BaseController
     params.require(:site_content).permit(
       :house_rules_pdf,
       :cancellation_policy_pdf,
+      :donation_percentage,
+      :total_contribution_amount,
       little_more_images: [],
       host_property_images: []
     )
@@ -32,7 +34,9 @@ class Admin::Api::V1::SiteContentsController < Admin::Api::V1::BaseController
       house_rules_pdf_url: blob_url(site_content.house_rules_pdf),
       cancellation_policy_pdf_url: blob_url(site_content.cancellation_policy_pdf),
       little_more_image_urls: blob_urls(site_content.little_more_images),
-      host_property_image_urls: blob_urls(site_content.host_property_images)
+      host_property_image_urls: blob_urls(site_content.host_property_images),
+      donation_percentage: site_content.donation_percentage,
+      total_contribution_amount: site_content.total_contribution_amount
     }
   end
 

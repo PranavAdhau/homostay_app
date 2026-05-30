@@ -35,12 +35,13 @@ class AdminApiV1BookingsTest < ActionDispatch::IntegrationTest
       status: :pending
     )
 
-    homestay.availability_slots.create!(
-      start_datetime: Time.zone.parse("2026-09-11 00:00:00"),
-      end_datetime: Time.zone.parse("2026-09-11 23:59:59"),
-      is_blocked: true,
-      block_source: "manual"
+    homestay.manual_inventory_blocks.create!(
+      starts_on: Date.new(2026, 9, 11),
+      ends_on: Date.new(2026, 9, 12),
+      reason: "maintenance",
+      created_by_admin_user: @admin
     )
+    CalendarSync::ExternalBlockReconciler.call(homestay)
 
     patch "/admin/api/v1/bookings/#{pending_booking.id}/approve", params: {}
 

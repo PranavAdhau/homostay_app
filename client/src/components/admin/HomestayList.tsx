@@ -153,6 +153,10 @@ export default function HomestayList() {
                             <Pencil className="h-3.5 w-3.5" />
                             <span className="whitespace-nowrap">Edit</span>
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/admin/homestays/${homestay.id}/calendar`)}>
+                            <CalendarDays className="h-3.5 w-3.5" />
+                            <span className="whitespace-nowrap">Manage Calendar</span>
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleCopyPropertyLink(homestay.slug)}>
                             <Copy className="h-3.5 w-3.5" />
                             <span className="whitespace-nowrap">Copy Link</span>
@@ -215,6 +219,10 @@ export default function HomestayList() {
                         <DropdownMenuItem onClick={() => navigate(`/admin/homestays/${homestay.id}/edit`)}>
                           <Pencil className="h-3.5 w-3.5" />
                           <span className="whitespace-nowrap">Edit</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/admin/homestays/${homestay.id}/calendar`)}>
+                          <CalendarDays className="h-3.5 w-3.5" />
+                          <span className="whitespace-nowrap">Manage Calendar</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleCopyPropertyLink(homestay.slug)}>
                           <Copy className="h-3.5 w-3.5" />

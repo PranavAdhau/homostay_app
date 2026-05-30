@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_22_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_31_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -217,6 +217,24 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_22_000001) do
     t.index ["role"], name: "index_host_profiles_on_role", unique: true
   end
 
+  create_table "manual_inventory_blocks", force: :cascade do |t|
+    t.bigint "homestay_id", null: false
+    t.date "starts_on", null: false
+    t.date "ends_on", null: false
+    t.string "reason", null: false
+    t.text "notes"
+    t.bigint "created_by_admin_user_id"
+    t.bigint "unlocked_by_admin_user_id"
+    t.datetime "unlocked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_admin_user_id"], name: "index_manual_inventory_blocks_on_created_by_admin_user_id"
+    t.index ["homestay_id", "starts_on", "ends_on"], name: "index_manual_inventory_blocks_on_homestay_dates"
+    t.index ["homestay_id", "unlocked_at", "starts_on", "ends_on"], name: "index_manual_inventory_blocks_on_homestay_active_dates"
+    t.index ["homestay_id"], name: "index_manual_inventory_blocks_on_homestay_id"
+    t.index ["unlocked_by_admin_user_id"], name: "index_manual_inventory_blocks_on_unlocked_by_admin_user_id"
+  end
+
   create_table "reservation_holds", force: :cascade do |t|
     t.bigint "homestay_id", null: false
     t.bigint "booking_id"
@@ -237,6 +255,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_22_000001) do
   create_table "site_contents", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "donation_percentage"
+    t.bigint "total_contribution_amount"
   end
 
   create_table "site_settings", force: :cascade do |t|
@@ -257,6 +277,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_22_000001) do
   add_foreign_key "external_calendar_blocks", "homestays"
   add_foreign_key "homestay_amenities", "amenities"
   add_foreign_key "homestay_amenities", "homestays"
+  add_foreign_key "manual_inventory_blocks", "admin_users", column: "created_by_admin_user_id"
+  add_foreign_key "manual_inventory_blocks", "admin_users", column: "unlocked_by_admin_user_id"
+  add_foreign_key "manual_inventory_blocks", "homestays"
   add_foreign_key "reservation_holds", "bookings"
   add_foreign_key "reservation_holds", "homestays"
 end

@@ -1,9 +1,13 @@
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import AnimatedSection from "./AnimatedSection";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { formatImpactAmount, getImpactDisplayNumber } from "../lib/impact";
 
 type TrustSectionProps = {
   images?: string[];
+  donationPercentage?: number | null;
+  totalContributionAmount?: number | null;
 };
 
 const placeholderTiles = [
@@ -25,9 +29,75 @@ const placeholderTiles = [
   },
 ];
 
-export default function TrustSection({ images = [] }: TrustSectionProps) {
+function AnimatedImpactValue({
+  value,
+  suffix,
+  decimals,
+}: {
+  value: number;
+  suffix: string;
+  decimals: number;
+}) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    let frame = 0;
+    let started = false;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting || started) return;
+        started = true;
+        const duration = 1200;
+        const start = performance.now();
+
+        const tick = (timestamp: number) => {
+          const progress = Math.min((timestamp - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setDisplayValue(value * eased);
+          if (progress < 1) {
+            frame = window.requestAnimationFrame(tick);
+          }
+        };
+
+        frame = window.requestAnimationFrame(tick);
+      },
+      { threshold: 0.35 },
+    );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [value]);
+
+  return (
+    <span ref={ref}>
+      {displayValue.toFixed(decimals)}
+      {suffix}
+    </span>
+  );
+}
+
+export default function TrustSection({
+  images = [],
+  donationPercentage,
+  totalContributionAmount,
+}: TrustSectionProps) {
   const galleryImages = images.slice(0, 4);
   const collageItems = Array.from({ length: 4 }, (_, index) => galleryImages[index] ?? null);
+  const amountDisplay = useMemo(
+    () => getImpactDisplayNumber(totalContributionAmount),
+    [totalContributionAmount],
+  );
+  const showImpactMetrics = donationPercentage != null || totalContributionAmount != null;
 
   return (
     <section className="h-auto bg-white py-20">
@@ -122,6 +192,37 @@ export default function TrustSection({ images = [] }: TrustSectionProps) {
               It’s not something you have to think about — just enjoy your stay knowing
               it’s part of something positive.
             </p>
+
+            {showImpactMetrics && (
+              <div className="mt-8 rounded-[1.5rem] border border-[#D8E5DF] bg-[#F8FBF9] p-6 shadow-[0_18px_32px_rgba(23,58,57,0.06)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5F7A73]">
+                  Impact Highlight
+                </p>
+                <p className="mt-3 text-lg leading-8 text-[#173A39]">
+                  We&apos;ve contributed over{" "}
+                  <span className="font-semibold text-[#1F8A84]">
+                    <AnimatedImpactValue
+                      value={amountDisplay.value}
+                      suffix={amountDisplay.suffix}
+                      decimals={amountDisplay.decimals}
+                    />
+                  </span>{" "}
+                  towards community initiatives and sustainable hospitality.
+                </p>
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl bg-white px-4 py-4">
+                    <p className="text-xs uppercase tracking-[0.16em] text-[#6F7B76]">Total Contribution</p>
+                    <p className="mt-2 text-2xl font-semibold text-[#173A39]">{formatImpactAmount(totalContributionAmount)}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white px-4 py-4">
+                    <p className="text-xs uppercase tracking-[0.16em] text-[#6F7B76]">Revenue Reinvested</p>
+                    <p className="mt-2 text-2xl font-semibold text-[#173A39]">
+                      <AnimatedImpactValue value={donationPercentage ?? 0} suffix="%" decimals={0} />
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
 
         </div>

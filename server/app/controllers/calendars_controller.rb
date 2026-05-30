@@ -8,9 +8,9 @@ class CalendarsController < ApplicationController
                        .unscope(:order)
                        .where(status: %i[approved confirmed])
                        .select(:id, :homestay_id, :check_in_date, :check_out_date, :updated_at)
-    manual_blocks = homestay.availability_slots
-                           .manual_blocks
-                           .select(:id, :start_datetime, :end_datetime, :updated_at)
+    manual_blocks = homestay.manual_inventory_blocks
+                           .active
+                           .select(:id, :starts_on, :ends_on, :updated_at)
 
     last_updated = [
       bookings.maximum(:updated_at),
@@ -49,13 +49,13 @@ class CalendarsController < ApplicationController
       end
     end
 
-    contiguous_manual_ranges(manual_blocks).each do |start_date, end_date, updated_at, source_id|
+    manual_blocks.each do |block|
       calendar.event do |event|
-        event.uid = "manual-block-#{homestay.id}-#{source_id}-#{start_date}-#{end_date}@#{ical_domain}"
-        event.dtstamp = updated_at.utc
-        event.last_modified = updated_at.utc
-        event.dtstart = Icalendar::Values::Date.new(start_date)
-        event.dtend = Icalendar::Values::Date.new(end_date)
+        event.uid = "manual-block-#{homestay.id}-#{block.id}-#{block.starts_on}-#{block.ends_on}@#{ical_domain}"
+        event.dtstamp = block.updated_at.utc
+        event.last_modified = block.updated_at.utc
+        event.dtstart = Icalendar::Values::Date.new(block.starts_on)
+        event.dtend = Icalendar::Values::Date.new(block.ends_on)
         event.summary = "Not available"
         event.transp = "OPAQUE"
       end
@@ -63,33 +63,6 @@ class CalendarsController < ApplicationController
 
     calendar.publish
     calendar.to_ical
-  end
-
-  def contiguous_manual_ranges(manual_blocks)
-    dates = manual_blocks.map { |slot| [slot.start_datetime.to_date, slot.updated_at, slot.id] }.sort_by(&:first)
-    return [] if dates.empty?
-
-    ranges = []
-    range_start = dates.first[0]
-    range_end = range_start + 1.day
-    range_updated_at = dates.first[1]
-    range_id = dates.first[2]
-
-    dates.drop(1).each do |date, updated_at, slot_id|
-      if date == range_end
-        range_end = date + 1.day
-        range_updated_at = [range_updated_at, updated_at].compact.max
-      else
-        ranges << [range_start, range_end, range_updated_at, range_id]
-        range_start = date
-        range_end = date + 1.day
-        range_updated_at = updated_at
-        range_id = slot_id
-      end
-    end
-
-    ranges << [range_start, range_end, range_updated_at, range_id]
-    ranges
   end
 
   def ical_domain

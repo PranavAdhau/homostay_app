@@ -93,4 +93,47 @@ class CalendarSyncSyncHomestayTest < ActiveSupport::TestCase
     assert_equal ["event-1@airbnb.com"], homestay.external_calendar_blocks.order(:external_uid).pluck(:external_uid)
     assert_equal 3, homestay.availability_slots.airbnb_sync_blocks.count
   end
+
+  test "sync keeps manual locks intact when airbnb inventory changes" do
+    homestay = create_homestay!
+    admin = AdminUser.create!(
+      email: "sync-admin-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      password_confirmation: "Password123!"
+    )
+    homestay.manual_inventory_blocks.create!(
+      starts_on: Date.new(2026, 7, 24),
+      ends_on: Date.new(2026, 7, 27),
+      reason: "offline_booking",
+      created_by_admin_user: admin
+    )
+    CalendarSync::ExternalBlockReconciler.call(homestay)
+
+    lock_result = Struct.new(:acquired?, :token, keyword_init: true).new(acquired?: true, token: "test-token")
+    payload = <<~ICS
+      BEGIN:VCALENDAR
+      VERSION:2.0
+      BEGIN:VEVENT
+      DTSTART;VALUE=DATE:20260723
+      DTEND;VALUE=DATE:20260725
+      SUMMARY:Reserved
+      UID:event-manual-overlap@airbnb.com
+      END:VEVENT
+      END:VCALENDAR
+    ICS
+
+    with_stubbed_class_method(Infrastructure::RedisLock, :acquire, lock_result) do
+      with_stubbed_class_method(Infrastructure::RedisLock, :release, nil) do
+        with_stubbed_class_method(CalendarSync::FetchIcs, :call, payload) do
+          assert CalendarSync::SyncHomestay.call(homestay, trigger: "test")
+        end
+      end
+    end
+
+    homestay.reload
+    assert_equal 1, homestay.manual_inventory_blocks.active.count
+    blocked_dates = homestay.availability_slots.where(booking_id: nil, is_blocked: true).order(:start_datetime).pluck(:start_datetime).map(&:to_date)
+    assert_includes blocked_dates, Date.new(2026, 7, 24)
+    assert_includes blocked_dates, Date.new(2026, 7, 26)
+  end
 end

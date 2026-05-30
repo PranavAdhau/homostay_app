@@ -7,6 +7,12 @@ class SiteContent < ApplicationRecord
   validate :single_row_only, on: :create
   validate :validate_pdf_types
   validate :validate_gallery_types
+  validates :donation_percentage,
+            numericality: { greater_than_or_equal_to: 0, only_integer: true },
+            allow_nil: true
+  validates :total_contribution_amount,
+            numericality: { greater_than_or_equal_to: 0, only_integer: true },
+            allow_nil: true
 
   def self.instance
     first_or_create!
