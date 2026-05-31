@@ -1,4 +1,8 @@
 class UpdateHostProfilesSchema < ActiveRecord::Migration[7.2]
+  class MigrationHostProfile < ApplicationRecord
+    self.table_name = "host_profiles"
+  end
+
   def up
     # Clear out old singleton rows to avoid constraint violations
     execute "TRUNCATE TABLE host_profiles RESTART IDENTITY"
@@ -17,20 +21,20 @@ class UpdateHostProfilesSchema < ActiveRecord::Migration[7.2]
 
     add_index :host_profiles, :role, unique: true
 
-    HostProfile.reset_column_information
+    MigrationHostProfile.reset_column_information
 
-    HostProfile.create!(
-      role: 'host',
-      name: 'Sacred Homes Host',
-      bio: 'Your local host in Varanasi.',
-      contact: 'hello@thesacredhomes.com'
+    MigrationHostProfile.create!(
+      role: "host",
+      name: "Sacred Homes Host",
+      bio: "Your local host in Varanasi.",
+      contact: "hello@thesacredhomes.com"
     )
 
-    HostProfile.create!(
-      role: 'co_host',
-      name: 'Sacred Homes Co-Host',
-      bio: 'Helping make every stay comfortable.',
-      contact: 'cohost@thesacredhomes.com'
+    MigrationHostProfile.create!(
+      role: "co_host",
+      name: "Sacred Homes Co-Host",
+      bio: "Helping make every stay comfortable.",
+      contact: "cohost@thesacredhomes.com"
     )
   end
 
@@ -42,23 +46,22 @@ class UpdateHostProfilesSchema < ActiveRecord::Migration[7.2]
     add_column :host_profiles, :co_host_bio, :text
     add_column :host_profiles, :co_host_contact, :string
 
-    HostProfile.reset_column_information
+    MigrationHostProfile.reset_column_information
 
-    # Save reverted data if any
-    host = HostProfile.find_by(role: 'host')
-    co_host = HostProfile.find_by(role: 'co_host')
+    host = MigrationHostProfile.find_by(role: "host")
+    co_host = MigrationHostProfile.find_by(role: "co_host")
 
     if host || co_host
-      HostProfile.create(
-        host_name: host&.name || 'Sacred Homes Host',
-        host_bio: host&.bio || 'Your local host in Varanasi.',
-        host_contact: host&.contact || 'hello@thesacredhomes.com',
-        co_host_name: co_host&.name || 'Sacred Homes Co-Host',
-        co_host_bio: co_host&.bio || 'Helping make every stay comfortable.',
-        co_host_contact: co_host&.contact || 'cohost@thesacredhomes.com'
+      MigrationHostProfile.create(
+        host_name: host&.name || "Sacred Homes Host",
+        host_bio: host&.bio || "Your local host in Varanasi.",
+        host_contact: host&.contact || "hello@thesacredhomes.com",
+        co_host_name: co_host&.name || "Sacred Homes Co-Host",
+        co_host_bio: co_host&.bio || "Helping make every stay comfortable.",
+        co_host_contact: co_host&.contact || "cohost@thesacredhomes.com"
       )
 
-      HostProfile.where(role: ['host', 'co_host']).delete_all
+      MigrationHostProfile.where(role: ["host", "co_host"]).delete_all
     end
 
     remove_index :host_profiles, :role
