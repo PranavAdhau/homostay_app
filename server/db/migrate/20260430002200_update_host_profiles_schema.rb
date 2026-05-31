@@ -16,10 +16,22 @@ class UpdateHostProfilesSchema < ActiveRecord::Migration[7.2]
     add_column :host_profiles, :contact, :string, null: false
 
     add_index :host_profiles, :role, unique: true
-    
+
     HostProfile.reset_column_information
-    HostProfile.ensure_exists('host')
-    HostProfile.ensure_exists('co_host')
+
+    HostProfile.create!(
+      role: 'host',
+      name: 'Sacred Homes Host',
+      bio: 'Your local host in Varanasi.',
+      contact: 'hello@thesacredhomes.com'
+    )
+
+    HostProfile.create!(
+      role: 'co_host',
+      name: 'Sacred Homes Co-Host',
+      bio: 'Helping make every stay comfortable.',
+      contact: 'cohost@thesacredhomes.com'
+    )
   end
 
   def down
@@ -35,6 +47,7 @@ class UpdateHostProfilesSchema < ActiveRecord::Migration[7.2]
     # Save reverted data if any
     host = HostProfile.find_by(role: 'host')
     co_host = HostProfile.find_by(role: 'co_host')
+
     if host || co_host
       HostProfile.create(
         host_name: host&.name || 'Sacred Homes Host',
@@ -44,6 +57,7 @@ class UpdateHostProfilesSchema < ActiveRecord::Migration[7.2]
         co_host_bio: co_host&.bio || 'Helping make every stay comfortable.',
         co_host_contact: co_host&.contact || 'cohost@thesacredhomes.com'
       )
+
       HostProfile.where(role: ['host', 'co_host']).delete_all
     end
 
