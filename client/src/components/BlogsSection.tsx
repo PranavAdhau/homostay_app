@@ -6,7 +6,7 @@ import AnimatedSection from './AnimatedSection';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { BLOG_PLACEHOLDER_IMAGE } from '../lib/blogPlaceholder';
 import { fetchPublicBlogs, type PublicBlog } from '../lib/publicContent';
-import { buildBlogPath } from '../lib/seo';
+import { buildBlogImageAlt, buildBlogPath } from '../lib/seo';
 
 const previewText = (content: string) => {
   const normalized = content.replace(/\s+/g, ' ').trim();
@@ -40,7 +40,12 @@ function BlogCard({ blog }: { blog: PublicBlog }) {
       <div className="relative w-full pt-[56.25%] overflow-hidden shrink-0">
         <ImageWithFallback
           src={blog.image_url || BLOG_PLACEHOLDER_IMAGE}
-          alt={blog.title}
+          alt={buildBlogImageAlt(
+            blog.title,
+            blog.featured_locality,
+            ...(blog.locality_tags ?? []),
+            ...(blog.nearby_landmark_tags ?? []),
+          )}
           loading="lazy"
           decoding="async"
           width={1200}
@@ -140,8 +145,9 @@ function BlogsSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            Local stories, travel inspiration, and thoughtful notes to help
-            guests experience Sacred Homes and Varanasi more deeply.
+            Local stories, stay-planning ideas, and neighborhood guides that
+            help guests choose where to stay in Varanasi, which localities fit
+            their trip, and how to experience Banaras more deeply.
           </motion.p>
         </AnimatedSection>
 

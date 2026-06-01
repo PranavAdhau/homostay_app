@@ -16,12 +16,18 @@ import { Button } from "./ui/button";
 import { formatINR } from "../lib/currency";
 import {
   applySeoMetadata,
+  buildAttractionLinks,
   buildBreadcrumbJsonLd,
   buildBlogPath,
   buildFaqJsonLd,
+  buildLandmarkSummary,
   buildManagedInternalLinks,
+  buildNearbyLocalityLinks,
+  buildPropertyLocalContext,
   buildPropertyImageAlt,
   buildPropertySeo,
+  buildRelatedBlogsForProperty,
+  buildRelatedProperties,
   inferVaranasiLocality,
   normalizeFaqEntries,
   normalizeNumericIds,
@@ -284,36 +290,77 @@ export default function PropertyDetailPage() {
         }
 
         setManagedLocalityLinks(
-          buildManagedInternalLinks(
-            [
+          (() => {
+            const managedLinks = buildManagedInternalLinks(
+              [
+                homestay.seo_locality_focus,
+                ...(homestay.locality_tags ?? []),
+                ...(homestay.nearby_landmark_tags ?? []),
+              ],
+              4,
+            );
+
+            if (managedLinks.length >= 3) {
+              return managedLinks;
+            }
+
+            return buildNearbyLocalityLinks(
+              homestay.name,
+              homestay.address,
+              homestay.description,
               homestay.seo_locality_focus,
               ...(homestay.locality_tags ?? []),
               ...(homestay.nearby_landmark_tags ?? []),
-            ],
-            4,
-          ),
+            );
+          })(),
         );
-        setRelatedHomestays(
-          resolveItemsByIds(homestay.related_homestay_ids ?? [], homestays)
-            .filter((property) => property.slug !== homestay.slug)
-            .slice(0, 3),
-        );
-        console.log({
-          resolvedRelatedHomestays: resolveItemsByIds(
-            homestay.related_homestay_ids ?? [],
-            homestays,
-          ),
-        });
-        setRelatedBlogs(
-          resolveItemsByIds(homestay.related_blog_ids ?? [], blogs).slice(0, 3),
-        );
-        console.log({
-          homestay,
-          blogs,
+        const curatedHomestays = resolveItemsByIds(
+          homestay.related_homestay_ids ?? [],
           homestays,
-          relatedBlogIds: homestay.related_blog_ids,
-          relatedHomestayIds: homestay.related_homestay_ids,
-        });
+        )
+          .filter((property) => property.slug !== homestay.slug)
+          .slice(0, 3);
+        const curatedBlogs = resolveItemsByIds(
+          homestay.related_blog_ids ?? [],
+          blogs,
+        ).slice(0, 3);
+
+        setRelatedHomestays(
+          curatedHomestays.length > 0
+            ? curatedHomestays
+            : buildRelatedProperties(
+                {
+                  id: homestay.id,
+                  slug: homestay.slug,
+                  name: homestay.name,
+                  description: homestay.description,
+                  amenities: homestay.amenities,
+                  address: homestay.address,
+                  capacity: homestay.capacity,
+                  rooms: homestay.rooms,
+                  price_per_night: homestay.price_per_night,
+                },
+                homestays,
+              ),
+        );
+        setRelatedBlogs(
+          curatedBlogs.length > 0
+            ? curatedBlogs
+            : buildRelatedBlogsForProperty(
+                {
+                  id: homestay.id,
+                  slug: homestay.slug,
+                  name: homestay.name,
+                  description: homestay.description,
+                  amenities: homestay.amenities,
+                  address: homestay.address,
+                  capacity: homestay.capacity,
+                  rooms: homestay.rooms,
+                  price_per_night: homestay.price_per_night,
+                },
+                blogs,
+              ),
+        );
       } catch (error) {
         console.error("Error fetching related property SEO content:", error);
         if (!cancelled) {
@@ -372,6 +419,26 @@ export default function PropertyDetailPage() {
   const localityLabel =
     inferVaranasiLocality(homestay.address, homestay.name)?.label || "the ghats";
   const faqEntries = normalizeFaqEntries(homestay.faq_entries);
+  const localContext = buildPropertyLocalContext(
+    homestay.name,
+    homestay.address,
+    homestay.description,
+    homestay.seo_locality_focus,
+    ...(homestay.locality_tags ?? []),
+    ...(homestay.nearby_landmark_tags ?? []),
+  );
+  const landmarkSummary = buildLandmarkSummary([
+    ...(homestay.nearby_landmark_tags ?? []),
+    homestay.seo_locality_focus,
+  ]);
+  const contextualTravelLinks = buildAttractionLinks(
+    homestay.name,
+    homestay.address,
+    homestay.description,
+    homestay.seo_locality_focus,
+    ...(homestay.locality_tags ?? []),
+    ...(homestay.nearby_landmark_tags ?? []),
+  );
 
   return (
     <div style={{ minHeight: '100vh', background: '#F4F7F6', fontFamily: 'inherit', display: 'flex', flexDirection: 'column' }}>
@@ -514,6 +581,10 @@ export default function PropertyDetailPage() {
               <div style={{ borderTop: '1px solid #E5ECE6', paddingTop: 16 }}>
                 <h2 style={{ fontSize: 15, fontWeight: 600, color: '#173A39', marginBottom: 8, marginTop: 0 }}>About This Stay</h2>
                 <p style={{ fontSize: 14, color: '#4F5F5B', lineHeight: 1.75, whiteSpace: 'pre-line', margin: 0 }}>{homestay.description}</p>
+                <p style={{ fontSize: 14, color: '#4F5F5B', lineHeight: 1.75, margin: '12px 0 0' }}>
+                  {localContext}
+                  {landmarkSummary ? ` Nearby landmarks and local references often associated with this stay include ${landmarkSummary}.` : ''}
+                </p>
               </div>
 
               {homestay.amenities.length > 0 && (
@@ -641,6 +712,40 @@ export default function PropertyDetailPage() {
             </h2>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
               {managedLocalityLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: "#1F8A84",
+                    textDecoration: "none",
+                    border: "1px solid #CFE1D8",
+                    borderRadius: 999,
+                    padding: "8px 14px",
+                    background: "#fff",
+                  }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {contextualTravelLinks.length > 0 && (
+          <section className="pdp-map-section" aria-labelledby="stay-guides-heading">
+            <h2
+              id="stay-guides-heading"
+              style={{ fontSize: 15, fontWeight: 600, color: "#173A39", marginBottom: 10, marginTop: 0 }}
+            >
+              Plan your stay around nearby landmarks
+            </h2>
+            <p style={{ fontSize: 14, color: "#4F5F5B", lineHeight: 1.7, marginBottom: 12 }}>
+              These nearby pages can help you compare locality-driven stay options across ghats, temple routes, and the neighborhoods most guests explore while staying in Varanasi.
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              {contextualTravelLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}

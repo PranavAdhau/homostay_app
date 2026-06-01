@@ -7,11 +7,16 @@ import api from '../lib/axios';
 import { BLOG_PLACEHOLDER_IMAGE } from '../lib/blogPlaceholder';
 import {
   applySeoMetadata,
+  buildAttractionLinks,
+  buildBlogImageAlt,
+  buildBlogInternalLinks,
   buildBlogPath,
   buildBlogSeo,
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
   buildManagedInternalLinks,
+  buildRelatedBlogLinks,
+  buildRelatedPropertiesForBlog,
   normalizeFaqEntries,
   normalizeNumericIds,
   resolveItemsByIds,
@@ -89,6 +94,7 @@ export default function BlogDetailPage() {
       'sacred-homes-breadcrumb-jsonld',
       buildBreadcrumbJsonLd([
         { name: 'Home', path: '/' },
+        { name: 'Journal', path: '/#blogs' },
         { name: blog.title, path: `/blogs/${id}` },
       ]),
     );
@@ -119,23 +125,37 @@ export default function BlogDetailPage() {
         }
 
         setManagedLocalityLinks(
-          buildManagedInternalLinks(
-            [
-              blog.featured_locality,
-              ...(blog.locality_tags ?? []),
-              ...(blog.nearby_landmark_tags ?? []),
-            ],
-            4,
-          ),
+          (() => {
+            const managedLinks = buildManagedInternalLinks(
+              [
+                blog.featured_locality,
+                ...(blog.locality_tags ?? []),
+                ...(blog.nearby_landmark_tags ?? []),
+              ],
+              4,
+            );
+
+            return managedLinks.length > 0
+              ? managedLinks
+              : buildBlogInternalLinks(blog.title, blog.content, 4);
+          })(),
         );
+        const curatedBlogs = resolveItemsByIds(blog.related_blog_ids ?? [], blogs)
+          .filter((item) => item.id !== blog.id)
+          .slice(0, 3);
+        const curatedProperties = resolveItemsByIds(
+          blog.related_homestay_ids ?? [],
+          properties,
+        ).slice(0, 3);
+
         setRelatedBlogs(
-          resolveItemsByIds(blog.related_blog_ids ?? [], blogs)
-            .filter((item) => item.id !== blog.id)
-            .slice(0, 3),
+          curatedBlogs.length > 0 ? curatedBlogs : buildRelatedBlogLinks(blog, blogs),
         );
 
         setRelatedProperties(
-          resolveItemsByIds(blog.related_homestay_ids ?? [], properties).slice(0, 3),
+          curatedProperties.length > 0
+            ? curatedProperties
+            : buildRelatedPropertiesForBlog(blog, properties),
         );
       } catch (error) {
         console.error('Error fetching related SEO content:', error);
@@ -203,6 +223,13 @@ export default function BlogDetailPage() {
     day: 'numeric',
   });
   const faqEntries = normalizeFaqEntries(blog.faq_entries);
+  const contextualTravelLinks = buildAttractionLinks(
+    blog.title,
+    blog.content,
+    blog.featured_locality,
+    ...(blog.locality_tags ?? []),
+    ...(blog.nearby_landmark_tags ?? []),
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -231,7 +258,12 @@ export default function BlogDetailPage() {
               <div className="w-full mb-8">
                 <ImageWithFallback
                   src={blog.image_url || BLOG_PLACEHOLDER_IMAGE}
-                  alt={`${blog.title} - Sacred Homes Journal cover`}
+                  alt={buildBlogImageAlt(
+                    blog.title,
+                    blog.featured_locality,
+                    ...(blog.locality_tags ?? []),
+                    ...(blog.nearby_landmark_tags ?? []),
+                  )}
                   className="w-full h-auto max-h-[500px] object-cover rounded-lg"
                   width={1600}
                   height={900}
@@ -272,6 +304,34 @@ export default function BlogDetailPage() {
                 </h2>
                 <div className="flex flex-wrap gap-3">
                   {managedLocalityLinks.map((link) => (
+                    <Link
+                      key={link.path}
+                      to={link.path}
+                      className="rounded-full border border-[#CFE1D8] px-4 py-2 text-sm text-[#1F8A84] hover:bg-[#F4F7F6]"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {contextualTravelLinks.length > 0 && (
+              <section
+                aria-labelledby="contextual-stay-links-heading"
+                className="mt-10 border-t border-[#E5ECE6] pt-6"
+              >
+                <h2
+                  id="contextual-stay-links-heading"
+                  className="text-xl font-semibold text-[#173A39] mb-3"
+                >
+                  Explore stay pages connected to this guide
+                </h2>
+                <p className="text-[#4F5F5B] leading-relaxed mb-4">
+                  These locality pages connect the travel ideas in this article with practical stay options across Varanasi, Banaras, and the neighborhoods around major ghats and temple routes.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {contextualTravelLinks.map((link) => (
                     <Link
                       key={link.path}
                       to={link.path}

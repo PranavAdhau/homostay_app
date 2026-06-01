@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import HomestayCard from './HomestayCard';
 import AnimatedSection from './AnimatedSection';
 import type { PublicHomestay } from '../lib/homestays';
@@ -10,12 +11,18 @@ type HomestaysSectionProps = {
   homestays?: PublicHomestay[] | null;
   loading?: boolean;
   emptyMessage?: string;
+  heading?: string;
+  description?: string;
+  supportingLinks?: Array<{ path: string; label: string }>;
 };
 
 function HomestaysSection({
   homestays: prefetchedHomestays,
   loading: prefetchedLoading,
   emptyMessage,
+  heading = 'Our Homestays in Varanasi',
+  description = 'Choose from our collection of Sacred Homes in Varanasi, each designed to offer calm, comfort, and an authentic Benaras experience near the ghats.',
+  supportingLinks = [],
 }: HomestaysSectionProps) {
   const [homestays, setHomestays] = useState<PublicHomestay[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +61,7 @@ function HomestaysSection({
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            Our <span className="text-[#1F8A84]">Homestays</span>
+            {heading}
           </motion.h2>
           <motion.p 
             className="text-base sm:text-xl text-[#4F5F5B] max-w-2xl mx-auto"
@@ -63,9 +70,27 @@ function HomestaysSection({
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Choose from our collection of Sacred Homes in Varanasi, 
-            each designed to offer calm, comfort, and an authentic Benaras experience near the ghats.
+            {description}
           </motion.p>
+          {supportingLinks.length > 0 ? (
+            <motion.div
+              className="mt-6 flex flex-wrap items-center justify-center gap-3"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+            >
+              {supportingLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="rounded-full border border-[#CFE1D8] bg-white px-4 py-2 text-sm font-medium text-[#1F8A84] transition-colors hover:bg-[#F8FBF9]"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </motion.div>
+          ) : null}
         </AnimatedSection>
 
         <motion.div 
@@ -117,6 +142,7 @@ function HomestaysSection({
                   capacity={homestay.capacity}
                   rooms={homestay.rooms}
                   amenities={homestay.amenities.map(a => a.name)}
+                  address={homestay.address}
                 />
               </motion.div>
             ))

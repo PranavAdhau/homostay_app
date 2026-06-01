@@ -6,6 +6,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { getAmenityIcon } from '../lib/amenityIcons';
+import { buildHomestayCardImageAlt } from '../lib/seo';
 
 interface HomestayCardProps {
   id: number;
@@ -19,11 +20,12 @@ interface HomestayCardProps {
   rooms: number;
   amenities: string[];
   isGlamping?: boolean;
+  address?: string | null;
 }
 
 export default function HomestayCard({
   id, slug, name, description, price, image,
-  rating, capacity, rooms, amenities, isGlamping = false
+  rating, capacity, rooms, amenities, isGlamping = false, address
 }: HomestayCardProps) {
   const navigate = useNavigate();
   const visibleAmenities = amenities.slice(0, 4);
@@ -51,7 +53,7 @@ export default function HomestayCard({
         >
           <ImageWithFallback
             src={image}
-            alt={name}
+            alt={buildHomestayCardImageAlt(name, address, description)}
             className="w-full h-44 sm:h-48 object-cover"
             loading="lazy"
             decoding="async"
@@ -157,7 +159,10 @@ export default function HomestayCard({
                 variant="ghost"
                 className="h-11 w-full border border-[#D8E3DE] text-[#173A39] hover:bg-[#F4F7F6]"
               >
-                <Link to={`/properties/${slug}`} aria-label={`View details for ${name}`}>
+                <Link
+                  to={`/properties/${slug}`}
+                  aria-label={`View details for ${name}, a homestay in Varanasi`}
+                >
                   Details
                 </Link>
               </Button>

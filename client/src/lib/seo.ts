@@ -2,16 +2,19 @@ import { resolveCanonicalBaseUrl } from "./apiBaseUrl";
 
 export const SEO_SITE_NAME = "Sacred Homes Varanasi";
 export const SEO_DEFAULT_TITLE =
-  "Sacred Homes Varanasi | Premium Homestays in Varanasi Near Ghats & Kashi Vishwanath";
+  "Homestays in Varanasi | Best Family & Premium Stays by Sacred Homes";
 export const SEO_DEFAULT_DESCRIPTION =
-  "Book premium homestays in Varanasi, Banaras, and Kashi with Sacred Homes near Assi Ghat, Dashashwamedh Ghat, and Kashi Vishwanath Temple for a peaceful local stay.";
+  "Discover Sacred Homes homestays in Varanasi for families, couples, and temple travelers looking for thoughtful stays near ghats, Assi, and Kashi Vishwanath.";
 export const SEO_DEFAULT_KEYWORDS =
-  "homestays in Varanasi, banaras homestays, homestay near Kashi Vishwanath temple, homestay near Dashashwamedh Ghat, homestays near Assi Ghat, family stay in Varanasi, premium homestays in Banaras, stay near Ganga Ghat, budget homestays in Varanasi, Sacred Homes Varanasi";
+  "homestays in Varanasi, best homestays in Varanasi, family homestays in Varanasi, premium homestays in Varanasi, places to stay in Varanasi, banaras homestays, stay near Kashi Vishwanath Temple, stay near Assi Ghat, Sacred Homes Varanasi";
 export const SEO_THEME_COLOR = "#1F8A84";
 export const SEO_AUTHOR = "Sacred Homes Varanasi";
 export const SEO_DEFAULT_IMAGE_PATH = "/sacred-homes-logo-circle.svg";
 export const SEO_DEFAULT_LOCALE = "en_IN";
 export const SEO_TWITTER_HANDLE = "@sacredhomes_in";
+export const SEO_ORGANIZATION_ID = "#organization";
+export const SEO_WEBSITE_ID = "#website";
+export const SEO_LODGING_ID = "#lodging-business";
 const SEO_DEBUG_ENABLED = import.meta.env.DEV;
 
 type RouteContent = {
@@ -19,17 +22,102 @@ type RouteContent = {
   description: string;
   keywords: string;
   heading: string;
+  heroEyebrow: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  heroDescription: string;
+  sectionHeading: string;
+  sectionDescription: string;
+  authorityHeading?: string;
+  authorityParagraphs?: string[];
+  introHeading?: string;
+  introParagraphs?: string[];
+  faqEntries?: SeoFaqItem[];
+  hubLinks?: Array<{ path: string; label: string }>;
+  featuredPropertySlugs?: string[];
+  featuredBlogTopics?: string[];
 };
+
+export type RouteSeoContent = RouteContent;
 
 export const LOCALITY_ROUTE_CONTENT: Record<
   string,
   RouteContent
 > = {
   "/": {
-    title: SEO_DEFAULT_TITLE,
-    description: SEO_DEFAULT_DESCRIPTION,
-    keywords: SEO_DEFAULT_KEYWORDS,
+    title:
+      "Homestays in Varanasi | Best Family & Premium Stays by Sacred Homes",
+    description:
+      "Discover Sacred Homes homestays in Varanasi for families, couples, and temple travelers looking for thoughtful stays near ghats, Assi, and Kashi Vishwanath.",
+    keywords:
+      "homestays in Varanasi, best homestays in Varanasi, family homestays in Varanasi, premium homestays in Varanasi, places to stay in Varanasi, banaras homestays, stay near Kashi Vishwanath Temple, stay near Assi Ghat, Sacred Homes Varanasi",
     heading: "Homestays in Varanasi",
+    heroEyebrow: "Sacred Homes Varanasi",
+    heroTitle: "Homestays in Varanasi for families, temple trips, and peaceful local stays",
+    heroSubtitle:
+      "Find the right Banaras stay near ghats, old-city lanes, and Kashi Vishwanath Temple.",
+    heroDescription:
+      "Sacred Homes brings together premium and family-friendly homestays in Varanasi for guests who want comfort, local guidance, and easy access to Assi Ghat, the old city, and the spiritual heart of Kashi.",
+    sectionHeading: "Explore Sacred Homes in Varanasi",
+    sectionDescription:
+      "Choose from family-friendly, premium, and centrally located Sacred Homes that make it easy to stay near ghats, temple routes, and the neighborhoods that shape a memorable Banaras trip.",
+    authorityHeading: "Where to stay in Varanasi",
+    authorityParagraphs: [
+      "The best place to stay in Varanasi depends on the kind of visit you are planning. Guests looking for sunrise walks and a slower riverside rhythm often prefer the Assi side, while travelers focused on temple access, food streets, and the old city usually benefit from staying closer to Godowlia and Kashi Vishwanath Temple.",
+      "Families and small groups often need more than just a central address. They look for space, calm, and easy movement between temple visits, ghat time, and local neighborhoods, while premium travelers often value a more peaceful stay that still keeps Banaras within easy reach.",
+      "Sacred Homes is built around these real stay patterns, helping guests choose homestays in Varanasi that feel comfortable, authentic, and well placed for everything from family travel to short spiritual trips.",
+    ],
+    introHeading: "Plan your stay with the right Varanasi locality",
+    introParagraphs: [
+      "Use the links below to explore Varanasi homestays by broad stay intent, from family stays and premium Banaras homestays to options near Assi Ghat and Kashi Vishwanath Temple.",
+    ],
+    faqEntries: [
+      {
+        question: "What is the best area to stay in Varanasi for first-time visitors?",
+        answer:
+          "Many first-time visitors choose between the Assi side for a calmer riverside experience and the old-city side for easier access to Kashi Vishwanath Temple, Dashashwamedh Ghat, and central Banaras landmarks.",
+      },
+      {
+        question: "Are Sacred Homes suitable for families visiting Varanasi?",
+        answer:
+          "Yes. Sacred Homes includes family-friendly homestays in Varanasi with more space, practical amenities, and convenient access to ghats, temples, and local neighborhoods.",
+      },
+      {
+        question: "Can I find premium homestays in Varanasi near the ghats?",
+        answer:
+          "Yes. Sacred Homes offers premium and comfortable stays near Varanasi's ghats so guests can enjoy local hospitality without giving up convenience or comfort.",
+      },
+      {
+        question: "Is it better to stay near Kashi Vishwanath Temple or Assi Ghat?",
+        answer:
+          "Temple-focused trips often benefit from a more central old-city base, while guests looking for slower mornings and riverside walks often prefer staying closer to Assi Ghat. The right choice depends on your trip priorities.",
+      },
+    ],
+    hubLinks: [
+      { path: "/varanasi-homestays", label: "Explore Varanasi homestays" },
+      { path: "/banaras-homestays", label: "Browse Banaras homestays" },
+      {
+        path: "/family-homestays-varanasi",
+        label: "See family homestays in Varanasi",
+      },
+      {
+        path: "/homestays-near-assi-ghat",
+        label: "Find stays near Assi Ghat",
+      },
+      {
+        path: "/homestays-near-kashi-vishwanath",
+        label: "View stays near Kashi Vishwanath Temple",
+      },
+    ],
+    featuredPropertySlugs: [
+      "assi-ghat-courtyard",
+      "kashi-family-retreat",
+      "old-city-courtyard-stay",
+    ],
+    featuredBlogTopics: [
+      "How to Choose the Right Homestay in Varanasi",
+      "What to Pack for a Peaceful Stay in Varanasi",
+    ],
   },
   "/homestays": {
     title: "Homestays in Varanasi | Sacred Homes Banaras Stays Near Ghats",
@@ -38,6 +126,14 @@ export const LOCALITY_ROUTE_CONTENT: Record<
     keywords:
       "homestays in Varanasi, best homestays in Varanasi, stay near ghats in Varanasi, family homestay in Varanasi, Sacred Homes Banaras",
     heading: "Homestays in Varanasi",
+    heroEyebrow: "Sacred Homes Varanasi",
+    heroTitle: "Homestays in Varanasi",
+    heroSubtitle: "Stay close to the ghats, temples, and timeless spirit of Kashi",
+    heroDescription:
+      "Discover thoughtfully designed homestays in the heart of Varanasi, blending authentic hospitality with modern comfort for a stay that feels warm, relaxing, and unforgettable.",
+    sectionHeading: "Our Homestays in Varanasi",
+    sectionDescription:
+      "Choose from Sacred Homes stays in Varanasi that balance comfort, locality, and easy access to Banaras landmarks.",
   },
   "/bookings": {
     title: "Book Your Varanasi Homestay | Sacred Homes Near Ghats & Temples",
@@ -48,20 +144,132 @@ export const LOCALITY_ROUTE_CONTENT: Record<
     heading: "Book a Homestay in Varanasi",
   },
   "/varanasi-homestays": {
-    title: "Varanasi Homestays | Premium Stays Near Ghats, Temples & Ganga",
+    title:
+      "Varanasi Homestays | Best Family, Premium & Ghat-Side Stays",
     description:
-      "Find Varanasi homestays for couples, families, and spiritual travelers near the ghats, Kashi Vishwanath Temple, and the heart of old Banaras.",
+      "Explore Varanasi homestays for families, temple travelers, and guests looking for premium stays near ghats, Assi, Godowlia, and Kashi Vishwanath Temple.",
     keywords:
-      "varanasi homestays, homestays in Varanasi, premium homestays in Varanasi, stay near Ganga Ghat, family stay in Varanasi",
+      "varanasi homestays, homestays in Varanasi, best homestays in Varanasi, family homestays in Varanasi, premium homestays in Varanasi, places to stay in Varanasi, stay near Ganga Ghat",
     heading: "Varanasi Homestays",
+    heroEyebrow: "Varanasi stay guide",
+    heroTitle: "Varanasi homestays for family trips, premium stays, and temple access",
+    heroSubtitle:
+      "Compare broad stay options across Assi, central Banaras, and neighborhoods near Kashi Vishwanath Temple.",
+    heroDescription:
+      "This pillar page brings together Sacred Homes in Varanasi for guests who want the right mix of comfort, neighborhood fit, and access to ghats, temples, and old-city experiences.",
+    sectionHeading: "Compare Varanasi homestays by stay style",
+    sectionDescription:
+      "From premium family stays to calm ghat-side homes and central Banaras bases, these Varanasi homestays help different travelers find the right fit without losing access to the city's most important landmarks.",
+    authorityHeading: "How to choose among Varanasi homestays",
+    authorityParagraphs: [
+      "Varanasi homestays work best when they match the way you want to experience the city. Some guests want a calmer base near Assi Ghat, while others want to stay closer to temple routes, Dashashwamedh Ghat, or the dense energy of old Banaras.",
+      "Families often prioritize room to spread out, smoother transport, and easier movement between neighborhood stops. Premium stays in Varanasi often balance those needs with a more peaceful setting and a stronger sense of local hospitality.",
+    ],
+    introHeading: "Explore Varanasi stays by travel intent",
+    introParagraphs: [
+      "Use these routes to compare Banaras homestays by locality and stay style, especially if you are deciding between family-friendly spaces, old-city access, and stays near major ghats or temple routes.",
+    ],
+    faqEntries: [
+      {
+        question: "What are the best homestays in Varanasi for families?",
+        answer:
+          "The best family homestays in Varanasi usually offer more space, practical amenities, and easier access to both local neighborhoods and major landmarks like Assi Ghat or Kashi Vishwanath Temple.",
+      },
+      {
+        question: "Are premium homestays in Varanasi better than staying in a hotel?",
+        answer:
+          "For many guests, premium homestays in Varanasi offer a more personal and local experience, while still providing the comfort and calm that matter on family, cultural, or temple-focused trips.",
+      },
+      {
+        question: "Which Varanasi locality is best for a short stay?",
+        answer:
+          "That depends on your itinerary. Assi is often preferred for riverside mornings, while central Banaras and Godowlia work well for guests who want easier access to temples, food streets, and the old city.",
+      },
+      {
+        question: "Can I use this page to compare stays near ghats and temples?",
+        answer:
+          "Yes. This page is designed as a Varanasi homestay overview that helps guests explore family stays, premium stays, and options near ghats or Kashi Vishwanath Temple.",
+      },
+    ],
+    hubLinks: [
+      { path: "/banaras-homestays", label: "Compare Banaras homestays" },
+      {
+        path: "/family-homestays-varanasi",
+        label: "Browse family homestays in Varanasi",
+      },
+      {
+        path: "/homestays-near-assi-ghat",
+        label: "Explore homestays near Assi Ghat",
+      },
+      {
+        path: "/homestays-near-kashi-vishwanath",
+        label: "Find stays near Kashi Vishwanath Temple",
+      },
+    ],
   },
   "/banaras-homestays": {
-    title: "Banaras Homestays | Sacred Homes Stays in the Heart of Kashi",
+    title:
+      "Banaras Homestays | Local Stays Across Ghats, Temples & Old Kashi",
     description:
-      "Choose Banaras homestays with Sacred Homes for a peaceful local stay near ghats, temples, and heritage lanes in Kashi.",
+      "Choose Banaras homestays with Sacred Homes for local stays near ghats, temple routes, and the heritage neighborhoods that shape daily life in Kashi.",
     keywords:
-      "banaras homestays, premium homestays in Banaras, stay in Kashi, Banaras family stay, homestay near ghats",
+      "banaras homestays, stay in Kashi, premium homestays in Banaras, family stay in Banaras, places to stay in Banaras, homestay near ghats",
     heading: "Banaras Homestays",
+    heroEyebrow: "Banaras locality guide",
+    heroTitle: "Banaras homestays for guests who want a more local way to stay in Kashi",
+    heroSubtitle:
+      "Stay near ghats, temple routes, and the neighborhoods that define old and modern Banaras.",
+    heroDescription:
+      "This page focuses on the Banaras side of the stay experience: local rhythm, neighborhood character, and homestays that help guests stay close to the lived texture of Kashi.",
+    sectionHeading: "Stay in Banaras with more locality and context",
+    sectionDescription:
+      "Banaras homestays are ideal for guests who want more than a room. They offer a grounded way to experience ghats, lanes, temples, and neighborhood life while still choosing the stay style that fits the trip.",
+    authorityHeading: "Why Banaras homestays feel different",
+    authorityParagraphs: [
+      "The word Banaras often points to a more lived, local experience of the city. Guests choosing Banaras homestays are usually looking for a stay that feels close to the texture of Kashi, whether that means ghat-side mornings, temple-focused days, or evenings in the old city.",
+      "A Banaras homestay can still be premium, family-friendly, or centrally located. The real difference is that the stay becomes part of the locality experience instead of sitting outside it.",
+    ],
+    introHeading: "Explore Banaras stays by neighborhood and trip style",
+    introParagraphs: [
+      "Use these links to move between broad Varanasi stay options, family-focused pages, and locality pages near Assi Ghat or Kashi Vishwanath Temple.",
+    ],
+    faqEntries: [
+      {
+        question: "What is the difference between Varanasi homestays and Banaras homestays?",
+        answer:
+          "They refer to the same city, but Banaras often signals a more local, cultural, and neighborhood-led stay experience rooted in the identity of Kashi.",
+      },
+      {
+        question: "Are Banaras homestays good for family travel?",
+        answer:
+          "Yes. Many Banaras homestays work well for family trips, especially when guests want space, neighborhood character, and access to ghats, temples, and central attractions.",
+      },
+      {
+        question: "Can I find Banaras homestays near ghats and temples?",
+        answer:
+          "Yes. Sacred Homes offers stays connected to localities near major ghats, old-city landmarks, and routes used for temple visits.",
+      },
+      {
+        question: "Who should use this Banaras homestays page?",
+        answer:
+          "It is useful for guests who want a stay rooted in local Banaras character, whether they are planning a family visit, a short temple trip, or a slower cultural stay in Kashi.",
+      },
+    ],
+    hubLinks: [
+      { path: "/varanasi-homestays", label: "See all Varanasi homestays" },
+      {
+        path: "/homestays-near-assi-ghat",
+        label: "Discover Banaras stays near Assi Ghat",
+      },
+      {
+        path: "/homestays-near-kashi-vishwanath",
+        label: "See stays near Kashi Vishwanath Temple",
+      },
+      {
+        path: "/family-homestays-varanasi",
+        label: "Compare family stays in Varanasi",
+      },
+    ],
   },
   "/homestays-near-assi-ghat": {
     title: "Homestays Near Assi Ghat | Peaceful Varanasi Stays by Sacred Homes",
@@ -70,6 +278,14 @@ export const LOCALITY_ROUTE_CONTENT: Record<
     keywords:
       "homestays near Assi Ghat, stay near Assi Ghat, Varanasi homestay near ghat, Banaras riverside stay, Sacred Homes Assi Ghat",
     heading: "Homestays Near Assi Ghat",
+    heroEyebrow: "Sacred Homes Varanasi",
+    heroTitle: "Homestays in Varanasi",
+    heroSubtitle: "Stay close to the ghats, temples, and timeless spirit of Kashi",
+    heroDescription:
+      "Discover thoughtfully designed homestays in the heart of Varanasi, blending authentic hospitality with modern comfort for a stay that feels warm, relaxing, and unforgettable.",
+    sectionHeading: "Our Homestays in Varanasi",
+    sectionDescription:
+      "Choose from Sacred Homes stays in Varanasi that balance comfort, locality, and easy access to Banaras landmarks.",
   },
   "/homestays-near-kashi-vishwanath": {
     title: "Homestay Near Kashi Vishwanath Temple | Sacred Homes Varanasi",
@@ -78,6 +294,14 @@ export const LOCALITY_ROUTE_CONTENT: Record<
     keywords:
       "homestay near Kashi Vishwanath temple, stay near Kashi Vishwanath, Kashi homestay, Banaras temple stay, Varanasi spiritual stay",
     heading: "Homestays Near Kashi Vishwanath Temple",
+    heroEyebrow: "Sacred Homes Varanasi",
+    heroTitle: "Homestays in Varanasi",
+    heroSubtitle: "Stay close to the ghats, temples, and timeless spirit of Kashi",
+    heroDescription:
+      "Discover thoughtfully designed homestays in the heart of Varanasi, blending authentic hospitality with modern comfort for a stay that feels warm, relaxing, and unforgettable.",
+    sectionHeading: "Our Homestays in Varanasi",
+    sectionDescription:
+      "Choose from Sacred Homes stays in Varanasi that balance comfort, locality, and easy access to Banaras landmarks.",
   },
   "/homestays-near-dashashwamedh-ghat": {
     title: "Homestays Near Dashashwamedh Ghat | Sacred Homes Banaras Stays",
@@ -86,6 +310,14 @@ export const LOCALITY_ROUTE_CONTENT: Record<
     keywords:
       "homestay near Dashashwamedh Ghat, stay near Ganga Aarti, Dashashwamedh Ghat stay, Banaras homestays, Sacred Homes Varanasi",
     heading: "Homestays Near Dashashwamedh Ghat",
+    heroEyebrow: "Sacred Homes Varanasi",
+    heroTitle: "Homestays in Varanasi",
+    heroSubtitle: "Stay close to the ghats, temples, and timeless spirit of Kashi",
+    heroDescription:
+      "Discover thoughtfully designed homestays in the heart of Varanasi, blending authentic hospitality with modern comfort for a stay that feels warm, relaxing, and unforgettable.",
+    sectionHeading: "Our Homestays in Varanasi",
+    sectionDescription:
+      "Choose from Sacred Homes stays in Varanasi that balance comfort, locality, and easy access to Banaras landmarks.",
   },
   "/family-homestays-varanasi": {
     title: "Family Homestays in Varanasi | Comfortable Sacred Homes Stays",
@@ -94,6 +326,14 @@ export const LOCALITY_ROUTE_CONTENT: Record<
     keywords:
       "family homestays in Varanasi, family stay in Varanasi, Banaras family homestay, premium family stay near ghats, Sacred Homes",
     heading: "Family Homestays in Varanasi",
+    heroEyebrow: "Sacred Homes Varanasi",
+    heroTitle: "Homestays in Varanasi",
+    heroSubtitle: "Stay close to the ghats, temples, and timeless spirit of Kashi",
+    heroDescription:
+      "Discover thoughtfully designed homestays in the heart of Varanasi, blending authentic hospitality with modern comfort for a stay that feels warm, relaxing, and unforgettable.",
+    sectionHeading: "Our Homestays in Varanasi",
+    sectionDescription:
+      "Choose from Sacred Homes stays in Varanasi that balance comfort, locality, and easy access to Banaras landmarks.",
   },
   "/budget-homestays-banaras": {
     title: "Budget Homestays in Banaras | Value Stays by Sacred Homes Varanasi",
@@ -102,6 +342,14 @@ export const LOCALITY_ROUTE_CONTENT: Record<
     keywords:
       "budget homestays in Banaras, budget homestays in Varanasi, affordable stay near ghats, Banaras budget stay, Sacred Homes",
     heading: "Budget Homestays in Banaras",
+    heroEyebrow: "Sacred Homes Varanasi",
+    heroTitle: "Homestays in Varanasi",
+    heroSubtitle: "Stay close to the ghats, temples, and timeless spirit of Kashi",
+    heroDescription:
+      "Discover thoughtfully designed homestays in the heart of Varanasi, blending authentic hospitality with modern comfort for a stay that feels warm, relaxing, and unforgettable.",
+    sectionHeading: "Our Homestays in Varanasi",
+    sectionDescription:
+      "Choose from Sacred Homes stays in Varanasi that balance comfort, locality, and easy access to Banaras landmarks.",
   },
 };
 
@@ -119,12 +367,12 @@ export const SEO_INTERNAL_LINKS: SeoInternalLink[] = [
   {
     path: "/varanasi-homestays",
     label: "Varanasi homestays",
-    matchTerms: ["varanasi", "homestay", "stay", "ghat"],
+    matchTerms: ["varanasi", "homestay", "stay", "ghat", "places to stay", "premium", "commercial"],
   },
   {
     path: "/banaras-homestays",
     label: "Banaras homestays",
-    matchTerms: ["banaras", "kashi", "heritage", "old city"],
+    matchTerms: ["banaras", "kashi", "heritage", "old city", "local", "lanes"],
   },
   {
     path: "/homestays-near-assi-ghat",
@@ -144,7 +392,7 @@ export const SEO_INTERNAL_LINKS: SeoInternalLink[] = [
   {
     path: "/family-homestays-varanasi",
     label: "family homestays in Varanasi",
-    matchTerms: ["family", "kids", "group", "parents"],
+    matchTerms: ["family", "kids", "group", "parents", "spacious", "elderly"],
   },
   {
     path: "/budget-homestays-banaras",
@@ -209,6 +457,10 @@ function warnSeoIssue(key: string, message: string) {
 
 export function buildAbsoluteUrl(path: string) {
   return new URL(path, `${resolveCanonicalBaseUrl()}/`).toString();
+}
+
+export function buildEntityId(fragment: string) {
+  return buildAbsoluteUrl(fragment);
 }
 
 export function isDynamicSeoRoute(pathname: string) {
@@ -408,6 +660,15 @@ export function normalizeFaqEntries(faqEntries?: Array<SeoFaqItem | null | undef
           faqEntry?.answer?.trim(),
       ),
   );
+}
+
+export function getRouteSeoContent(pathname: string) {
+  const canonicalPath = normalizeCanonicalPath(pathname);
+  return LOCALITY_ROUTE_CONTENT[canonicalPath] ?? LOCALITY_ROUTE_CONTENT["/"];
+}
+
+export function buildRouteFaqJsonLd(pathname: string) {
+  return buildFaqJsonLd(getRouteSeoContent(pathname).faqEntries ?? []);
 }
 
 /**
@@ -629,6 +890,49 @@ export function buildAttractionLinks(...parts: Array<string | null | undefined>)
   ).slice(0, 3);
 }
 
+export function buildPropertyLocalContext(
+  propertyName: string,
+  ...parts: Array<string | null | undefined>
+) {
+  const locality = inferVaranasiLocality(propertyName, ...parts);
+  if (!locality) {
+    return `This Sacred Homes property gives guests a grounded Varanasi base with local guidance, neighborhood context, and easy access to the city's cultural rhythm.`;
+  }
+
+  if (locality.label === "Assi Ghat") {
+    return `${propertyName} suits guests who want to stay close to Assi Ghat, slower riverside mornings, and a neighborhood rhythm that feels relaxed while still connected to the wider city.`;
+  }
+
+  if (locality.label === "Kashi Vishwanath Temple") {
+    return `${propertyName} works well for travelers who want to stay with easier access to Kashi Vishwanath Temple, old-city routes, and the central landmarks that shape a short spiritual visit.`;
+  }
+
+  if (locality.label === "Dashashwamedh Ghat") {
+    return `${propertyName} is especially relevant for guests planning time around Dashashwamedh Ghat, Ganga Aarti routes, and the busiest heritage stretches of Banaras.`;
+  }
+
+  if (locality.label === "old Banaras") {
+    return `${propertyName} is a strong fit for guests who want to stay close to old Banaras, heritage lanes, and neighborhoods that make it easier to explore Godowlia and central Kashi.`;
+  }
+
+  return `${propertyName} keeps guests connected to ${locality.label} and the wider Varanasi experience, making it easier to balance comfort with genuine neighborhood access.`;
+}
+
+export function buildLandmarkSummary(
+  landmarks: Array<string | null | undefined>,
+  maxItems = 3,
+) {
+  const normalizedLandmarks = landmarks
+    .map((landmark) => landmark?.trim())
+    .filter((landmark): landmark is string => Boolean(landmark));
+
+  if (!normalizedLandmarks.length) {
+    return null;
+  }
+
+  return normalizedLandmarks.slice(0, maxItems).join(", ");
+}
+
 export function buildRouteMetadata(pathname: string): SeoMetadata {
   const canonicalPath = normalizeCanonicalPath(pathname);
 
@@ -667,8 +971,7 @@ export function buildRouteMetadata(pathname: string): SeoMetadata {
     };
   }
 
-  const routeContent =
-    LOCALITY_ROUTE_CONTENT[canonicalPath] ?? LOCALITY_ROUTE_CONTENT["/"];
+  const routeContent = getRouteSeoContent(canonicalPath);
 
   return {
     title: routeContent.title,
@@ -695,8 +998,7 @@ export function buildBreadcrumbJsonLd(
 
 export function buildWebPageJsonLd(pathname: string) {
   const canonicalPath = normalizeCanonicalPath(pathname);
-  const routeContent =
-    LOCALITY_ROUTE_CONTENT[canonicalPath] ?? LOCALITY_ROUTE_CONTENT["/"];
+  const routeContent = getRouteSeoContent(canonicalPath);
 
   return {
     "@context": "https://schema.org",
@@ -710,14 +1012,15 @@ export function buildWebPageJsonLd(pathname: string) {
     inLanguage: "en-IN",
     about: [
       "Homestays in Varanasi",
-      "Banaras stays",
+      "Best homestays in Varanasi",
+      "Family homestays in Varanasi",
+      "Banaras homestays",
+      "Places to stay in Varanasi",
       "Kashi Vishwanath Temple",
       "Ganga ghats",
     ],
     isPartOf: {
-      "@type": "WebSite",
-      name: SEO_SITE_NAME,
-      url: buildAbsoluteUrl("/"),
+      "@id": buildEntityId(SEO_WEBSITE_ID),
     },
   };
 }
@@ -768,6 +1071,26 @@ export function buildPropertyImageAlt(
   return `${propertyName} homestay in Varanasi near ${localityLabel} photo ${index + 1}`;
 }
 
+export function buildHomestayCardImageAlt(
+  propertyName: string,
+  ...parts: Array<string | null | undefined>
+) {
+  const localityLabel = inferVaranasiLocality(propertyName, ...parts)?.label;
+  return localityLabel
+    ? `${propertyName} homestay in Varanasi near ${localityLabel}`
+    : `${propertyName} homestay in Varanasi`;
+}
+
+export function buildBlogImageAlt(
+  title: string,
+  ...parts: Array<string | null | undefined>
+) {
+  const localityLabel = inferVaranasiLocality(title, ...parts)?.label;
+  return localityLabel
+    ? `${title} travel guide for ${localityLabel} in Varanasi`
+    : `${title} travel guide for Varanasi stays and local experiences`;
+}
+
 export function buildPropertySeo(input: PropertySeoInput) {
   const localityMatch = inferVaranasiLocality(input.address, input.name);
   const localityLabel = localityMatch?.label ?? "the ghats";
@@ -810,6 +1133,7 @@ export function buildPropertySeo(input: PropertySeoInput) {
     schema: {
       "@context": "https://schema.org",
       "@type": ["LodgingBusiness", "Hotel", "LocalBusiness"],
+      "@id": buildEntityId(canonicalPath),
       name: input.name,
       description,
       url: buildAbsoluteUrl(canonicalPath),
@@ -837,6 +1161,9 @@ export function buildPropertySeo(input: PropertySeoInput) {
       occupancy: {
         "@type": "QuantitativeValue",
         maxValue: input.capacity,
+      },
+      parentOrganization: {
+        "@id": buildEntityId(SEO_ORGANIZATION_ID),
       },
       amenityFeature: input.amenities.map((amenity) => ({
         "@type": "LocationFeatureSpecification",
@@ -923,6 +1250,7 @@ export function buildBlogSeo(input: BlogSeoInput) {
     schema: {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
+      "@id": buildEntityId(canonicalPath),
       headline: input.title,
       description,
       image: [buildAbsoluteUrl(imagePath)],
@@ -931,16 +1259,10 @@ export function buildBlogSeo(input: BlogSeoInput) {
       datePublished: input.publishedAt,
       dateModified: input.publishedAt,
       author: {
-        "@type": "Organization",
-        name: SEO_SITE_NAME,
+        "@id": buildEntityId(SEO_ORGANIZATION_ID),
       },
       publisher: {
-        "@type": "Organization",
-        name: SEO_SITE_NAME,
-        logo: {
-          "@type": "ImageObject",
-          url: buildAbsoluteUrl(SEO_DEFAULT_IMAGE_PATH),
-        },
+        "@id": buildEntityId(SEO_ORGANIZATION_ID),
       },
       articleSection: "Varanasi Travel",
       inLanguage: "en-IN",

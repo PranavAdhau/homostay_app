@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
 import BlogsSection from '../components/BlogsSection';
@@ -19,7 +19,13 @@ import {
   type SearchFilters,
 } from '../lib/searchFilters';
 import { useContent } from '../components/ContentProvider';
-import { LOCALITY_ROUTE_CONTENT } from '../lib/seo';
+import {
+  buildBlogPath,
+  getRouteSeoContent,
+  type RouteSeoContent,
+  LOCALITY_ROUTE_CONTENT,
+} from '../lib/seo';
+import { fetchPublicBlogs, type PublicBlog } from '../lib/publicContent';
 
 function buildHomestaySearchParams(filters: SearchFilters) {
   const params: Record<string, string> = {};
@@ -56,6 +62,7 @@ export default function Index() {
   const [appliedFilters, setAppliedFilters] = useState<SearchFilters>(DEFAULT_SEARCH_FILTERS);
   const [allHomestays, setAllHomestays] = useState<PublicHomestay[]>([]);
   const [visibleHomestays, setVisibleHomestays] = useState<PublicHomestay[]>([]);
+  const [featuredBlogs, setFeaturedBlogs] = useState<PublicBlog[]>([]);
   const [homestaysLoading, setHomestaysLoading] = useState(true);
   const [filteredHomestaysLoading, setFilteredHomestaysLoading] = useState(false);
   const { siteContent } = useContent();
@@ -82,6 +89,11 @@ export default function Index() {
 
     handleNavigation();
   }, [location, homestaysLoading]);
+
+  const routeSeoContent = useMemo<RouteSeoContent>(
+    () => getRouteSeoContent(location.pathname),
+    [location.pathname],
+  );
 
   const fetchHomestays = useCallback(async (searchFilters: SearchFilters) => {
     const response = await api.get('/homestays', {
@@ -130,6 +142,30 @@ export default function Index() {
       cancelled = true;
     };
   }, [fetchHomestays]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchBlogs = async () => {
+      try {
+        const blogs = await fetchPublicBlogs(8);
+        if (!cancelled) {
+          setFeaturedBlogs(blogs);
+        }
+      } catch (error) {
+        console.error('Error fetching featured blogs for SEO hub:', error);
+        if (!cancelled) {
+          setFeaturedBlogs([]);
+        }
+      }
+    };
+
+    fetchBlogs();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const hasAppliedFilters = useMemo(
     () => hasActiveFilters(appliedFilters),
@@ -255,11 +291,43 @@ export default function Index() {
     [allHomestays, siteContent],
   );
 
+  const featuredPropertyLinks = useMemo(() => {
+    const preferredSlugs = routeSeoContent.featuredPropertySlugs ?? [];
+    const preferred = preferredSlugs
+      .map((slug) => allHomestays.find((homestay) => homestay.slug === slug))
+      .filter((homestay): homestay is PublicHomestay => Boolean(homestay));
+
+    const fallback = allHomestays.filter(
+      (homestay) => !preferred.some((selected) => selected.slug === homestay.slug),
+    );
+
+    return [...preferred, ...fallback].slice(0, 3);
+  }, [allHomestays, routeSeoContent.featuredPropertySlugs]);
+
+  const featuredBlogLinks = useMemo(() => {
+    const preferredTopics = routeSeoContent.featuredBlogTopics ?? [];
+    const preferred = preferredTopics
+      .map((topic) => featuredBlogs.find((blog) => blog.title === topic))
+      .filter((blog): blog is PublicBlog => Boolean(blog));
+
+    const fallback = featuredBlogs.filter(
+      (blog) => !preferred.some((selected) => selected.id === blog.id),
+    );
+
+    return [...preferred, ...fallback].slice(0, 3);
+  }, [featuredBlogs, routeSeoContent.featuredBlogTopics]);
+
   return (
     <div className="min-h-screen">
       <Header />
       <div className="overflow-x-hidden">
         <Hero
+          content={{
+            eyebrow: routeSeoContent.heroEyebrow,
+            title: routeSeoContent.heroTitle,
+            subtitle: routeSeoContent.heroSubtitle,
+            description: routeSeoContent.heroDescription,
+          }}
           searchUi={{
             filters,
             validation: searchValidation,
@@ -275,7 +343,112 @@ export default function Index() {
           homestays={visibleHomestays}
           loading={homestaysLoading || filteredHomestaysLoading}
           emptyMessage={hasAppliedFilters ? 'No homestays match your search.' : undefined}
+          heading={routeSeoContent.sectionHeading}
+          description={routeSeoContent.sectionDescription}
+          supportingLinks={routeSeoContent.hubLinks}
         />
+        {(routeSeoContent.authorityParagraphs?.length || routeSeoContent.hubLinks?.length) ? (
+          <section className="bg-white py-16">
+            <div className="container mx-auto px-4">
+              <div className="mx-auto max-w-5xl rounded-[24px] border border-[#DDE7E1] bg-[#FCFDFB] px-6 py-8 shadow-[0_2px_16px_rgba(0,0,0,0.03)] sm:px-8">
+                <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div>
+                    {routeSeoContent.authorityHeading ? (
+                      <h2 className="text-3xl text-[#173A39]">{routeSeoContent.authorityHeading}</h2>
+                    ) : null}
+                    <div className="mt-4 space-y-4 text-base leading-8 text-[#4F5F5B]">
+                      {(routeSeoContent.authorityParagraphs ?? []).map((paragraph) => (
+                        <p key={paragraph}>{paragraph}</p>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-6">
+                    {routeSeoContent.introHeading ? (
+                      <div>
+                        <h3 className="text-xl font-semibold text-[#173A39]">
+                          {routeSeoContent.introHeading}
+                        </h3>
+                        <div className="mt-3 space-y-3 text-sm leading-7 text-[#4F5F5B]">
+                          {(routeSeoContent.introParagraphs ?? []).map((paragraph) => (
+                            <p key={paragraph}>{paragraph}</p>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {routeSeoContent.hubLinks?.length ? (
+                      <div>
+                        <h3 className="text-xl font-semibold text-[#173A39]">Explore stay types and localities</h3>
+                        <div className="mt-4 flex flex-wrap gap-3">
+                          {routeSeoContent.hubLinks.map((link) => (
+                            <Link
+                              key={link.path}
+                              to={link.path}
+                              className="rounded-full border border-[#CFE1D8] bg-white px-4 py-2 text-sm font-medium text-[#1F8A84] transition-colors hover:bg-[#F4F7F6]"
+                            >
+                              {link.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {(featuredPropertyLinks.length || featuredBlogLinks.length) ? (
+                      <div>
+                        <h3 className="text-xl font-semibold text-[#173A39]">Plan with key stays and guides</h3>
+                        <div className="mt-4 flex flex-wrap gap-3">
+                          {featuredPropertyLinks.map((property) => (
+                            <Link
+                              key={property.slug}
+                              to={`/properties/${property.slug}`}
+                              className="rounded-full border border-[#CFE1D8] bg-white px-4 py-2 text-sm font-medium text-[#1F8A84] transition-colors hover:bg-[#F4F7F6]"
+                            >
+                              {property.name}
+                            </Link>
+                          ))}
+                          {featuredBlogLinks.map((blog) => (
+                            <Link
+                              key={blog.id}
+                              to={buildBlogPath(blog)}
+                              className="rounded-full border border-[#CFE1D8] bg-white px-4 py-2 text-sm font-medium text-[#1F8A84] transition-colors hover:bg-[#F4F7F6]"
+                            >
+                              {blog.title}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : null}
+        {routeSeoContent.faqEntries?.length ? (
+          <section className="bg-[#F4F7F6] py-16">
+            <div className="container mx-auto px-4">
+              <div className="mx-auto max-w-4xl">
+                <div className="text-center">
+                  <h2 className="text-3xl text-[#173A39]">Frequently asked questions about staying in Varanasi</h2>
+                  <p className="mt-3 text-base leading-7 text-[#4F5F5B]">
+                    These quick answers help guests compare Varanasi homestays, Banaras neighborhoods, and the stay styles that fit family trips, premium stays, and temple-focused visits.
+                  </p>
+                </div>
+                <div className="mt-8 space-y-4">
+                  {routeSeoContent.faqEntries.map((faqEntry, index) => (
+                    <details
+                      key={`${faqEntry.question}-${index}`}
+                      className="rounded-[20px] border border-[#DDE7E1] bg-white px-5 py-4"
+                    >
+                      <summary className="cursor-pointer text-left text-base font-semibold text-[#173A39]">
+                        {faqEntry.question}
+                      </summary>
+                      <p className="mt-3 text-sm leading-7 text-[#4F5F5B]">{faqEntry.answer}</p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : null}
         <TeamSection />
         <HostPropertySection imageCandidates={hostPropertyImageCandidates} />
         <TrustSection

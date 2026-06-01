@@ -19,6 +19,12 @@ type HeroSearchUi = {
 };
 
 type HeroProps = {
+  content?: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    description: string;
+  };
   searchUi?: HeroSearchUi;
 };
 
@@ -28,7 +34,7 @@ function focusBodyFallback() {
   document.body.removeAttribute("tabindex");
 }
 
-export default function Hero({ searchUi }: HeroProps) {
+export default function Hero({ content, searchUi }: HeroProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const scrollPositionRef = useRef(0);
@@ -85,6 +91,14 @@ export default function Hero({ searchUi }: HeroProps) {
     setIsFilterOpen(false);
   };
 
+  const heroContent = content ?? {
+    eyebrow: "SACRED HOMES",
+    title: "Homestays in Varanasi",
+    subtitle: "Stay close to the ghats, temples, and timeless spirit of Kashi",
+    description:
+      "Discover thoughtfully designed homestays in the heart of Varanasi, blending authentic hospitality with modern comfort for a stay that feels warm, relaxing, and unforgettable.",
+  };
+
   return (
     <>
       <section
@@ -131,7 +145,7 @@ export default function Hero({ searchUi }: HeroProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.5 }}
               >
-                SACRED HOMES
+                {heroContent.eyebrow}
               </motion.p>
               <motion.h1
                 className="block text-4xl md:text-6xl"
@@ -139,7 +153,7 @@ export default function Hero({ searchUi }: HeroProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.7 }}
               >
-                Homestays in Varanasi
+                {heroContent.title}
               </motion.h1>
             </motion.div>
 
@@ -149,7 +163,7 @@ export default function Hero({ searchUi }: HeroProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              Stay close to the ghats, temples, and timeless spirit of Kashi
+              {heroContent.subtitle}
             </motion.h2>
             <motion.p
               className="mx-auto mb-8 max-w-3xl text-base text-[#F8F8F8] md:text-lg"
@@ -157,7 +171,7 @@ export default function Hero({ searchUi }: HeroProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
             >
-              Discover thoughtfully designed homestays in the heart of Varanasi, blending authentic hospitality with modern comfort for a stay that feels warm, relaxing, and unforgettable.
+              {heroContent.description}
             </motion.p>
 
             <motion.div
