@@ -122,8 +122,7 @@ export default function TrustSection({
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            Every stay quietly contributes to something meaningful — making your
-            experience feel just a little more special.
+            Every stay reflects more than a booking — it reflects local care, thoughtful hosting, and a more grounded way to experience Varanasi.
           </motion.p>
         </AnimatedSection>
 
@@ -184,13 +183,11 @@ export default function TrustSection({
             <div className="mt-6 h-px w-24 bg-[#B9CDC3]" />
 
             <p className="mt-6 max-w-xl text-lg leading-8 text-[#4F5F5B]">
-              When you choose to stay with us, you're also supporting local communities,
-              mindful living, and small initiatives that make a quiet difference.
+              Sacred Homes is built around real neighborhood familiarity, guest comfort, and a hosting style that helps visitors understand where they are staying, not just where they are sleeping.
             </p>
 
             <p className="mt-4 max-w-xl text-base leading-7 text-[#6F7B76]">
-              It’s not something you have to think about — just enjoy your stay knowing
-              it’s part of something positive.
+              That means practical guidance around local areas, more confidence for family and temple-focused trips, and stays that feel authentic to Banaras without turning into generic hospitality copy.
             </p>
 
             {showImpactMetrics && (

@@ -55,7 +55,7 @@ export default function TeamSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            The people behind Sacred Homes — passionate locals who will make your Varanasi stay unforgettable.
+            The people behind Sacred Homes are local hosts who understand how different parts of Varanasi feel in practice, from quieter stays near Assi Ghat to more central routes for temple visits, families, and first-time guests.
           </motion.p>
         </AnimatedSection>
 
@@ -100,6 +100,9 @@ export default function TeamSection() {
 
                 <p className="mt-3.5 text-[13px] leading-[1.65] text-[#4F5F5B] line-clamp-3 min-h-[3.6rem] flex-1">
                   {host.description || host.bio}
+                </p>
+                <p className="mt-3 text-[12px] leading-[1.7] text-[#73867A]">
+                  Guests can rely on practical local guidance, neighborhood familiarity, and support shaped by real hosting experience in Banaras.
                 </p>
 
                 <div className="mt-4 pt-4 border-t border-[#F0F5F1] w-full flex items-center justify-center gap-4">
