@@ -1,5 +1,5 @@
 class Admin::Api::V1::BookingsController < Admin::Api::V1::BaseController
-  before_action :set_booking, only: [:show, :update, :approve, :reject, :confirm]
+  before_action :set_booking, only: [:show, :update, :approve, :reject, :preflight]
 
   def index
     bookings = Booking.includes(:homestay).order(created_at: :desc)
@@ -34,19 +34,31 @@ class Admin::Api::V1::BookingsController < Admin::Api::V1::BaseController
     end
   end
 
+  def preflight
+    service = BookingLifecycle::VerifyBookingAction.new(@booking, action_name: params[:action_name])
+
+    if service.call
+      render_success(
+        data: {
+          id: @booking.id,
+          action_name: params[:action_name]
+        },
+        message: "Inventory verification completed successfully."
+      )
+    else
+      render_error(
+        message: service.error_message || "Unable to verify this booking right now. Please try again.",
+        errors: @booking.errors.full_messages,
+        status: service.status || :unprocessable_entity
+      )
+    end
+  end
+
   def reject
     if @booking.reject!
       render_success(data: serialize_booking(@booking), message: "Booking rejected successfully")
     else
       render_error(message: "Failed to reject booking", errors: @booking.errors.full_messages)
-    end
-  end
-
-  def confirm
-    if @booking.confirm!
-      render_success(data: serialize_booking(@booking), message: "Booking confirmed successfully")
-    else
-      render_error(message: "Failed to confirm booking", errors: @booking.errors.full_messages)
     end
   end
 

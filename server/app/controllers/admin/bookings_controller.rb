@@ -1,5 +1,5 @@
 class Admin::BookingsController < Admin::BaseController
-  before_action :set_booking, only: [:show, :update, :approve, :reject, :confirm]
+  before_action :set_booking, only: [:show, :update, :approve, :reject]
 
   def index
     @bookings = Booking.includes(:homestay).order(created_at: :desc)
@@ -28,14 +28,6 @@ class Admin::BookingsController < Admin::BaseController
   def reject
     if @booking.reject!
       redirect_to admin_booking_path(@booking), notice: 'Booking was successfully rejected.'
-    else
-      redirect_to admin_booking_path(@booking), alert: @booking.errors.full_messages.join(', ')
-    end
-  end
-
-  def confirm
-    if @booking.confirm!
-      redirect_to admin_booking_path(@booking), notice: 'Booking was successfully confirmed.'
     else
       redirect_to admin_booking_path(@booking), alert: @booking.errors.full_messages.join(', ')
     end

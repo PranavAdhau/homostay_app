@@ -10,16 +10,19 @@ class Booking < ApplicationRecord
   # ----------------------------
 
   validates :guest_name, presence: true
-  validates :guest_email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :guest_email, presence: true, length: { maximum: 254 }, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :guest_phone, presence: true
   validates :check_in_date, presence: true
   validates :check_out_date, presence: true
   validates :number_of_guests, presence: true, numericality: { greater_than: 0 }
   validates :total_price, presence: true, numericality: { greater_than: 0 }
 
+  before_validation :normalize_guest_contact_fields
+
   validate :must_be_future_dated
   validate :check_out_after_check_in
   validate :dates_must_be_available
+  validate :guest_phone_must_be_reasonable
 
   # ----------------------------
   # ENUMS
@@ -34,7 +37,6 @@ class Booking < ApplicationRecord
   enum :status, {
     pending: 0,
     approved: 1,
-    confirmed: 2,
     rejected: 3,
     completed: 4
   }
@@ -58,10 +60,14 @@ class Booking < ApplicationRecord
   end
 
   def finalized?
-    approved? || confirmed?
+    approved?
   end
 
   private
+
+  PHONE_ALLOWED_FORMAT = /\A[+\d\s()-]+\z/
+  PHONE_MIN_DIGITS = 7
+  PHONE_MAX_DIGITS = 15
 
   # ----------------------------
   # AVAILABILITY VALIDATION
@@ -131,5 +137,28 @@ class Booking < ApplicationRecord
 
   def notify_user_rejection
     WhatsappUserRejectionJob.perform_later(self)
+  end
+
+  def normalize_guest_contact_fields
+    self.guest_email = guest_email.to_s.strip.downcase.presence
+    self.guest_phone = guest_phone.to_s.strip.presence
+  end
+
+  def guest_phone_must_be_reasonable
+    return if guest_phone.blank?
+
+    unless guest_phone.match?(PHONE_ALLOWED_FORMAT)
+      errors.add(:guest_phone, "is invalid")
+      return
+    end
+
+    digits = guest_phone.gsub(/\D/, "")
+
+    if digits.length < PHONE_MIN_DIGITS || digits.length > PHONE_MAX_DIGITS
+      errors.add(:guest_phone, "is invalid")
+      return
+    end
+
+    errors.add(:guest_phone, "is invalid") if digits.chars.uniq.one?
   end
 end

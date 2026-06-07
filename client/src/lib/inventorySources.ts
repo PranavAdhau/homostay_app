@@ -12,7 +12,7 @@ export const INVENTORY_SOURCE_META: Record<InventorySourceKey, InventorySourceMe
     label: 'Website Booking',
     badgeClassName: 'bg-primary/10 text-primary border-primary/20',
     dotClassName: 'bg-primary',
-    tooltip: 'Dates blocked by an approved or confirmed booking.',
+    tooltip: 'Dates blocked by an approved booking.',
   },
   airbnb_sync: {
     label: 'Airbnb Reservation',

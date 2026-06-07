@@ -44,9 +44,9 @@ Rails.application.routes.draw do
         end
         resources :bookings, only: [:index, :show, :update] do
           member do
+            post :preflight
             patch :approve
             patch :reject
-            patch :confirm
           end
         end
         resources :amenities, only: [:index]

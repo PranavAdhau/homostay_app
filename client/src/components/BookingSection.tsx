@@ -21,6 +21,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
 import { formatINR, formatNightlyRate } from "../lib/currency";
 import { toast } from "sonner@2.0.3";
+import {
+  clearBookingContactError,
+  type BookingContactErrors,
+  validateBookingContactFields,
+} from "../lib/bookingValidation";
 
 interface Homestay {
   id: number;
@@ -49,6 +54,7 @@ export default function BookingSection() {
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+  const [contactErrors, setContactErrors] = useState<BookingContactErrors>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [availability, setAvailability] = useState<AvailabilityData | null>(
@@ -118,6 +124,12 @@ export default function BookingSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedHomestay || !checkIn || !checkOut) return;
+    const nextErrors = validateBookingContactFields({ guestEmail, guestPhone });
+    if (Object.keys(nextErrors).length > 0) {
+      setContactErrors(nextErrors);
+      toast.info("Please correct the highlighted contact details.");
+      return;
+    }
     setSubmitting(true);
     try {
       const selected = homestays.find(
@@ -146,6 +158,7 @@ export default function BookingSection() {
           setGuestName("");
           setGuestEmail("");
           setGuestPhone("");
+          setContactErrors({});
         }, 3000);
       }
     } catch (error: any) {
@@ -330,19 +343,27 @@ export default function BookingSection() {
                         id: "guestEmail",
                         label: "Email",
                         value: guestEmail,
-                        setter: setGuestEmail,
+                        setter: (value: string) => {
+                          setGuestEmail(value);
+                          setContactErrors((current) => clearBookingContactError(current, "guestEmail"));
+                        },
                         type: "email",
                         delay: 0.4,
+                        error: contactErrors.guestEmail,
                       },
                       {
                         id: "guestPhone",
                         label: "Phone",
                         value: guestPhone,
-                        setter: setGuestPhone,
+                        setter: (value: string) => {
+                          setGuestPhone(value);
+                          setContactErrors((current) => clearBookingContactError(current, "guestPhone"));
+                        },
                         type: "tel",
                         delay: 0.5,
+                        error: contactErrors.guestPhone,
                       },
-                    ].map(({ id, label, value, setter, type, delay }) => (
+                    ].map(({ id, label, value, setter, type, delay, error }) => (
                       <motion.div
                         key={id}
                         initial={{ opacity: 0, y: 30 }}
@@ -358,7 +379,11 @@ export default function BookingSection() {
                           onChange={(e) => setter(e.target.value)}
                           required
                           className="mt-2"
+                          aria-invalid={!!error}
                         />
+                        {error ? (
+                          <p className="mt-2 text-sm font-medium text-[#A65B4A]">{error}</p>
+                        ) : null}
                       </motion.div>
                     ))}
                   </div>
@@ -537,11 +562,14 @@ export default function BookingSection() {
                   <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                 </motion.div>
                 <h3 className="text-2xl mb-2 text-green-600">
-                  Booking Confirmed!
+                  Booking Request Received
                 </h3>
                 <p className="text-[#4F5F5B]">
-                  We'll contact you shortly to finalize your reservation.
+                  Your booking request has been sent successfully. Our host will review the request and contact you shortly to confirm availability and finalize your reservation.
                 </p>
+                <Button type="button" className="mt-6 w-full bg-[#1F8A84] hover:bg-[#264948]" onClick={() => setIsSubmitted(false)}>
+                  Done
+                </Button>
               </motion.div>
             </motion.div>
           )}

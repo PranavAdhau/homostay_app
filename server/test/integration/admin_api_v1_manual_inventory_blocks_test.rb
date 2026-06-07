@@ -31,7 +31,7 @@ class AdminApiV1ManualInventoryBlocksTest < ActionDispatch::IntegrationTest
     hold_booking = homestay.bookings.create!(
       guest_name: "Hold Guest",
       guest_email: "hold@example.com",
-      guest_phone: "9999999999",
+      guest_phone: "+91 9309800427",
       check_in_date: Date.new(2026, 12, 20),
       check_out_date: Date.new(2026, 12, 22),
       number_of_guests: 2,

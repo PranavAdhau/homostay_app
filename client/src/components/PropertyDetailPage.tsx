@@ -15,6 +15,11 @@ import dayjs, { Dayjs } from "dayjs";
 import { Button } from "./ui/button";
 import { formatINR } from "../lib/currency";
 import {
+  clearBookingContactError,
+  type BookingContactErrors,
+  validateBookingContactFields,
+} from "../lib/bookingValidation";
+import {
   applySeoMetadata,
   buildBreadcrumbJsonLd,
   buildBlogPath,
@@ -89,6 +94,7 @@ export default function PropertyDetailPage() {
   const [guestName, setGuestName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
+  const [contactErrors, setContactErrors] = useState<BookingContactErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [relatedHomestays, setRelatedHomestays] = useState<PublicHomestay[]>([]);
   const [relatedBlogs, setRelatedBlogs] = useState<PublicBlog[]>([]);
@@ -151,6 +157,12 @@ export default function PropertyDetailPage() {
       toast.info('Please complete the guest details before submitting.');
       return;
     }
+    const nextErrors = validateBookingContactFields({ guestEmail, guestPhone });
+    if (Object.keys(nextErrors).length > 0) {
+      setContactErrors(nextErrors);
+      toast.info('Please correct the highlighted contact details.');
+      return;
+    }
     setSubmitting(true);
     try {
       const r = await api.post('/bookings', {
@@ -162,6 +174,7 @@ export default function PropertyDetailPage() {
       });
       if (r.data.success) {
         setSuccess(true);
+        setContactErrors({});
         setTimeout(() => { setSuccess(false); navigate('/'); }, 3000);
       }
     } catch (err: any) {
@@ -542,6 +555,8 @@ export default function PropertyDetailPage() {
                 guestName={guestName} setGuestName={setGuestName}
                 guestEmail={guestEmail} setGuestEmail={setGuestEmail}
                 guestPhone={guestPhone} setGuestPhone={setGuestPhone}
+                contactErrors={contactErrors}
+                setContactErrors={setContactErrors}
                 checkIn={checkIn} setCheckIn={setCheckIn}
                 checkOut={checkOut} setCheckOut={setCheckOut}
                 nights={nights} total={total}
@@ -559,6 +574,8 @@ export default function PropertyDetailPage() {
               guestName={guestName} setGuestName={setGuestName}
               guestEmail={guestEmail} setGuestEmail={setGuestEmail}
               guestPhone={guestPhone} setGuestPhone={setGuestPhone}
+              contactErrors={contactErrors}
+              setContactErrors={setContactErrors}
               checkIn={checkIn} setCheckIn={setCheckIn}
               checkOut={checkOut} setCheckOut={setCheckOut}
               nights={nights} total={total}
@@ -762,8 +779,8 @@ export default function PropertyDetailPage() {
             <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#F4F7F6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
               <CheckCircle style={{ width: 42, height: 42, color: '#1F8A84' }} />
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#173A39', marginBottom: 8 }}>Booking Confirmed!</h2>
-            <p style={{ color: '#73867A', marginBottom: 26, fontSize: 14, lineHeight: 1.6 }}>We'll contact you shortly to finalize your reservation.</p>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#173A39', marginBottom: 8 }}>Booking Request Received</h2>
+            <p style={{ color: '#73867A', marginBottom: 26, fontSize: 14, lineHeight: 1.6 }}>Your booking request has been sent successfully. Our host will review the request and contact you shortly to confirm availability and finalize your reservation.</p>
             <button onClick={() => setSuccess(false)} style={{ width: '100%', height: 46, background: '#1F8A84', color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>Done</button>
           </div>
         </div>
@@ -781,6 +798,8 @@ interface ReservationFormProps {
   guestName: string; setGuestName: (v: string) => void;
   guestEmail: string; setGuestEmail: (v: string) => void;
   guestPhone: string; setGuestPhone: (v: string) => void;
+  contactErrors: BookingContactErrors;
+  setContactErrors: React.Dispatch<React.SetStateAction<BookingContactErrors>>;
   checkIn: string; setCheckIn: (v: string) => void;
   checkOut: string; setCheckOut: (v: string) => void;
   nights: number;
@@ -797,6 +816,7 @@ interface ReservationFormProps {
 function ReservationForm({
   homestay, guests, setGuests, guestName, setGuestName,
   guestEmail, setGuestEmail, guestPhone, setGuestPhone,
+  contactErrors, setContactErrors,
   checkIn, setCheckIn, checkOut, setCheckOut,
   nights, total, submitting, handleSubmit, availability, fieldLabel,
   calendarAlign = 'center',
@@ -851,12 +871,38 @@ function ReservationForm({
 
         <div>
           <label style={fieldLabel}>Email</label>
-          <input type="email" value={guestEmail} onChange={e => setGuestEmail(e.target.value)} required className="pdp-field pdp-input" />
+          <input
+            type="email"
+            value={guestEmail}
+            onChange={e => {
+              setGuestEmail(e.target.value);
+              setContactErrors(current => clearBookingContactError(current, 'guestEmail'));
+            }}
+            required
+            aria-invalid={!!contactErrors.guestEmail}
+            className="pdp-field pdp-input"
+          />
+          {contactErrors.guestEmail ? (
+            <p style={{ marginTop: 6, marginBottom: 0, fontSize: 12, fontWeight: 500, color: '#A65B4A' }}>{contactErrors.guestEmail}</p>
+          ) : null}
         </div>
 
         <div>
           <label style={fieldLabel}>Phone</label>
-          <input type="tel" value={guestPhone} onChange={e => setGuestPhone(e.target.value)} required className="pdp-field pdp-input" />
+          <input
+            type="tel"
+            value={guestPhone}
+            onChange={e => {
+              setGuestPhone(e.target.value);
+              setContactErrors(current => clearBookingContactError(current, 'guestPhone'));
+            }}
+            required
+            aria-invalid={!!contactErrors.guestPhone}
+            className="pdp-field pdp-input"
+          />
+          {contactErrors.guestPhone ? (
+            <p style={{ marginTop: 6, marginBottom: 0, fontSize: 12, fontWeight: 500, color: '#A65B4A' }}>{contactErrors.guestPhone}</p>
+          ) : null}
         </div>
 
         {/* ✅ Date row — each calendar is absolutely positioned inside its own wrapper */}

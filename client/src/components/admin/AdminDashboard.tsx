@@ -9,7 +9,6 @@ interface Stats {
   total_bookings: number;
   pending_bookings: number;
   approved_bookings: number;
-  confirmed_bookings: number;
   rejected_bookings: number;
   completed_bookings: number;
 }

@@ -26,13 +26,8 @@ module BookingLifecycle
     end
   end
 
-  def confirm!
-    return false unless approved?
-    update_column(:status, :confirmed)
-  end
-
   def complete!
-    return false unless approved? || confirmed?
+    return false unless approved?
 
     transaction do
       update_column(:status, :completed)

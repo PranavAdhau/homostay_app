@@ -40,7 +40,7 @@ class ApiV1HomestaysTest < ActionDispatch::IntegrationTest
     blocked.bookings.create!(
       guest_name: "Guest",
       guest_email: "guest@example.com",
-      guest_phone: "9999999999",
+      guest_phone: "+91 9309800427",
       check_in_date: base_date,
       check_out_date: base_date + 5.days,
       number_of_guests: 2,

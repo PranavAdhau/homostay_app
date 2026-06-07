@@ -169,7 +169,7 @@ def upsert_bookings!(homestays_by_name)
       check_in_date: today + 15,
       check_out_date: today + 17,
       number_of_guests: 2,
-      status: :confirmed,
+      status: :approved,
       source: :manual,
       whatsapp_message_sent: true
     },
@@ -223,7 +223,7 @@ def upsert_bookings!(homestays_by_name)
     )
     booking.save!
 
-    create_or_update_booking_slot!(booking) if booking.approved? || booking.confirmed?
+    create_or_update_booking_slot!(booking) if booking.approved?
     puts "Booking ready: #{booking.guest_name} -> #{homestay.name} (#{booking.status})"
   end
 end

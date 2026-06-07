@@ -27,7 +27,7 @@ class ManualInventoryBlockTest < ActiveSupport::TestCase
     booking = homestay.bookings.create!(
       guest_name: "Approved Guest",
       guest_email: "approved@example.com",
-      guest_phone: "9999999999",
+      guest_phone: "+91 9309800427",
       check_in_date: Date.new(2026, 10, 10),
       check_out_date: Date.new(2026, 10, 12),
       number_of_guests: 2,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Building2, Calendar, LogOut, Menu, X, Settings, NotebookText, Users, FileImage } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -7,12 +7,12 @@ import axios from 'axios';
 import { resolveAppBaseUrl } from '../../lib/apiBaseUrl';
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
   const handleLogout = async () => {
     try {
       const rootURL = resolveAppBaseUrl();
       const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
+      setSidebarOpen(false);
       await axios.delete(`${rootURL}/admin/sign_out`, {
         withCredentials: true,
         headers: token ? { 'X-CSRF-Token': token } : undefined,
@@ -20,7 +20,7 @@ export default function AdminLayout() {
       window.location.href = '/admin/sign_in';
     } catch (error) {
       console.error('Error logging out admin user:', error);
-      navigate('/admin/sign_out');
+      window.location.href = '/admin/sign_in';
     }
   };
   const menuItems = [
@@ -73,6 +73,14 @@ export default function AdminLayout() {
               </Link>
             );
           })}
+          <Button
+            variant="ghost"
+            className="lg:hidden w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-destructive"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            Logout
+          </Button>
         </nav>
         <div className="p-3 border-t border-border">
           <Button

@@ -40,7 +40,7 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
     booking = homestay.bookings.create!(
       guest_name: "First Guest",
       guest_email: "first@example.com",
-      guest_phone: "9999999999",
+      guest_phone: "+91 9309800427",
       check_in_date: Date.new(2026, 7, 10),
       check_out_date: Date.new(2026, 7, 12),
       number_of_guests: 2,
@@ -54,7 +54,7 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
         homestay_id: homestay.id,
         guest_name: "Second Guest",
         guest_email: "second@example.com",
-        guest_phone: "8888888888",
+        guest_phone: "+1 (415) 555-1234",
         check_in_date: "2026-07-10",
         check_out_date: "2026-07-12",
         number_of_guests: 2,
@@ -77,7 +77,7 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
             homestay_id: homestay.id,
             guest_name: "Sync Guest",
             guest_email: "sync@example.com",
-            guest_phone: "7777777777",
+            guest_phone: "+44 20 7946 0958",
             check_in_date: "2026-08-10",
             check_out_date: "2026-08-12",
             number_of_guests: 2,
@@ -111,7 +111,7 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
         homestay_id: homestay.id,
         guest_name: "Blocked Guest",
         guest_email: "blocked@example.com",
-        guest_phone: "8888888888",
+        guest_phone: "+61 412 345 678",
         check_in_date: "2026-08-10",
         check_out_date: "2026-08-12",
         number_of_guests: 2,
@@ -121,5 +121,63 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
 
     assert_response :conflict
     assert_equal "These dates were just booked. Please choose different dates.", parsed_response["message"]
+  end
+
+  test "rejects invalid email addresses" do
+    homestay = create_homestay!
+
+    post "/api/v1/bookings", params: {
+      booking: {
+        homestay_id: homestay.id,
+        guest_name: "Invalid Email Guest",
+        guest_email: "not-an-email",
+        guest_phone: "+91 9309800427",
+        check_in_date: "2026-08-10",
+        check_out_date: "2026-08-12",
+        number_of_guests: 2,
+        total_price: 1000
+      }
+    }
+
+    assert_response :unprocessable_entity
+    assert_equal false, parsed_response["success"]
+    assert_includes parsed_response["errors"], "Guest email is invalid"
+  end
+
+  test "accepts international phone formats and rejects obvious junk values" do
+    homestay = create_homestay!
+
+    post "/api/v1/bookings", params: {
+      booking: {
+        homestay_id: homestay.id,
+        guest_name: "International Guest",
+        guest_email: "traveler@example.com",
+        guest_phone: "+1 (415) 555-1234",
+        check_in_date: "2026-08-10",
+        check_out_date: "2026-08-12",
+        number_of_guests: 2,
+        total_price: 1000
+      }
+    }
+
+    assert_response :created
+    assert_equal true, parsed_response["success"]
+
+    post "/api/v1/bookings", params: {
+      booking: {
+        homestay_id: homestay.id,
+        guest_name: "Junk Phone Guest",
+        guest_email: "junk@example.com",
+        guest_phone: "0000000000",
+        check_in_date: "2026-08-15",
+        check_out_date: "2026-08-18",
+        number_of_guests: 2,
+        total_price: 1500
+      }
+    }
+
+    assert_response :unprocessable_entity
+    assert_equal false, parsed_response["success"]
+    assert_includes parsed_response["errors"], "Guest phone is invalid"
   end
 end

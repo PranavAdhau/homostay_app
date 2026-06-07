@@ -4,10 +4,20 @@ import { CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog';
 import api from '../../lib/adminAxios';
-import { useNavigate } from 'react-router-dom';
 import { formatINR } from '../../lib/currency';
 import { toast } from 'sonner@2.0.3';
+
 interface Booking {
   id: number;
   homestay_name: string;
@@ -21,14 +31,21 @@ interface Booking {
   status: string;
   created_at: string;
 }
+
+type BookingAction = 'approve' | 'reject';
+
 export default function BookingList() {
-  const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+  const [verifyingAction, setVerifyingAction] = useState<{ id: number; action: BookingAction } | null>(null);
+  const [confirmingAction, setConfirmingAction] = useState<{ id: number; action: BookingAction } | null>(null);
+  const [submittingAction, setSubmittingAction] = useState(false);
+
   useEffect(() => {
     fetchBookings();
   }, [statusFilter]);
+
   const fetchBookings = async () => {
     try {
       const params = statusFilter && statusFilter !== 'all'
@@ -44,30 +61,47 @@ export default function BookingList() {
       setLoading(false);
     }
   };
-  const handleApprove = async (id: number) => {
+
+  const handlePreflight = async (id: number, action: BookingAction) => {
+    setVerifyingAction({ id, action });
     try {
-      const response = await api.patch(`/bookings/${id}/approve`, {});
-      toast.success(response.data.message || 'Booking approved successfully');
-      fetchBookings();
+      const response = await api.post(`/bookings/${id}/preflight`, { action_name: action });
+      toast.success(response.data.message || 'Inventory verification completed successfully.');
+      setConfirmingAction({ id, action });
     } catch (error: any) {
-      console.error('Error approving booking:', error);
-      toast.error(error.response?.data?.message || 'Unable to approve this booking right now');
+      console.error(`Error verifying booking ${action}:`, error);
+      toast.error(error.response?.data?.message || 'Unable to verify this booking right now');
+    } finally {
+      setVerifyingAction(null);
     }
   };
-  const handleReject = async (id: number) => {
+
+  const handleActionConfirm = async () => {
+    if (!confirmingAction) return;
+
+    setSubmittingAction(true);
     try {
-      const response = await api.patch(`/bookings/${id}/reject`, {});
-      toast.success(response.data.message || 'Booking rejected successfully');
-      fetchBookings();
+      const response = await api.patch(`/bookings/${confirmingAction.id}/${confirmingAction.action}`, {});
+      toast.success(
+        response.data.message ||
+          (confirmingAction.action === 'approve' ? 'Booking approved successfully' : 'Booking rejected successfully'),
+      );
+      setConfirmingAction(null);
+      await fetchBookings();
     } catch (error: any) {
-      console.error('Error rejecting booking:', error);
-      toast.error(error.response?.data?.message || 'Unable to reject this booking right now');
+      console.error(`Error ${confirmingAction.action}ing booking:`, error);
+      toast.error(
+        error.response?.data?.message ||
+          `Unable to ${confirmingAction.action} this booking right now`,
+      );
+    } finally {
+      setSubmittingAction(false);
     }
   };
+
   const statusStyles: Record<string, string> = {
     pending: 'bg-warning/10 text-warning',
     approved: 'bg-primary/10 text-primary',
-    confirmed: 'bg-success/10 text-success',
     rejected: 'bg-destructive/10 text-destructive',
     completed: 'bg-muted text-muted-foreground',
   };
@@ -101,7 +135,6 @@ export default function BookingList() {
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="confirmed">Confirmed</SelectItem>
             <SelectItem value="rejected">Rejected</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
           </SelectContent>
@@ -145,18 +178,20 @@ export default function BookingList() {
                           <Button
                             size="sm"
                             className="bg-success hover:bg-success/90 text-success-foreground"
-                            onClick={() => handleApprove(booking.id)}
+                            onClick={() => void handlePreflight(booking.id, 'approve')}
+                            disabled={!!verifyingAction || submittingAction}
                           >
                             <CheckCircle className="h-4 w-4 mr-1.5" />
-                            Approve
+                            {verifyingAction?.id === booking.id && verifyingAction.action === 'approve' ? 'Verifying...' : 'Approve'}
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleReject(booking.id)}
+                            onClick={() => void handlePreflight(booking.id, 'reject')}
+                            disabled={!!verifyingAction || submittingAction}
                           >
                             <XCircle className="h-4 w-4 mr-1.5" />
-                            Reject
+                            {verifyingAction?.id === booking.id && verifyingAction.action === 'reject' ? 'Verifying...' : 'Reject'}
                           </Button>
                         </>
                       )}
@@ -168,6 +203,30 @@ export default function BookingList() {
           ))
         )}
       </div>
+      <AlertDialog open={!!confirmingAction} onOpenChange={(open) => !open && !submittingAction && setConfirmingAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmingAction?.action === 'approve' ? 'Approve Booking?' : 'Reject Booking?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmingAction?.action === 'approve'
+                ? 'Inventory verification completed successfully. Are you sure you want to approve this booking?'
+                : 'Inventory verification completed successfully. Are you sure you want to reject this booking?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={submittingAction}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void handleActionConfirm()} disabled={submittingAction}>
+              {submittingAction
+                ? 'Saving...'
+                : confirmingAction?.action === 'approve'
+                  ? 'Approve'
+                  : 'Reject'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -20,7 +20,7 @@ class CalendarsControllerTest < ActionDispatch::IntegrationTest
     approved = homestay.bookings.create!(
       guest_name: "Approved Guest",
       guest_email: "approved@example.com",
-      guest_phone: "9999999999",
+      guest_phone: "+91 9309800427",
       check_in_date: Date.new(2026, 6, 10),
       check_out_date: Date.new(2026, 6, 12),
       number_of_guests: 2,
@@ -32,7 +32,7 @@ class CalendarsControllerTest < ActionDispatch::IntegrationTest
     homestay.bookings.create!(
       guest_name: "Pending Guest",
       guest_email: "pending@example.com",
-      guest_phone: "8888888888",
+      guest_phone: "+1 (415) 555-1234",
       check_in_date: Date.new(2026, 6, 15),
       check_out_date: Date.new(2026, 6, 17),
       number_of_guests: 2,

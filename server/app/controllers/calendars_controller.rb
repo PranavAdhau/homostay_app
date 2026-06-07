@@ -6,7 +6,7 @@ class CalendarsController < ApplicationController
 
     bookings = homestay.bookings
                        .unscope(:order)
-                       .where(status: %i[approved confirmed])
+                       .where(status: :approved)
                        .select(:id, :homestay_id, :check_in_date, :check_out_date, :updated_at)
     manual_blocks = homestay.manual_inventory_blocks
                            .active

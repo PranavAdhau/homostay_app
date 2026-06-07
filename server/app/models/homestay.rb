@@ -101,7 +101,7 @@ class Homestay < ApplicationRecord
 
   def self.conflicting_booking_homestay_ids(check_in, check_out)
     Booking
-      .where(status: %i[approved confirmed])
+      .where(status: :approved)
       .where(
         "check_in_date < ? AND check_out_date > ?",
         check_out,
@@ -195,7 +195,7 @@ class Homestay < ApplicationRecord
   def authoritative_unavailable_dates(start_date, end_date)
     dates = []
 
-    bookings.where(status: %i[approved confirmed])
+    bookings.where(status: :approved)
             .where("check_in_date < ? AND check_out_date > ?", end_date, start_date)
             .find_each do |booking|
       dates.concat((booking.check_in_date...booking.check_out_date).to_a)

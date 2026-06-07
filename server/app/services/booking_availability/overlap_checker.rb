@@ -124,7 +124,7 @@ module BookingAvailability
 
     def finalized_booking_scope
       scope = homestay.bookings
-                      .where(status: %i[approved confirmed])
+                      .where(status: :approved)
                       .where("check_in_date < ? AND check_out_date > ?", check_out_date, check_in_date)
       scope = scope.where.not(id: booking_to_ignore.id) if booking_to_ignore&.id.present?
       scope

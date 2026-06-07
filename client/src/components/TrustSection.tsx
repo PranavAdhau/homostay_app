@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "motion/react";
+import { useMemo, useEffect, useRef, useState } from "react";
+import { motion, useInView } from "motion/react";
 import AnimatedSection from "./AnimatedSection";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { formatImpactAmount, getImpactDisplayNumber } from "../lib/impact";
+import { formatImpactAmount } from "../lib/impact";
 
 type TrustSectionProps = {
   images?: string[];
@@ -29,61 +29,31 @@ const placeholderTiles = [
   },
 ];
 
-function AnimatedImpactValue({
-  value,
-  suffix,
-  decimals,
-}: {
-  value: number;
-  suffix: string;
-  decimals: number;
-}) {
-  const ref = useRef<HTMLSpanElement | null>(null);
-  const [displayValue, setDisplayValue] = useState(0);
+function useCountUp(target: number, duration = 3200, trigger: boolean) {
+  const [current, setCurrent] = useState(0);
+  const hasRun = useRef(false);
 
   useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
+    if (!trigger || hasRun.current) return;
+    hasRun.current = true;
 
-    let frame = 0;
-    let started = false;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (!entry?.isIntersecting || started) return;
-        started = true;
-        const duration = 1200;
-        const start = performance.now();
-
-        const tick = (timestamp: number) => {
-          const progress = Math.min((timestamp - start) / duration, 1);
-          const eased = 1 - Math.pow(1 - progress, 3);
-          setDisplayValue(value * eased);
-          if (progress < 1) {
-            frame = window.requestAnimationFrame(tick);
-          }
-        };
-
-        frame = window.requestAnimationFrame(tick);
-      },
-      { threshold: 0.35 },
-    );
-
-    observer.observe(element);
-
-    return () => {
-      observer.disconnect();
-      if (frame) window.cancelAnimationFrame(frame);
+    const startTime = performance.now();
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCurrent(Math.floor(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
     };
-  }, [value]);
+    requestAnimationFrame(step);
+  }, [trigger, target, duration]);
 
-  return (
-    <span ref={ref}>
-      {displayValue.toFixed(decimals)}
-      {suffix}
-    </span>
-  );
+  return current;
+}
+
+function formatLakhs(value: number): string {
+  const inLakhs = (value / 100000).toFixed(1);
+  return `₹${inLakhs} L`;
 }
 
 export default function TrustSection({
@@ -93,34 +63,39 @@ export default function TrustSection({
 }: TrustSectionProps) {
   const galleryImages = images.slice(0, 4);
   const collageItems = Array.from({ length: 4 }, (_, index) => galleryImages[index] ?? null);
-  const amountDisplay = useMemo(
-    () => getImpactDisplayNumber(totalContributionAmount),
-    [totalContributionAmount],
-  );
   const showImpactMetrics = donationPercentage != null || totalContributionAmount != null;
+  const reinvestedDisplay = useMemo(
+    () => (donationPercentage != null ? `${Math.round(donationPercentage)}%` : "0%"),
+    [donationPercentage],
+  );
+
+  const cardRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(cardRef, { once: true, margin: "-80px" });
+  const rawTotal = totalContributionAmount ?? 0;
+  const animatedValue = useCountUp(rawTotal, 3200, isInView);
 
   return (
-    <section className="h-auto bg-white py-20">
-      <div className="mx-auto h-auto max-w-7xl px-4 sm:px-6">
-        
+    <section className="bg-white py-20 sm:py-28">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+
         {/* HEADING SECTION */}
-        <AnimatedSection className="mb-12 text-center">
+        <AnimatedSection className="mb-14 sm:mb-16 text-center">
           <motion.h2
-            className="text-3xl sm:text-4xl mb-4"
-            initial={{ opacity: 0, y: 30 }}
+            className="text-3xl sm:text-4xl mb-3"
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.55 }}
           >
             A Little More Than <span className="text-[#1F8A84]">Just a Stay</span>
           </motion.h2>
 
           <motion.p
-            className="text-base sm:text-xl text-[#4F5F5B] max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
+            className="text-base sm:text-lg text-[#4F5F5B] max-w-xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.15 }}
+            transition={{ duration: 0.55, delay: 0.12 }}
           >
             Every stay quietly contributes to something meaningful — making your
             experience feel just a little more special.
@@ -128,100 +103,115 @@ export default function TrustSection({
         </AnimatedSection>
 
         {/* MAIN GRID */}
-        <div className="grid items-center gap-10 md:grid-cols-2">
-          
-          {/* IMAGE GRID */}
+        <div className="grid items-center gap-10 lg:gap-16 lg:grid-cols-2">
+
+          {/* IMAGE COLLAGE */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6 }}
-            className="grid grid-cols-2 gap-4"
+            className="grid grid-cols-2 gap-2.5 sm:gap-3"
           >
             {collageItems.map((image, index) => {
               const placeholder = placeholderTiles[index];
-              const heightClassName = index % 2 === 0 ? "aspect-[0.9]" : "aspect-[0.78]";
+              const heightClass = index % 2 === 0 ? "aspect-[0.88]" : "aspect-[0.76]";
 
               return (
-                <div
+                <motion.div
                   key={`trust-tile-${index}`}
-                  className={`overflow-hidden rounded-[1.75rem] shadow-[0_18px_40px_rgba(23,58,57,0.10)] ${heightClassName}`}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.07 }}
+                  className={`overflow-hidden rounded-xl sm:rounded-2xl shadow-[0_2px_12px_rgba(23,58,57,0.06)] ${heightClass}`}
                 >
                   {image ? (
                     <ImageWithFallback
                       src={image}
                       alt={placeholder.title}
                       loading="lazy"
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
                     />
                   ) : (
                     <div
                       className={`flex h-full w-full items-end p-5 ${placeholder.className}`}
                       aria-hidden="true"
                     >
-                      <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#2E5756]">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#2E5756]">
                         {placeholder.title}
                       </span>
                     </div>
                   )}
-                </div>
+                </motion.div>
               );
             })}
           </motion.div>
 
           {/* TEXT CONTENT */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-left"
           >
-            <h2 className="text-4xl font-semibold leading-tight text-[#173A39]">
-              Stays That Feel Good, Inside and Out
+            <h2 className="text-3xl sm:text-[2.1rem] font-semibold leading-tight text-[#173A39]">
+              Your Stay Supports Something Meaningful
             </h2>
 
-            <div className="mt-6 h-px w-24 bg-[#B9CDC3]" />
+            <div className="mt-5 h-px w-12 bg-[#C8D9D3]" />
 
-            <p className="mt-6 max-w-xl text-lg leading-8 text-[#4F5F5B]">
+            <p className="mt-6 text-base leading-8 text-[#4F5F5B]">
               When you choose to stay with us, you're also supporting local communities,
               mindful living, and small initiatives that make a quiet difference.
             </p>
 
-            <p className="mt-4 max-w-xl text-base leading-7 text-[#6F7B76]">
-              It’s not something you have to think about — just enjoy your stay knowing
-              it’s part of something positive.
+            <p className="mt-3 text-sm leading-7 text-[#7A8C87]">
+              It's not something you have to think about — just enjoy your stay knowing
+              it's part of something positive.
             </p>
 
             {showImpactMetrics && (
-              <div className="mt-8 rounded-[1.5rem] border border-[#D8E5DF] bg-[#F8FBF9] p-6 shadow-[0_18px_32px_rgba(23,58,57,0.06)]">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5F7A73]">
-                  Impact Highlight
+              <motion.div
+                ref={cardRef}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="mt-8 rounded-xl border border-[#EAF0ED] px-5 py-5"
+              >
+                {/* IMPACT LABEL */}
+                <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#A8BDB6]">
+                  Impact
                 </p>
-                <p className="mt-3 text-lg leading-8 text-[#173A39]">
-                  We&apos;ve contributed over{" "}
-                  <span className="font-semibold text-[#1F8A84]">
-                    <AnimatedImpactValue
-                      value={amountDisplay.value}
-                      suffix={amountDisplay.suffix}
-                      decimals={amountDisplay.decimals}
-                    />
-                  </span>{" "}
-                  towards community initiatives and sustainable hospitality.
-                </p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl bg-white px-4 py-4">
-                    <p className="text-xs uppercase tracking-[0.16em] text-[#6F7B76]">Total Contribution</p>
-                    <p className="mt-2 text-2xl font-semibold text-[#173A39]">{formatImpactAmount(totalContributionAmount)}</p>
-                  </div>
-                  <div className="rounded-2xl bg-white px-4 py-4">
-                    <p className="text-xs uppercase tracking-[0.16em] text-[#6F7B76]">Revenue Reinvested</p>
-                    <p className="mt-2 text-2xl font-semibold text-[#173A39]">
-                      <AnimatedImpactValue value={donationPercentage ?? 0} suffix="%" decimals={0} />
-                    </p>
-                  </div>
+
+                {/* COUNTER */}
+                <div className="mt-3.5 flex flex-wrap items-baseline gap-2">
+                  <span className="text-[2rem] font-semibold tracking-[-0.03em] text-[#1F8A84] leading-none tabular-nums">
+                    {formatLakhs(animatedValue)}
+                  </span>
+                  <span className="text-xs text-[#A8BDB6] tracking-wide">contributed so far</span>
                 </div>
-              </div>
+
+                <p className="mt-2 text-sm leading-6 text-[#7A8C87]">
+                  A portion of every stay helps support local communities and meaningful
+                  initiatives around us.
+                </p>
+
+                {/* DIVIDER */}
+                <div className="mt-4 h-px bg-[#EAF0ED]" />
+
+                {/* REINVESTED STAT */}
+                <div className="mt-4 flex items-center gap-3">
+                  <span className="text-lg font-semibold text-[#173A39] tabular-nums">
+                    {reinvestedDisplay}
+                  </span>
+                  <span className="text-xs text-[#7A8C87] leading-5">
+                    of revenue reinvested into community-focused initiatives
+                  </span>
+                </div>
+              </motion.div>
             )}
           </motion.div>
 

@@ -5,7 +5,7 @@ module InventoryCalendarSerialization
     "booking" => {
       label: "Website Booking",
       badge_color: "bg-primary/10 text-primary",
-      tooltip: "Dates blocked by an approved or confirmed booking."
+      tooltip: "Dates blocked by an approved booking."
     },
     "airbnb_sync" => {
       label: "Airbnb Reservation",
@@ -23,7 +23,7 @@ module InventoryCalendarSerialization
 
   def serialize_calendar_inventory(homestay, start_date, end_date)
     events = []
-    homestay.bookings.where(status: %i[approved confirmed])
+    homestay.bookings.where(status: :approved)
             .where("check_in_date < ? AND check_out_date > ?", end_date, start_date)
             .order(:check_in_date)
             .each do |booking|
