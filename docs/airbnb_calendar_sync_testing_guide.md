@@ -97,7 +97,7 @@ In Airbnb:
 
 1. In the platform admin or public booking flow, create a **new booking** for that homestay:
    - Ensure the dates are in the future.
-2. Confirm the booking is **approved/confirmed** so it appears in the export feed.
+2. Confirm the booking is **approved** so it appears in the export feed.
 
 **Expected result:**
 
@@ -416,7 +416,7 @@ You **do not** need to repeat these steps unless you change your listing or doma
    - Confirm it matches `https://your-real-domain.com/calendars/:homestay_id.ics`.
 3. Confirm the platform ICS is valid:
    - Open the URL in a browser and ensure you see `BEGIN:VCALENDAR` and `VEVENT` entries.
-4. Verify that bookings exist on those dates in the platform and are **approved/confirmed**.
+4. Verify that bookings exist on those dates in the platform and are **approved**.
 
 ---
 

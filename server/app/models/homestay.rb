@@ -8,6 +8,7 @@ class Homestay < ApplicationRecord
   has_many :reservation_holds, dependent: :destroy
   has_many :homestay_amenities, dependent: :destroy
   has_many :amenities, through: :homestay_amenities
+  has_many :slug_redirects, class_name: "HomestaySlugRedirect", dependent: :destroy
 
   has_many_attached :images
   has_one_attached :featured_image
@@ -31,6 +32,7 @@ class Homestay < ApplicationRecord
   validate :airbnb_ical_must_be_ics
 
   before_validation :generate_slug, on: :create
+  before_validation :regenerate_slug_on_name_change, on: :update
 
   scope :active, -> { where(is_active: true) }
   scope :with_min_capacity, lambda { |guests|
@@ -180,16 +182,38 @@ class Homestay < ApplicationRecord
   def generate_slug
     return if slug.present?
 
-    base_slug = name.parameterize
+    self.slug = unique_slug_for(name.parameterize)
+  end
+
+  def regenerate_slug_on_name_change
+    return unless will_save_change_to_name?
+    return if name.blank?
+
+    old_slug = slug_in_database
+    new_slug = unique_slug_for(name.parameterize, exclude_id: id)
+    return if new_slug == old_slug
+
+    slug_redirects.find_or_create_by!(slug: old_slug) if old_slug.present?
+    self.slug = new_slug
+  end
+
+  def unique_slug_for(base_slug, exclude_id: nil)
     candidate_slug = base_slug
     counter = 1
 
-    while Homestay.exists?(slug: candidate_slug)
+    while slug_taken?(candidate_slug, exclude_id: exclude_id)
       candidate_slug = "#{base_slug}-#{counter}"
       counter += 1
     end
 
-    self.slug = candidate_slug
+    candidate_slug
+  end
+
+  def slug_taken?(candidate_slug, exclude_id: nil)
+    homestay_scope = Homestay.where(slug: candidate_slug)
+    homestay_scope = homestay_scope.where.not(id: exclude_id) if exclude_id
+
+    homestay_scope.exists? || HomestaySlugRedirect.exists?(slug: candidate_slug)
   end
 
   def authoritative_unavailable_dates(start_date, end_date)

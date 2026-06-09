@@ -87,8 +87,16 @@ class Api::V1::HomestaysController < Api::V1::BaseController
   end
 
   def set_homestay
-    @homestay = Homestay.active.find_by!(slug: params[:id]) || Homestay.active.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
+    @homestay = Homestay.active.find_by(slug: params[:id])
+    @homestay ||= HomestaySlugRedirect.find_by(slug: params[:id])&.homestay
+    @homestay = nil unless @homestay&.is_active?
+
+    if @homestay.nil? && params[:id].to_s.match?(/\A\d+\z/)
+      @homestay = Homestay.active.find_by(id: params[:id])
+    end
+
+    return if @homestay
+
     render_error(message: "Homestay not found", status: :not_found)
   end
 

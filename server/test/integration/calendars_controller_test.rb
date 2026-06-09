@@ -22,7 +22,7 @@ class CalendarsControllerTest < ActionDispatch::IntegrationTest
       guest_email: "approved@example.com",
       guest_phone: "+91 9309800427",
       check_in_date: Date.new(2026, 6, 10),
-      check_out_date: Date.new(2026, 6, 12),
+      check_out_date: Date.new(2026, 6, 13),
       number_of_guests: 2,
       total_price: 1000,
       status: :approved
@@ -84,5 +84,11 @@ class CalendarsControllerTest < ActionDispatch::IntegrationTest
 
     calendar = Icalendar::Calendar.parse(response.body).first
     assert_equal 2, calendar.events.size
+
+    booking_event = calendar.events.find { |event| event.summary == "Reserved" }
+    assert_equal Date.new(2026, 6, 10), booking_event.dtstart.to_date
+    assert_equal Date.new(2026, 6, 13), booking_event.dtend.to_date
+    assert_includes response.body, "DTSTART;VALUE=DATE:20260610"
+    assert_includes response.body, "DTEND;VALUE=DATE:20260613"
   end
 end

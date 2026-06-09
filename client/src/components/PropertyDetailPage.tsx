@@ -37,6 +37,13 @@ import { toast } from "sonner@2.0.3";
 import { useContent } from "./ContentProvider";
 import { fetchPublicBlogs, fetchPublicHomestays, type PublicBlog } from "../lib/publicContent";
 import type { PublicHomestay } from "../lib/homestays";
+import {
+  enumerateDateRange,
+  getCheckInDisabledDates,
+  getCheckoutDisabledDates,
+  getValidCheckoutDates,
+  isValidCheckout,
+} from "../lib/bookingDates";
 import "./PropertyDetailPage.css";
 
 const PropertyMap = lazy(() => import("./PropertyMap"));
@@ -825,6 +832,28 @@ function ReservationForm({
   const cardRef = useRef<HTMLDivElement>(null);
 
   const unavailableDates = availability?.unavailable_dates ?? [];
+  const availabilityRangeEnd = dayjs().add(90, "day").format("YYYY-MM-DD");
+  const checkInMin = dayjs().add(1, "day").format("YYYY-MM-DD");
+  const candidateDates = enumerateDateRange(checkInMin, availabilityRangeEnd);
+  const checkInDisabled = getCheckInDisabledDates(
+    unavailableDates,
+    availabilityRangeEnd,
+    candidateDates,
+  );
+  const validCheckoutDates = checkIn
+    ? getValidCheckoutDates(checkIn, unavailableDates, availabilityRangeEnd)
+    : [];
+  const checkoutDisabled = checkIn
+    ? getCheckoutDisabledDates(
+        checkIn,
+        unavailableDates,
+        availabilityRangeEnd,
+        candidateDates,
+      )
+    : unavailableDates;
+  const checkoutMax = validCheckoutDates.length
+    ? dayjs(validCheckoutDates[validCheckoutDates.length - 1])
+    : undefined;
 
   // ✅ Close calendar on outside click (relative to the whole card)
   useEffect(() => {
@@ -846,10 +875,6 @@ function ReservationForm({
   const checkoutMin = checkIn
     ? dayjs(checkIn).add(1, 'day')
     : dayjs().add(1, 'day');
-
-  const checkoutDisabled = checkIn
-    ? [...unavailableDates, checkIn]
-    : unavailableDates;
 
   return (
     <div className="pdp-res-card" ref={cardRef}>
@@ -935,11 +960,13 @@ function ReservationForm({
                       if (!date) { setCheckIn(''); return; }
                       const str = date.format('YYYY-MM-DD');
                       setCheckIn(str);
-                      if (checkOut && checkOut <= str) setCheckOut('');
+                      if (checkOut && !isValidCheckout(str, checkOut, unavailableDates)) {
+                        setCheckOut('');
+                      }
                     }}
                     onClose={() => setOpenCal(null)}
                     minDate={dayjs().add(1, 'day')}
-                    disabledDates={unavailableDates}
+                    disabledDates={checkInDisabled}
                   />
                 </div>
               )}
@@ -975,6 +1002,7 @@ function ReservationForm({
                     }}
                     onClose={() => setOpenCal(null)}
                     minDate={checkoutMin}
+                    maxDate={checkoutMax}
                     disabledDates={checkoutDisabled}
                     defaultCalendarMonth={checkoutMin}
                   />

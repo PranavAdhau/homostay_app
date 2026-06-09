@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Send, CheckCircle } from 'lucide-react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
@@ -44,13 +44,6 @@ export default function ContactSection() {
       title: "Location",
       value: resolvedSettings.address || fallbackSettings.address,
       subValues: null as string[] | null,
-      action: null,
-    },
-    {
-      icon: Clock,
-      title: "Check-in Hours",
-      value: null as string | null,
-      subValues: ["Check-in: 3:00 PM", "Check-out: 11:00 AM"],
       action: null,
     },
   ];

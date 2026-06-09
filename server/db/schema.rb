@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_07_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_09_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -173,6 +173,15 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_07_000000) do
     t.index ["homestay_id"], name: "index_homestay_amenities_on_homestay_id"
   end
 
+  create_table "homestay_slug_redirects", force: :cascade do |t|
+    t.bigint "homestay_id", null: false
+    t.string "slug", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["homestay_id"], name: "index_homestay_slug_redirects_on_homestay_id"
+    t.index ["slug"], name: "index_homestay_slug_redirects_on_slug", unique: true
+  end
+
   create_table "homestays", force: :cascade do |t|
     t.string "name", null: false
     t.string "slug", null: false
@@ -277,6 +286,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_07_000000) do
   add_foreign_key "external_calendar_blocks", "homestays"
   add_foreign_key "homestay_amenities", "amenities"
   add_foreign_key "homestay_amenities", "homestays"
+  add_foreign_key "homestay_slug_redirects", "homestays"
   add_foreign_key "manual_inventory_blocks", "admin_users", column: "created_by_admin_user_id"
   add_foreign_key "manual_inventory_blocks", "admin_users", column: "unlocked_by_admin_user_id"
   add_foreign_key "manual_inventory_blocks", "homestays"

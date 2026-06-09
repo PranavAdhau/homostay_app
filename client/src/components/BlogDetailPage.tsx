@@ -57,7 +57,6 @@ export default function BlogDetailPage() {
         setBlog(null);
       } finally {
         setLoading(false);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
 

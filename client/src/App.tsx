@@ -19,6 +19,7 @@ const AdminAuthGuard = lazy(() => import("./components/admin/AdminAuthGuard"));
 const SettingsPage = lazy(() => import("./components/admin/SettingsPage"));
 import { SiteSettingsProvider } from "./components/SiteSettingsProvider";
 import SeoManager from "./components/SeoManager";
+import ScrollToTop from "./components/ScrollToTop";
 import { ContentProvider } from "./components/ContentProvider";
 const HostProfilePage = lazy(() => import("./components/admin/HostProfilePage"));
 const SiteContentPage = lazy(() => import("./components/admin/SiteContentPage"));
@@ -39,6 +40,7 @@ export default function App() {
     <SiteSettingsProvider>
       <ContentProvider>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <ScrollToTop />
           <SeoManager />
           <Suspense fallback={<RouteFallback />}>
             <Routes>

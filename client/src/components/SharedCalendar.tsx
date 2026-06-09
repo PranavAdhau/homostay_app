@@ -10,6 +10,7 @@ interface SharedCalendarProps {
   onChange: (date: Dayjs | null) => void;
   onClose?: () => void;
   minDate?: Dayjs;
+  maxDate?: Dayjs;
   disabledDates?: string[];
   defaultCalendarMonth?: Dayjs;
   accentColor?: string;
@@ -44,6 +45,7 @@ export default function SharedCalendar({
   onChange,
   onClose,
   minDate,
+  maxDate,
   disabledDates = [],
   defaultCalendarMonth,
   accentColor = "#1F8A84",
@@ -77,6 +79,7 @@ export default function SharedCalendar({
           value={value ?? null}
           onChange={onChange}
           minDate={minDate ?? dayjs()}
+          maxDate={maxDate}
           shouldDisableDate={shouldDisableDate}
           defaultCalendarMonth={defaultCalendarMonth}
           views={["year", "month", "day"]}

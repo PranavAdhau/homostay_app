@@ -433,7 +433,13 @@ export default function HomestayForm() {
                     type="number"
                     min="1"
                     value={homestay.rooms}
-                    onChange={(e) => setHomestay({ ...homestay, rooms: parseInt(e.target.value, 10) || 0 })}
+                    onChange={(e) => {
+                      const parsed = parseInt(e.target.value, 10);
+                      setHomestay({
+                        ...homestay,
+                        rooms: Number.isNaN(parsed) ? homestay.rooms : parsed,
+                      });
+                    }}
                     required
                     className="mt-1.5"
                   />

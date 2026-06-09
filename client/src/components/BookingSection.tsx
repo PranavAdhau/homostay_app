@@ -26,6 +26,13 @@ import {
   type BookingContactErrors,
   validateBookingContactFields,
 } from "../lib/bookingValidation";
+import {
+  enumerateDateRange,
+  getCheckInDisabledDates,
+  getCheckoutDisabledDates,
+  getValidCheckoutDates,
+  isValidCheckout,
+} from "../lib/bookingDates";
 
 interface Homestay {
   id: number;
@@ -202,10 +209,30 @@ export default function BookingSection() {
   }, [maxGuests, guests]);
 
   const unavailableDates = availability?.unavailable_dates ?? [];
-  const checkoutMin = checkIn ? checkIn.add(1, "day") : dayjs().add(1, "day");
-  const checkoutDisabled = checkIn
-    ? [...unavailableDates, checkIn.format("YYYY-MM-DD")]
+  const availabilityRangeEnd = dayjs().add(90, "day").format("YYYY-MM-DD");
+  const checkInMin = dayjs().add(1, "day").format("YYYY-MM-DD");
+  const candidateDates = enumerateDateRange(checkInMin, availabilityRangeEnd);
+  const checkInDisabled = getCheckInDisabledDates(
+    unavailableDates,
+    availabilityRangeEnd,
+    candidateDates,
+  );
+  const checkInStr = checkIn?.format("YYYY-MM-DD");
+  const validCheckoutDates = checkInStr
+    ? getValidCheckoutDates(checkInStr, unavailableDates, availabilityRangeEnd)
+    : [];
+  const checkoutDisabled = checkInStr
+    ? getCheckoutDisabledDates(
+        checkInStr,
+        unavailableDates,
+        availabilityRangeEnd,
+        candidateDates,
+      )
     : unavailableDates;
+  const checkoutMin = checkIn ? checkIn.add(1, "day") : dayjs().add(1, "day");
+  const checkoutMax = validCheckoutDates.length
+    ? dayjs(validCheckoutDates[validCheckoutDates.length - 1])
+    : undefined;
 
   return (
     <section id="booking" className="py-20 bg-white">
@@ -417,12 +444,21 @@ export default function BookingSection() {
                             value={checkIn}
                             onChange={(date) => {
                               setCheckIn(date);
-                              if (date && checkOut && !checkOut.isAfter(date))
+                              if (
+                                date &&
+                                checkOut &&
+                                !isValidCheckout(
+                                  date.format("YYYY-MM-DD"),
+                                  checkOut.format("YYYY-MM-DD"),
+                                  unavailableDates,
+                                )
+                              ) {
                                 setCheckOut(null);
+                              }
                             }}
                             onClose={() => setCheckInOpen(false)}
                             minDate={dayjs().add(1, "day")}
-                            disabledDates={unavailableDates}
+                            disabledDates={checkInDisabled}
                           />
                         </PopoverContent>
                       </Popover>
@@ -459,6 +495,7 @@ export default function BookingSection() {
                             onChange={setCheckOut}
                             onClose={() => setCheckOutOpen(false)}
                             minDate={checkoutMin}
+                            maxDate={checkoutMax}
                             disabledDates={checkoutDisabled}
                             defaultCalendarMonth={checkoutMin}
                           />
