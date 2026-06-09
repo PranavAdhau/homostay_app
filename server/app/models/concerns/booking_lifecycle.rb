@@ -20,19 +20,25 @@ module BookingLifecycle
   def reject!
     return false unless pending? || approved?
 
+    rejected = false
     transaction do
       update_column(:status, :rejected)
       release_inventory!
+      rejected = true
     end
+    rejected
   end
 
   def complete!
     return false unless approved?
 
+    completed = false
     transaction do
       update_column(:status, :completed)
       release_inventory!
+      completed = true
     end
+    completed
   end
 
   private

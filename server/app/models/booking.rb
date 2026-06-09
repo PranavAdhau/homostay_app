@@ -80,7 +80,8 @@ class Booking < ApplicationRecord
       homestay: homestay,
       check_in_date: check_in_date,
       check_out_date: check_out_date,
-      booking_to_ignore: self
+      booking_to_ignore: self,
+      consider_holds: false
     ).conflict?
       errors.add(:base, "Selected dates are already booked")
     end

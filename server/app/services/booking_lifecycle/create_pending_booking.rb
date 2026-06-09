@@ -36,7 +36,6 @@ module BookingLifecycle
         end
 
         booking.save!
-        BookingAvailability::HoldManager.create_for_booking!(booking)
       end
 
       return false unless booking.persisted?
@@ -61,7 +60,8 @@ module BookingLifecycle
       BookingAvailability::OverlapChecker.new(
         homestay: homestay,
         check_in_date: booking.check_in_date,
-        check_out_date: booking.check_out_date
+        check_out_date: booking.check_out_date,
+        consider_holds: false
       ).conflict?
     end
 

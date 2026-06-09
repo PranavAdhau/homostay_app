@@ -58,7 +58,6 @@ class Homestay < ApplicationRecord
       .where.not(id: conflicting_external_block_homestay_ids(check_in, check_out))
       .where.not(id: conflicting_manual_block_homestay_ids(check_in, check_out))
       .where.not(id: conflicting_slot_homestay_ids(check_in, check_out))
-      .where.not(id: conflicting_hold_homestay_ids(check_in, check_out))
   }
 
   # -------------------------------------------------
@@ -71,11 +70,7 @@ class Homestay < ApplicationRecord
     requested_dates = (start_date...end_date).to_a
     unavailable_dates = authoritative_unavailable_dates(start_date, end_date)
 
-    held_dates = reservation_holds.active.overlapping(start_date, end_date).flat_map do |hold|
-      (hold.check_in_date...hold.check_out_date).to_a
-    end
-
-    requested_dates - unavailable_dates - held_dates
+    requested_dates - unavailable_dates
   end
 
   # Hour-based booking removed

@@ -35,26 +35,51 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "blocks overlapping booking requests when an active reservation hold exists" do
+  test "allows multiple overlapping pending booking requests for the same dates" do
     homestay = create_homestay!
-    booking = homestay.bookings.create!(
-      guest_name: "First Guest",
-      guest_email: "first@example.com",
-      guest_phone: "+91 9309800427",
-      check_in_date: Date.new(2026, 7, 10),
-      check_out_date: Date.new(2026, 7, 12),
+    booking_params = {
+      homestay_id: homestay.id,
+      check_in_date: "2026-07-10",
+      check_out_date: "2026-07-12",
       number_of_guests: 2,
-      total_price: 1000,
-      status: :pending
-    )
-    BookingAvailability::HoldManager.create_for_booking!(booking)
+      total_price: 1000
+    }
+
+    post "/api/v1/bookings", params: {
+      booking: booking_params.merge(
+        guest_name: "First Guest",
+        guest_email: "first@example.com",
+        guest_phone: "+91 9309800427"
+      )
+    }
+
+    assert_response :created
+    assert_equal true, parsed_response["success"]
+
+    post "/api/v1/bookings", params: {
+      booking: booking_params.merge(
+        guest_name: "Second Guest",
+        guest_email: "second@example.com",
+        guest_phone: "+1 (415) 555-1234"
+      )
+    }
+
+    assert_response :created
+    assert_equal true, parsed_response["success"]
+    assert_equal 2, homestay.bookings.pending.count
+  end
+
+  test "pending booking creation does not create availability slots or external blocks" do
+    homestay = create_homestay!
+    external_blocks_before = homestay.external_calendar_blocks.count
+    slots_before = homestay.availability_slots.count
 
     post "/api/v1/bookings", params: {
       booking: {
         homestay_id: homestay.id,
-        guest_name: "Second Guest",
-        guest_email: "second@example.com",
-        guest_phone: "+1 (415) 555-1234",
+        guest_name: "Pending Guest",
+        guest_email: "pending@example.com",
+        guest_phone: "+91 9309800427",
         check_in_date: "2026-07-10",
         check_out_date: "2026-07-12",
         number_of_guests: 2,
@@ -62,9 +87,13 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
       }
     }
 
-    assert_response :conflict
-    assert_equal false, parsed_response["success"]
-    assert_equal "These dates were just booked. Please choose different dates.", parsed_response["message"]
+    assert_response :created
+    booking = Booking.order(:id).last
+
+    assert_equal 0, booking.availability_slots.count
+    assert_equal external_blocks_before, homestay.external_calendar_blocks.reload.count
+    assert_equal slots_before, homestay.availability_slots.reload.count
+    assert_nil booking.reservation_hold
   end
 
   test "fails closed when sync enabled availability cannot be refreshed and data is stale" do

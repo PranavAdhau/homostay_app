@@ -112,4 +112,57 @@ class AdminApiV1BookingsTest < ActionDispatch::IntegrationTest
     assert_equal "We couldn’t refresh availability right now. Please try again.", parsed_response["message"]
     assert_equal "pending", pending_booking.reload.status
   end
+
+  test "reject succeeds when reservation hold has expired" do
+    homestay = create_homestay!
+    pending_booking = homestay.bookings.create!(
+      guest_name: "Expired Hold Guest",
+      guest_email: "expired@example.com",
+      guest_phone: "+91 9309800427",
+      check_in_date: Date.new(2026, 9, 10),
+      check_out_date: Date.new(2026, 9, 13),
+      number_of_guests: 2,
+      total_price: 1500,
+      status: :pending
+    )
+    pending_booking.create_reservation_hold!(
+      homestay: homestay,
+      check_in_date: pending_booking.check_in_date,
+      check_out_date: pending_booking.check_out_date,
+      expires_at: 10.minutes.ago,
+      token: SecureRandom.uuid
+    )
+
+    patch "/admin/api/v1/bookings/#{pending_booking.id}/reject", params: {}
+
+    assert_response :success
+    assert_equal true, parsed_response["success"]
+    assert_equal "Booking rejected successfully", parsed_response["message"]
+    assert_equal "rejected", pending_booking.reload.status
+  end
+
+  test "reject succeeds and releases active reservation hold" do
+    homestay = create_homestay!
+    pending_booking = homestay.bookings.create!(
+      guest_name: "Active Hold Guest",
+      guest_email: "active@example.com",
+      guest_phone: "+1 (415) 555-1234",
+      check_in_date: Date.new(2026, 9, 10),
+      check_out_date: Date.new(2026, 9, 13),
+      number_of_guests: 2,
+      total_price: 1500,
+      status: :pending
+    )
+    BookingAvailability::HoldManager.create_for_booking!(pending_booking)
+    hold = pending_booking.reservation_hold
+    assert hold.active?
+
+    patch "/admin/api/v1/bookings/#{pending_booking.id}/reject", params: {}
+
+    assert_response :success
+    assert_equal true, parsed_response["success"]
+    assert_equal "rejected", pending_booking.reload.status
+    assert_not hold.reload.active?
+    assert hold.released_at.present?
+  end
 end
