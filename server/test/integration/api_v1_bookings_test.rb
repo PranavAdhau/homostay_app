@@ -209,4 +209,27 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
     assert_equal false, parsed_response["success"]
     assert_includes parsed_response["errors"], "Guest phone is invalid"
   end
+
+  test "booking creation enqueues host and guest whatsapp jobs" do
+    homestay = create_homestay!
+
+    assert_enqueued_with(job: WhatsappBookingJob) do
+      assert_enqueued_with(job: WhatsappGuestAcknowledgementJob) do
+        post "/api/v1/bookings", params: {
+          booking: {
+            homestay_id: homestay.id,
+            guest_name: "WhatsApp Guest",
+            guest_email: "whatsapp@example.com",
+            guest_phone: "+91 9309800427",
+            check_in_date: "2026-08-20",
+            check_out_date: "2026-08-22",
+            number_of_guests: 2,
+            total_price: 1000
+          }
+        }
+      end
+    end
+
+    assert_response :created
+  end
 end

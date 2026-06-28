@@ -4,6 +4,8 @@ Rails.application.routes.draw do
   get "/sitemap.xml", to: "sitemaps#show", defaults: { format: :xml }
 
   get "up" => "rails/health#show", as: :rails_health_check
+  get "/webhooks/whatsapp", to: "webhooks/whatsapp#verify"
+  post "/webhooks/whatsapp", to: "webhooks/whatsapp#receive"
 
   devise_for :admin_users, path: "admin", controllers: {
     sessions: 'admin_users/sessions',

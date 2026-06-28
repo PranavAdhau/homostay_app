@@ -126,16 +126,21 @@ Used directly by application code or Rails config:
 - `REDIS_URL`
 - `WHATSAPP_PHONE_NUMBER_ID`
 - `WHATSAPP_ACCESS_TOKEN`
+- `WHATSAPP_WEBHOOK_VERIFY_TOKEN`
+- `WHATSAPP_APP_SECRET`
 - `ADMIN_WHATSAPP_NUMBER`
 - `ICAL_DOMAIN`
 - `SEED_ADMIN_EMAIL`
 - `SEED_ADMIN_PASSWORD`
 
+Used by WhatsApp webhook validation when configured:
+
+- `WHATSAPP_BUSINESS_ACCOUNT_ID`
+
 Only present in commented code or comments, not required by current running config:
 
 - `GMAIL_USERNAME`
 - `GMAIL_APP_PASSWORD`
-- `WHATSAPP_BUSINESS_ACCOUNT_ID`
 
 ### Client variables
 

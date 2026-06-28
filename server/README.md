@@ -5,8 +5,23 @@ This README documents key configuration required for external services.
 ## WhatsApp Business Cloud API
 
 The app sends WhatsApp notifications via the Meta WhatsApp Business Cloud API
-from background jobs (`WhatsappBookingJob`, `WhatsappUserConfirmationJob`,
-`WhatsappUserRejectionJob`) through the `WhatsappService`.
+from background jobs (`WhatsappBookingJob`, `WhatsappGuestAcknowledgementJob`,
+`WhatsappUserConfirmationJob`, `WhatsappUserRejectionJob`) through the
+`WhatsappService`.
+
+Incoming Meta webhook calls are handled at:
+
+- `GET /webhooks/whatsapp` for webhook verification
+- `POST /webhooks/whatsapp` for signed inbound events
+
+The webhook flow is intentionally lightweight:
+
+1. Validate request signature and payload
+2. Enqueue `WhatsappWebhookEventJob`
+3. Return `200 OK` immediately
+
+Any parsing, duplicate suppression, and event logging happens asynchronously in
+the job layer.
 
 ### Required environment variables
 
@@ -15,6 +30,9 @@ environment):
 
 - `WHATSAPP_PHONE_NUMBER_ID` – Phone number ID from the Meta Business dashboard.
 - `WHATSAPP_ACCESS_TOKEN` – Access token used for the `Authorization: Bearer` header.
+- `WHATSAPP_BUSINESS_ACCOUNT_ID` – Expected WABA id for webhook payload validation.
+- `WHATSAPP_WEBHOOK_VERIFY_TOKEN` – Verify token used by Meta during webhook setup.
+- `WHATSAPP_APP_SECRET` – Meta app secret used for `X-Hub-Signature-256` verification.
 - `ADMIN_WHATSAPP_NUMBER` – Destination number for owner/admin booking alerts.
 
 The legacy Twilio variables (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,

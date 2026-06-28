@@ -1,82 +1,179 @@
-require 'net/http'
-require 'uri'
-require 'json'
+require "json"
+require "net/http"
+require "uri"
 
 class WhatsappService
-  def initialize(phone_number, booking)
-    @phone_number = format_number(phone_number)
-    @booking = booking
+  GRAPH_API_VERSION = "v22.0".freeze
+  DEFAULT_LANGUAGE_CODE = "en_US".freeze
+
+  Result = Struct.new(
+    :success?,
+    :message_id,
+    :response_code,
+    :response_body,
+    :error_code,
+    keyword_init: true
+  )
+
+  class TransientError < StandardError; end
+
+  def initialize(phone_number:, template_name:, template_parameters:, booking_id: nil, language_code: DEFAULT_LANGUAGE_CODE)
+    @phone_number = Whatsapp::PhoneNumberNormalizer.normalize(phone_number)
+    @template_name = template_name.to_s
+    @template_parameters = Array(template_parameters).map { |value| value.to_s }
+    @booking_id = booking_id
+    @language_code = language_code
   end
 
   def call
-    return unless booking
-    send_via_whatsapp_cloud
+    return failure_result(error_code: "invalid_phone_number") if invalid_phone_number?
+    return failure_result(error_code: "missing_configuration") if missing_configuration?
+
+    response = http_client.request(build_request)
+    parsed_body = parse_json(response.body)
+    message_id = parsed_body.dig("messages", 0, "id")
+    result = Result.new(
+      success?: response.is_a?(Net::HTTPSuccess),
+      message_id: message_id,
+      response_code: response.code.to_i,
+      response_body: parsed_body
+    )
+
+    if result.success?
+      log_success(result)
+      result
+    elsif transient_response?(response.code.to_i)
+      log_failure(result, error_code: "transient_http_error")
+      raise TransientError, "WhatsApp Cloud API transient failure (HTTP #{response.code})"
+    else
+      log_failure(result, error_code: "http_error")
+      result
+    end
+  rescue Net::OpenTimeout, Net::ReadTimeout, Timeout::Error, EOFError, IOError, SocketError => e
+    log_exception(e, error_code: "network_error")
+    raise TransientError, e.message
+  rescue JSON::ParserError => e
+    log_exception(e, error_code: "invalid_json_response")
+    raise TransientError, e.message
   end
 
   private
 
-  attr_reader :phone_number, :booking
+  attr_reader :phone_number, :template_name, :template_parameters, :booking_id, :language_code
 
-  def format_number(number)
-    number.to_s.gsub(/\D/, '')
+  def invalid_phone_number?
+    phone_number.blank?
   end
 
-  def send_via_whatsapp_cloud
-    phone_number_id = ENV['WHATSAPP_PHONE_NUMBER_ID']
-    access_token    = ENV['WHATSAPP_ACCESS_TOKEN']
+  def missing_configuration?
+    phone_number_id.blank? || access_token.blank?
+  end
 
-    if phone_number_id.blank? || access_token.blank?
-      Rails.logger.error "[WhatsAppCloud] Missing WHATSAPP_PHONE_NUMBER_ID or WHATSAPP_ACCESS_TOKEN – skipping send"
-      return
-    end
+  def failure_result(error_code:)
+    result = Result.new(success?: false, error_code: error_code)
+    log_failure(result, error_code: error_code)
+    result
+  end
 
-    uri = URI("https://graph.facebook.com/v22.0/#{phone_number_id}/messages")
+  def phone_number_id
+    ENV["WHATSAPP_PHONE_NUMBER_ID"]
+  end
 
-    http = Net::HTTP.new(uri.host, uri.port)
+  def access_token
+    ENV["WHATSAPP_ACCESS_TOKEN"]
+  end
+
+  def endpoint_uri
+    URI("https://graph.facebook.com/#{GRAPH_API_VERSION}/#{phone_number_id}/messages")
+  end
+
+  def http_client
+    http = Net::HTTP.new(endpoint_uri.host, endpoint_uri.port)
     http.use_ssl = true
     http.open_timeout = 5
     http.read_timeout = 10
+    http
+  end
 
-    request = Net::HTTP::Post.new(uri)
-    request['Content-Type']  = 'application/json'
-    request['Authorization'] = "Bearer #{access_token}"
+  def build_request
+    request = Net::HTTP::Post.new(endpoint_uri)
+    request["Content-Type"] = "application/json"
+    request["Authorization"] = "Bearer #{access_token}"
+    request.body = request_payload.to_json
+    request
+  end
 
-    request.body = {
+  def request_payload
+    {
       messaging_product: "whatsapp",
       to: phone_number,
       type: "template",
       template: {
-        name: "booking_request",
+        name: template_name,
         language: {
-          code: "en_US"
+          code: language_code
         },
         components: [
           {
             type: "body",
-            parameters: [
-              { type: "text", text: booking.homestay.name },
-              { type: "text", text: booking.guest_name },
-              { type: "text", text: booking.guest_phone },
-              { type: "text", text: booking.check_in_date.strftime("%d %b %Y") },
-              { type: "text", text: booking.check_out_date.strftime("%d %b %Y") },
-              { type: "text", text: booking.number_of_guests.to_s }
-            ]
+            parameters: template_parameters.map do |value|
+              { type: "text", text: value }
+            end
           }
         ]
       }
-    }.to_json
+    }
+  end
 
-    response = http.request(request)
+  def parse_json(body)
+    return {} if body.blank?
 
-    Rails.logger.info "[WhatsAppCloud] Response: #{response.code} #{response.body}"
+    JSON.parse(body)
+  end
 
-    if response.is_a?(Net::HTTPSuccess)
-      Rails.logger.info "[WhatsAppCloud] ✅ Message sent successfully to #{phone_number}"
-    else
-      Rails.logger.error "[WhatsAppCloud] ❌ Failed to send message to #{phone_number}"
-    end
+  def transient_response?(status_code)
+    status_code == 429 || status_code >= 500
+  end
 
-  rescue StandardError => e
-    Rails.logger.error "[WhatsAppCloud] ❌ Error sending message to #{phone_number} - #{e.class}: #{e.message}"
+  def log_success(result)
+    Observability::StructuredLogger.info(
+      log_payload(result).merge(
+        event: "whatsapp.outbound.sent",
+        result: "success"
+      )
+    )
+  end
+
+  def log_failure(result, error_code:)
+    Observability::StructuredLogger.error(
+      log_payload(result).merge(
+        event: "whatsapp.outbound.failed",
+        result: "failure",
+        error_code: error_code
+      )
+    )
+  end
+
+  def log_exception(error, error_code:)
+    Observability::StructuredLogger.error(
+      log_payload(nil).merge(
+        event: "whatsapp.outbound.exception",
+        result: "failure",
+        error_code: error_code,
+        error_class: error.class.name,
+        error_message: error.message
+      )
+    )
+  end
+
+  def log_payload(result)
+    {
+      booking_id: booking_id,
+      phone_number: phone_number,
+      template_name: template_name,
+      meta_message_id: result&.message_id,
+      http_status: result&.response_code,
+      response: result&.response_body
+    }
   end
 end

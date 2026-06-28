@@ -1,4 +1,4 @@
-class WhatsappUserRejectionJob < ApplicationJob
+class WhatsappGuestAcknowledgementJob < ApplicationJob
   queue_as :default
 
   retry_on WhatsappService::TransientError, wait: :polynomially_longer, attempts: 5
@@ -8,7 +8,7 @@ class WhatsappUserRejectionJob < ApplicationJob
 
     WhatsappService.new(
       phone_number: booking.guest_phone,
-      template_name: "booking_rejected",
+      template_name: "booking_request_received",
       template_parameters: [
         booking.guest_name
       ],

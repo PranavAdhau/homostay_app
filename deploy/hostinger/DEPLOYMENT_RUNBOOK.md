@@ -103,6 +103,15 @@ sudo install -o root -g deploy -m 0640 /dev/null /etc/homostay_app.env
 sudo nano /etc/homostay_app.env
 ```
 
+Make sure the WhatsApp section includes:
+
+- `WHATSAPP_PHONE_NUMBER_ID`
+- `WHATSAPP_ACCESS_TOKEN`
+- `WHATSAPP_BUSINESS_ACCOUNT_ID`
+- `WHATSAPP_WEBHOOK_VERIFY_TOKEN`
+- `WHATSAPP_APP_SECRET`
+- `ADMIN_WHATSAPP_NUMBER`
+
 ```bash
 cd /var/www/homostay_app/client
 npm ci
@@ -164,6 +173,13 @@ sudo systemctl status homostay_app_sidekiq --no-pager
 ls -lah /var/www/homostay_app/server/tmp/sockets/
 curl -i http://82.25.105.149/up
 ```
+
+After the app is reachable over its public HTTPS URL, configure the Meta webhook
+callback to:
+
+- `https://thesacredhomes.com/webhooks/whatsapp`
+
+Use the same `WHATSAPP_WEBHOOK_VERIFY_TOKEN` value from `/etc/homostay_app.env`.
 
 ## Normal Deploy
 

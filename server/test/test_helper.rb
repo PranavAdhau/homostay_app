@@ -1,4 +1,5 @@
 ENV["RAILS_ENV"] ||= "test"
+ENV["SECRET_KEY_BASE"] ||= "test-secret-key-base"
 require_relative "../config/environment"
 require "rails/test_help"
 require "devise"
@@ -19,6 +20,7 @@ end
 module ActiveSupport
   class TestCase
     include ActiveJob::TestHelper
+    ActiveJob::Base.queue_adapter = :test
 
     # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors)

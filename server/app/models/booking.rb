@@ -116,6 +116,7 @@ class Booking < ApplicationRecord
   def send_notifications_after_commit
     if previous_changes.key?("id") && status == "pending"
       notify_owner
+      notify_guest_acknowledgement
     elsif previous_changes.key?("status")
       case status
       when "approved"
@@ -138,6 +139,10 @@ class Booking < ApplicationRecord
 
   def notify_user_rejection
     WhatsappUserRejectionJob.perform_later(self)
+  end
+
+  def notify_guest_acknowledgement
+    WhatsappGuestAcknowledgementJob.perform_later(self)
   end
 
   def normalize_guest_contact_fields

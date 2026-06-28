@@ -165,4 +165,5 @@ class AdminApiV1BookingsTest < ActionDispatch::IntegrationTest
     assert_not hold.reload.active?
     assert hold.released_at.present?
   end
+
 end
