@@ -3,7 +3,7 @@
 # Then create symlink: ln -s /etc/nginx/sites-available/homostay_app /etc/nginx/sites-enabled/
 
 upstream rails_app {
-  server unix:///var/www/homostay_app/server/tmp/sockets/puma.sock;
+  server 127.0.0.1:3000;
 }
 
 server {

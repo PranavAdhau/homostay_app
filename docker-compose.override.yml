@@ -1,0 +1,5 @@
+# Local development only. Do not use this override on the VPS or other production hosts.
+services:
+  rails:
+    ports:
+      - "3000:3000"

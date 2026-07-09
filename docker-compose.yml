@@ -1,0 +1,112 @@
+services:
+  rails:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+      args:
+        RUBY_VERSION: ${RUBY_VERSION:-3.3.10}
+        NODE_VERSION: ${NODE_VERSION:-20.19.0}
+        BUNDLER_VERSION: ${BUNDLER_VERSION:-2.7.2}
+    image: sacred-homes-rails:local
+    command: bundle exec puma -C config/puma.rb
+    environment:
+      RAILS_ENV: production
+      PORT: 3000
+      BACKEND_URL: ${BACKEND_URL:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      APP_HOSTS: ${APP_HOSTS:-localhost,127.0.0.1,rails,nginx}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-development-secret-key-base-change-me}
+      HOMOSTAY_APP_DATABASE_PASSWORD: ${HOMOSTAY_APP_DATABASE_PASSWORD:-change_me}
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME:-homostay_app_production}
+      DATABASE_USER: ${DATABASE_USER:-homostay_app}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      RAILS_SERVE_STATIC_FILES: "1"
+      RAILS_FORCE_SSL: ${RAILS_FORCE_SSL:-false}
+      RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-5}
+      RAILS_MIN_THREADS: ${RAILS_MIN_THREADS:-5}
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-1}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "3000"
+    volumes:
+      - rails_storage:/app/server/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3000/up >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  sidekiq:
+    image: sacred-homes-rails:local
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+      args:
+        RUBY_VERSION: ${RUBY_VERSION:-3.3.10}
+        NODE_VERSION: ${NODE_VERSION:-20.19.0}
+        BUNDLER_VERSION: ${BUNDLER_VERSION:-2.7.2}
+    command: bundle exec sidekiq -e production -c ${SIDEKIQ_CONCURRENCY:-2}
+    environment:
+      RAILS_ENV: production
+      BACKEND_URL: ${BACKEND_URL:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-development-secret-key-base-change-me}
+      HOMOSTAY_APP_DATABASE_PASSWORD: ${HOMOSTAY_APP_DATABASE_PASSWORD:-change_me}
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME:-homostay_app_production}
+      DATABASE_USER: ${DATABASE_USER:-homostay_app}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-5}
+      RAILS_MIN_THREADS: ${RAILS_MIN_THREADS:-5}
+      SIDEKIQ_CONCURRENCY: ${SIDEKIQ_CONCURRENCY:-2}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - rails_storage:/app/server/storage
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-homostay_app_production}
+      POSTGRES_USER: ${DATABASE_USER:-homostay_app}
+      POSTGRES_PASSWORD: ${HOMOSTAY_APP_DATABASE_PASSWORD:-change_me}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-bookworm
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  rails_storage:

@@ -1,62 +1,69 @@
-# syntax = docker/dockerfile:1
+# syntax = docker/dockerfile:1.7
 
-# Make sure RUBY_VERSION matches the Ruby version in .ruby-version and Gemfile
 ARG RUBY_VERSION=3.3.10
-FROM registry.docker.com/library/ruby:$RUBY_VERSION-slim as base
+ARG NODE_VERSION=20.19.0
+ARG BUNDLER_VERSION=2.7.2
 
-# Rails app lives here
-WORKDIR /rails
+FROM node:${NODE_VERSION}-bookworm-slim AS frontend-build
+WORKDIR /app/client
 
-# Set production environment
-ENV RAILS_ENV="production" \
-    BUNDLE_DEPLOYMENT="1" \
-    BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development"
+COPY client/package.json client/package-lock.json ./
 
+RUN npm config set fetch-retries 5 && \
+    npm ci --prefer-online --no-audit
 
-# Throw-away build stage to reduce size of final image
-FROM base as build
+COPY client/ ./
+ARG VITE_FRONTEND_URL=""
+ARG VITE_API_BASE_URL=""
+ENV VITE_FRONTEND_URL="${VITE_FRONTEND_URL}" \
+    VITE_API_BASE_URL="${VITE_API_BASE_URL}"
+RUN npm run build:production
 
-# Install packages needed to build gems
+FROM ruby:${RUBY_VERSION}-slim AS gems
+WORKDIR /app/server
+ARG BUNDLER_VERSION
+
+ENV RAILS_ENV=production \
+    BUNDLE_DEPLOYMENT=1 \
+    BUNDLE_PATH=/usr/local/bundle \
+    BUNDLE_WITHOUT=development:test
+
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libpq-dev libvips pkg-config
+    apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev pkg-config && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install application gems
-COPY Gemfile Gemfile.lock ./
-RUN bundle install && \
-    rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
-    bundle exec bootsnap precompile --gemfile
+COPY server/Gemfile server/Gemfile.lock ./
+RUN gem install bundler -v "${BUNDLER_VERSION}" && \
+    bundle _${BUNDLER_VERSION}_ install && \
+    rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git
 
-# Copy application code
-COPY . .
+FROM ruby:${RUBY_VERSION}-slim AS app
+WORKDIR /app/server
 
-# Precompile bootsnap code for faster boot times
-RUN bundle exec bootsnap precompile app/ lib/
+ENV RAILS_ENV=production \
+    BUNDLE_DEPLOYMENT=1 \
+    BUNDLE_PATH=/usr/local/bundle \
+    BUNDLE_WITHOUT=development:test \
+    PORT=3000
 
-# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
-
-
-# Final stage for app image
-FROM base
-
-# Install packages needed for deployment
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libvips postgresql-client && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+    apt-get install --no-install-recommends -y curl libvips postgresql-client libpq5 && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy built artifacts: gems, application
-COPY --from=build /usr/local/bundle /usr/local/bundle
-COPY --from=build /rails /rails
+COPY --from=gems /usr/local/bundle /usr/local/bundle
+COPY server/ ./
+COPY scripts/ /app/server/scripts/
+RUN chmod +x /app/server/scripts/*.sh
+COPY --from=frontend-build /app/client/build/ ./public/
 
-# Run and own only the runtime files as a non-root user for security
-RUN useradd rails --create-home --shell /bin/bash && \
-    chown -R rails:rails db log storage tmp
+RUN bundle exec bootsnap precompile --gemfile && \
+    bundle exec bootsnap precompile app/ lib/ && \
+    useradd rails --create-home --shell /bin/bash && \
+    mkdir -p log tmp/pids tmp/cache tmp/sockets storage && \
+    chown -R rails:rails log tmp storage public
+
 USER rails:rails
 
-# Entrypoint prepares the database.
-ENTRYPOINT ["/rails/bin/docker-entrypoint"]
-
-# Start the server by default, this can be overwritten at runtime
+ENTRYPOINT ["/app/server/bin/docker-entrypoint"]
 EXPOSE 3000
-CMD ["./bin/rails", "server"]
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]

@@ -1,0 +1,57 @@
+# Git and editor state
+.git
+.github
+.cursor
+.codex
+.agents
+.rubymate
+.ruby-lsp
+.vscode
+
+# Node and Ruby dependencies
+node_modules
+client/node_modules
+server/node_modules
+server/vendor/bundle
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+!.env.development.example
+!.env.test.example
+server/.env
+server/.env.*
+!server/.env.example
+!server/.env.production.example
+!server/.env.development.example
+!server/.env.test.example
+client/.env
+client/.env.*
+!client/.env.production.example
+!client/.env.development.example
+!client/.env.test.example
+server/config/master.key
+
+# Build output
+build
+dist
+client/build
+client/dist
+server/public/index.html
+server/public/assets
+server/public/vite
+
+# Logs, temp files, storage, and local artifacts
+*.log
+server/log
+server/tmp
+server/storage
+tmp
+storage
+
+# Misc local files
+.DS_Store
+Thumbs.db
+*.dump

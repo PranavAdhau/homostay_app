@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.10
+          bundler-cache: true
+          working-directory: server
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Frontend production build
+        working-directory: client
+        run: npm run build:production
+
+      - name: Rails boot
+        working-directory: server
+        env:
+          RAILS_ENV: test
+          SECRET_KEY_BASE: test-secret-key-base
+        run: bundle exec rails runner 'puts "boot-ok"'
+
+      - name: Docker build
+        run: docker build -f server/Dockerfile -t sacred-homes-rails:ci .
+
+      - name: Compose validation
+        run: |
+          docker compose -f docker-compose.yml config >/dev/null
+          docker compose -f docker-compose.yml -f docker-compose.production.yml config >/dev/null

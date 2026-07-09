@@ -41,11 +41,6 @@ environment rails_env
 # Specifies the `pidfile` that Puma will use.
 pidfile ENV.fetch("PIDFILE") { "tmp/pids/server.pid" }
 
-# Unix socket for production (used by Nginx)
-if rails_env == "production"
-  bind "unix://tmp/sockets/puma.sock"
-end
-
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
 plugin :systemd

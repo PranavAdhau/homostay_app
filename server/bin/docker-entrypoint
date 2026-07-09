@@ -1,8 +1,13 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-# If running the rails server then create or migrate existing database
-if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
-  ./bin/rails db:prepare
+# Wait for PostgreSQL before starting the web server.
+# Database initialization (db:prepare) is intentionally handled
+# by scripts/docker-db-setup.sh during deployment.
+if [[ "${1:-}" == "bundle" && "${2:-}" == "exec" ]]; then
+  if [[ "${3:-}" == "puma" ]]; then
+    /app/server/scripts/wait-for-postgres.sh
+  fi
 fi
 
-exec "${@}"
+exec "$@"

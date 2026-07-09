@@ -22,7 +22,9 @@ Rails.application.configure do
   # config.require_master_key = true
 
   # Enable serving static files from `public/` (or use Nginx)
-  config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present? || true
+  config.public_file_server.enabled = ActiveModel::Type::Boolean.new.cast(
+    ENV.fetch("RAILS_SERVE_STATIC_FILES", "true")
+  )
 
   # Compress CSS using a preprocessor.
   # config.assets.css_compressor = :sass
@@ -101,7 +103,7 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  config.hosts = ENV.fetch("APP_HOSTS", "").split(",").map(&:strip).reject(&:blank?)
+  config.hosts = ENV.fetch("APP_HOSTS", "localhost,127.0.0.1,rails,nginx").split(",").map(&:strip).reject(&:blank?)
 
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }

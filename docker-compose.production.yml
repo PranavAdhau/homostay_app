@@ -1,0 +1,30 @@
+services:
+  rails:
+    environment:
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?Set SECRET_KEY_BASE to a strong random value}
+      HOMOSTAY_APP_DATABASE_PASSWORD: ${HOMOSTAY_APP_DATABASE_PASSWORD:?Set HOMOSTAY_APP_DATABASE_PASSWORD to the PostgreSQL password}
+    ports: []
+    expose:
+      - "3000"
+
+  sidekiq:
+    environment:
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?Set SECRET_KEY_BASE to a strong random value}
+      HOMOSTAY_APP_DATABASE_PASSWORD: ${HOMOSTAY_APP_DATABASE_PASSWORD:?Set HOMOSTAY_APP_DATABASE_PASSWORD to the PostgreSQL password}
+
+  nginx:
+    image: nginx:1.28-bookworm
+    depends_on:
+      rails:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
