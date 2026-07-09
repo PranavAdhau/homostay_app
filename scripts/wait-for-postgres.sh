@@ -1,27 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-host="${DATABASE_HOST:-}"
-port="${DATABASE_PORT:-5432}"
-user="${DATABASE_USER:-}"
-db="${DATABASE_NAME:-}"
+if [[ -n "${DATABASE_URL:-}" ]]; then
+  echo "Using DATABASE_URL for PostgreSQL connection."
 
-if [[ -z "$host" && -n "${DATABASE_URL:-}" ]]; then
-  if [[ "$DATABASE_URL" =~ ^[A-Za-z][A-Za-z0-9+.-]*://([^:/@]+)(:([^@/]+))?@([^/:]+)(:([0-9]+))?/([^?]+) ]]; then
-    user="${user:-${BASH_REMATCH[1]}}"
-    host="${host:-${BASH_REMATCH[4]}}"
-    port="${port:-${BASH_REMATCH[6]}}"
-    db="${db:-${BASH_REMATCH[7]}}"
-  fi
+  host=$(ruby -ruri -e 'puts URI.parse(ENV["DATABASE_URL"]).host')
+  port=$(ruby -ruri -e 'puts URI.parse(ENV["DATABASE_URL"]).port')
+  user=$(ruby -ruri -e 'puts URI.parse(ENV["DATABASE_URL"]).user')
+  db=$(ruby -ruri -e 'puts URI.parse(ENV["DATABASE_URL"]).path.sub(%r{^/}, "")')
+else
+  echo "Using DATABASE_HOST for PostgreSQL connection."
+
+  host="${DATABASE_HOST:-postgres}"
+  port="${DATABASE_PORT:-5432}"
+  user="${DATABASE_USER:-homostay_app}"
+  db="${DATABASE_NAME:-homostay_app_production}"
 fi
 
-host="${host:-postgres}"
-port="${port:-5432}"
-user="${user:-homostay_app}"
-db="${db:-homostay_app_production}"
+echo "Waiting for PostgreSQL at ${host}:${port}..."
 
 until pg_isready -h "$host" -p "$port" -U "$user" -d "$db" >/dev/null 2>&1; do
-  echo "Waiting for PostgreSQL at ${host}:${port}..."
   sleep 2
 done
 
