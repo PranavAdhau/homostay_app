@@ -43,8 +43,7 @@ WORKDIR /app/server
 ENV RAILS_ENV=production \
     BUNDLE_DEPLOYMENT=1 \
     BUNDLE_PATH=/usr/local/bundle \
-    BUNDLE_WITHOUT=development:test \
-    PORT=3000
+    BUNDLE_WITHOUT=development:test
 
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y curl libvips postgresql-client libpq5 && \
@@ -65,5 +64,5 @@ RUN bundle exec bootsnap precompile --gemfile && \
 USER rails:rails
 
 ENTRYPOINT ["/app/server/bin/docker-entrypoint"]
-EXPOSE 3000
+EXPOSE 8080
 CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
