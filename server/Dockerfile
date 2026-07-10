@@ -63,6 +63,6 @@ RUN bundle exec bootsnap precompile --gemfile && \
 
 USER rails:rails
 
-ENTRYPOINT ["/app/server/bin/docker-entrypoint"]
+ENV PORT=8080
 EXPOSE 8080
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+CMD ["/bin/bash", "-lc", "cd /app/server && /app/server/scripts/wait-for-postgres.sh && exec bundle exec puma -C config/puma.rb"]
