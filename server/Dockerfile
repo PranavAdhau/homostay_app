@@ -65,4 +65,5 @@ USER rails:rails
 
 ENV PORT=8080
 EXPOSE 8080
-CMD ["/bin/bash", "-lc", "cd /app/server && /app/server/scripts/wait-for-postgres.sh && exec bundle exec puma -C config/puma.rb"]
+ENTRYPOINT ["./bin/docker-entrypoint"]
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]

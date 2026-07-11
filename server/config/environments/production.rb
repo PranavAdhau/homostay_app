@@ -1,5 +1,6 @@
 require "active_support/core_ext/integer/time"
 require "uri"
+require "set"
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -103,7 +104,21 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  config.hosts = ENV.fetch("APP_HOSTS", "localhost,127.0.0.1,rails,nginx").split(",").map(&:strip).reject(&:blank?)
+  config.hosts =
+    if ENV["APP_HOSTS"].present?
+      ENV["APP_HOSTS"].split(",").map(&:strip).reject(&:blank?)
+    else
+      host_candidates = Set.new(%w[localhost 127.0.0.1 rails nginx])
+
+      [ ENV["BACKEND_URL"], ENV["FRONTEND_URL"] ].compact.each do |url|
+        uri = URI.parse(url)
+        host_candidates << uri.host if uri.host.present?
+      rescue URI::InvalidURIError
+        next
+      end
+
+      host_candidates.to_a
+    end
 
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
