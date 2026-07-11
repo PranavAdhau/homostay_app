@@ -1,16 +1,14 @@
 const trimTrailingSlash = (value: string) => value.replace(/\/$/, '');
 
+const resolveBrowserOrigin = () =>
+  typeof window === 'undefined' ? '' : window.location.origin.trim();
+
 export const resolveApiBaseUrl = () => {
   const configuredBaseURL = import.meta.env.VITE_API_BASE_URL?.trim();
-  const baseURL =
-    import.meta.env.MODE === 'development'
-      ? window.location.origin
-      : import.meta.env.MODE === 'test'
-        ? configuredBaseURL || window.location.origin
-        : configuredBaseURL;
+  const baseURL = configuredBaseURL || resolveBrowserOrigin();
 
   if (!baseURL) {
-    throw new Error('VITE_API_BASE_URL is not configured');
+    throw new Error('API base URL could not be resolved');
   }
 
   return trimTrailingSlash(baseURL);
@@ -23,14 +21,15 @@ export const resolveAppBaseUrl = () => {
 
 export const resolveCanonicalBaseUrl = () => {
   const configuredFrontEndURL = import.meta.env.VITE_FRONTEND_URL?.trim();
+  const browserOrigin = resolveBrowserOrigin();
 
-  if (import.meta.env.MODE === 'development') {
-    return trimTrailingSlash(window.location.origin);
+  if (import.meta.env.MODE === 'development' && browserOrigin) {
+    return trimTrailingSlash(browserOrigin);
   }
 
   if (import.meta.env.MODE === 'test') {
-    return trimTrailingSlash(configuredFrontEndURL || window.location.origin);
+    return trimTrailingSlash(configuredFrontEndURL || browserOrigin);
   }
 
-  return trimTrailingSlash(configuredFrontEndURL || resolveAppBaseUrl());
+  return trimTrailingSlash(configuredFrontEndURL || browserOrigin || resolveAppBaseUrl());
 };
