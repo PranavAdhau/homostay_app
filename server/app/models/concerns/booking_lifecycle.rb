@@ -22,7 +22,7 @@ module BookingLifecycle
 
     rejected = false
     transaction do
-      update_column(:status, :rejected)
+      update!(status: :rejected)
       release_inventory!
       rejected = true
     end
@@ -34,7 +34,7 @@ module BookingLifecycle
 
     completed = false
     transaction do
-      update_column(:status, :completed)
+      update!(status: :completed)
       release_inventory!
       completed = true
     end
@@ -79,7 +79,7 @@ module BookingLifecycle
   end
 
   def release_availability_slots
-    availability_slots.update_all(booking_id: nil)
+    availability_slots.delete_all
   end
 
   def release_inventory!

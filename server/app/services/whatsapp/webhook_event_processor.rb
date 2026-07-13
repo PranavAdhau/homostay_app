@@ -85,14 +85,7 @@ module Whatsapp
       return @matching_booking if defined?(@matching_booking)
 
       phone = normalized_from_phone.presence || normalized_recipient_phone.presence
-      @matching_booking =
-        if phone.blank?
-          nil
-        else
-          Booking.order(created_at: :desc).detect do |booking|
-            Whatsapp::PhoneNumberNormalizer.normalize(booking.guest_phone) == phone
-          end
-        end
+      @matching_booking = phone.blank? ? nil : find_matching_booking(phone)
     end
 
     def normalized_from_phone
@@ -105,6 +98,46 @@ module Whatsapp
 
     def idempotency_key(event_id)
       "whatsapp:webhook:event:#{event_id}"
+    end
+
+    def find_matching_booking(phone)
+      active_bookings = Booking.where(status: %i[pending approved]).order(created_at: :desc).to_a
+
+      exact_active_match = active_bookings.find do |booking|
+        Whatsapp::PhoneNumberNormalizer.normalize(booking.guest_phone) == phone
+      end
+      return exact_active_match if exact_active_match
+
+      suffix_active_matches = bookings_matching_phone_suffix(active_bookings, phone)
+      return suffix_active_matches.first if suffix_active_matches.one?
+
+      all_bookings = Booking.order(created_at: :desc).to_a
+
+      exact_match = all_bookings.find do |booking|
+        Whatsapp::PhoneNumberNormalizer.normalize(booking.guest_phone) == phone
+      end
+      return exact_match if exact_match
+
+      suffix_matches = bookings_matching_phone_suffix(all_bookings, phone)
+      return suffix_matches.first if suffix_matches.one?
+
+      nil
+    end
+
+    def bookings_matching_phone_suffix(bookings, phone)
+      suffix = comparable_phone_suffix(phone)
+      return [] if suffix.blank?
+
+      bookings.select do |booking|
+        comparable_phone_suffix(Whatsapp::PhoneNumberNormalizer.normalize(booking.guest_phone)) == suffix
+      end
+    end
+
+    def comparable_phone_suffix(phone)
+      digits = phone.to_s.gsub(/\D/, "")
+      return if digits.length < 10
+
+      digits.last(10)
     end
 
     def base_log_payload

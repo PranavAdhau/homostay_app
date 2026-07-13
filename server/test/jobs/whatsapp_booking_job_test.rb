@@ -51,7 +51,7 @@ class WhatsappBookingJobTest < ActiveSupport::TestCase
     end
   end
 
-  test "booking job sends host template and marks whatsapp_message_sent on success" do
+  test "booking job sends host template and marks host notification sent on success" do
     booking = create_booking!(create_homestay!)
     result = Struct.new(:success?).new(true)
 
@@ -66,6 +66,16 @@ class WhatsappBookingJobTest < ActiveSupport::TestCase
       end
 
       assert_equal true, booking.reload.whatsapp_message_sent
+    end
+  end
+
+  test "booking job skips send when host notification has already been recorded" do
+    booking = create_booking!(create_homestay!)
+    booking.update_column(:whatsapp_message_sent, true)
+
+    stub_whatsapp_service(result: Struct.new(:success?).new(true)) do |calls|
+      WhatsappBookingJob.perform_now(booking)
+      assert_empty calls
     end
   end
 

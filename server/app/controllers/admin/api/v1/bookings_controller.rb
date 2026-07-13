@@ -93,7 +93,8 @@ class Admin::Api::V1::BookingsController < Admin::Api::V1::BaseController
       number_of_guests: booking.number_of_guests,
       total_price: booking.total_price.to_f,
       status: booking.status,
-      whatsapp_message_sent: booking.whatsapp_message_sent,
+      host_notification_sent: booking.host_notification_sent?,
+      whatsapp_message_sent: booking.host_notification_sent?,
       created_at: booking.created_at,
       updated_at: booking.updated_at
     }

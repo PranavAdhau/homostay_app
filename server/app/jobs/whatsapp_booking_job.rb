@@ -5,6 +5,7 @@ class WhatsappBookingJob < ApplicationJob
 
   def perform(booking)
     return unless booking
+    return if booking.host_notification_sent?
 
     result = WhatsappService.new(
       phone_number: ENV["ADMIN_WHATSAPP_NUMBER"],
@@ -21,6 +22,6 @@ class WhatsappBookingJob < ApplicationJob
       booking_id: booking.id
     ).call
 
-    booking.update_column(:whatsapp_message_sent, true) if result.success?
+    booking.mark_host_notification_sent! if result.success?
   end
 end

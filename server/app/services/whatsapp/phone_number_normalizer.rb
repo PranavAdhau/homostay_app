@@ -5,7 +5,7 @@ module Whatsapp
         digits = value.to_s.gsub(/\D/, "")
         return if digits.blank?
 
-        digits
+        digits.sub(/\A00/, "")
       end
     end
   end

@@ -39,8 +39,8 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
     homestay = create_homestay!
     booking_params = {
       homestay_id: homestay.id,
-      check_in_date: "2026-07-10",
-      check_out_date: "2026-07-12",
+      check_in_date: "2026-08-10",
+      check_out_date: "2026-08-12",
       number_of_guests: 2,
       total_price: 1000
     }
@@ -80,8 +80,8 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
         guest_name: "Pending Guest",
         guest_email: "pending@example.com",
         guest_phone: "+91 9309800427",
-        check_in_date: "2026-07-10",
-        check_out_date: "2026-07-12",
+        check_in_date: "2026-08-10",
+        check_out_date: "2026-08-12",
         number_of_guests: 2,
         total_price: 1000
       }
@@ -210,10 +210,10 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
     assert_includes parsed_response["errors"], "Guest phone is invalid"
   end
 
-  test "booking creation enqueues host and guest whatsapp jobs" do
+  test "booking creation enqueues telegram host and guest acknowledgement jobs" do
     homestay = create_homestay!
 
-    assert_enqueued_with(job: WhatsappBookingJob) do
+    assert_enqueued_with(job: TelegramBookingJob) do
       assert_enqueued_with(job: WhatsappGuestAcknowledgementJob) do
         post "/api/v1/bookings", params: {
           booking: {
@@ -231,5 +231,7 @@ class ApiV1BookingsTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :created
+    assert_equal false, parsed_response.dig("data", "host_notification_sent")
+    assert_equal false, parsed_response.dig("data", "whatsapp_message_sent")
   end
 end

@@ -32,6 +32,11 @@ class AdminApiV1BookingsTest < ActionDispatch::IntegrationTest
   setup do
     @admin = AdminUser.create!(email: "admin-#{SecureRandom.hex(4)}@example.com", password: "Password123!", password_confirmation: "Password123!")
     sign_in @admin
+    clear_enqueued_jobs
+  end
+
+  teardown do
+    clear_enqueued_jobs
   end
 
   test "approve preflight succeeds before opening the confirmation flow" do
@@ -133,7 +138,9 @@ class AdminApiV1BookingsTest < ActionDispatch::IntegrationTest
       token: SecureRandom.uuid
     )
 
-    patch "/admin/api/v1/bookings/#{pending_booking.id}/reject", params: {}
+    assert_enqueued_with(job: WhatsappUserRejectionJob) do
+      patch "/admin/api/v1/bookings/#{pending_booking.id}/reject", params: {}
+    end
 
     assert_response :success
     assert_equal true, parsed_response["success"]
@@ -157,7 +164,9 @@ class AdminApiV1BookingsTest < ActionDispatch::IntegrationTest
     hold = pending_booking.reservation_hold
     assert hold.active?
 
-    patch "/admin/api/v1/bookings/#{pending_booking.id}/reject", params: {}
+    assert_enqueued_with(job: WhatsappUserRejectionJob) do
+      patch "/admin/api/v1/bookings/#{pending_booking.id}/reject", params: {}
+    end
 
     assert_response :success
     assert_equal true, parsed_response["success"]

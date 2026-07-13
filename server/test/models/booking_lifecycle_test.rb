@@ -1,6 +1,14 @@
 require "test_helper"
 
 class BookingLifecycleTest < ActiveSupport::TestCase
+  setup do
+    clear_enqueued_jobs
+  end
+
+  teardown do
+    clear_enqueued_jobs
+  end
+
   def create_homestay!
     Homestay.create!(
       name: "Lifecycle Stay",
@@ -26,7 +34,7 @@ class BookingLifecycleTest < ActiveSupport::TestCase
     )
   end
 
-  test "reject! returns true when reservation hold has expired" do
+  test "reject! returns true when reservation hold has expired and enqueues guest rejection notification" do
     homestay = create_homestay!
     booking = create_pending_booking!(homestay)
     booking.create_reservation_hold!(
@@ -37,7 +45,9 @@ class BookingLifecycleTest < ActiveSupport::TestCase
       token: SecureRandom.uuid
     )
 
-    assert_equal true, booking.reject!
+    assert_enqueued_with(job: WhatsappUserRejectionJob) do
+      assert_equal true, booking.reject!
+    end
     assert_equal "rejected", booking.reload.status
   end
 
@@ -49,5 +59,6 @@ class BookingLifecycleTest < ActiveSupport::TestCase
 
     assert_equal true, booking.complete!
     assert_equal "completed", booking.reload.status
+    assert_empty booking.reload.availability_slots
   end
 end

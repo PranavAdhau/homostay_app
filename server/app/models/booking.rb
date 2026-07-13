@@ -63,6 +63,14 @@ class Booking < ApplicationRecord
     approved?
   end
 
+  def host_notification_sent?
+    whatsapp_message_sent?
+  end
+
+  def mark_host_notification_sent!
+    update_column(:whatsapp_message_sent, true)
+  end
+
   private
 
   PHONE_ALLOWED_FORMAT = /\A[+\d\s()-]+\z/
@@ -128,9 +136,9 @@ class Booking < ApplicationRecord
   end
 
   def notify_owner
-    return if whatsapp_message_sent?
+    return if host_notification_sent?
 
-    WhatsappBookingJob.perform_later(self)
+    TelegramBookingJob.perform_later(self)
   end
 
   def notify_user_confirmation

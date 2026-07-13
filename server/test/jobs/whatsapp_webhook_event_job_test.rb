@@ -47,6 +47,15 @@ class WhatsappWebhookEventJobTest < ActiveSupport::TestCase
     end
   end
 
+  def with_modified_env(overrides)
+    original = overrides.transform_values { nil }
+    overrides.each_key { |key| original[key] = ENV[key] }
+    overrides.each { |key, value| ENV[key] = value }
+    yield
+  ensure
+    original.each { |key, value| ENV[key] = value }
+  end
+
   def capture_logs
     info_logs = []
     original_info = Observability::StructuredLogger.method(:info)
@@ -99,8 +108,10 @@ class WhatsappWebhookEventJobTest < ActiveSupport::TestCase
     }
 
     capture_logs do |logs|
-      stub_redis(results: [true, true]) do
-        WhatsappWebhookEventJob.perform_now(payload)
+      with_modified_env("WHATSAPP_BUSINESS_ACCOUNT_ID" => "waba-123") do
+        stub_redis(results: [true, true]) do
+          WhatsappWebhookEventJob.perform_now(payload)
+        end
       end
 
       assert logs.any? { |payload| payload[:event] == "whatsapp.webhook.message_received" }
@@ -129,6 +140,44 @@ class WhatsappWebhookEventJobTest < ActiveSupport::TestCase
       end
 
       assert logs.any? { |payload| payload[:event] == "whatsapp.webhook.duplicate_ignored" }
+    end
+  end
+
+  test "webhook processing prefers active bookings when phone matches multiple bookings" do
+    homestay = create_homestay!
+    older_booking = create_booking!(homestay)
+    older_booking.update_column(:status, Booking.statuses[:rejected])
+    newer_booking = homestay.bookings.create!(
+      guest_name: "Webhook Guest Followup",
+      guest_email: "webhook-followup@example.com",
+      guest_phone: "0091 9309800427",
+      check_in_date: Date.new(2026, 12, 10),
+      check_out_date: Date.new(2026, 12, 12),
+      number_of_guests: 2,
+      total_price: 1000,
+      status: :pending
+    )
+
+    event = {
+      "event_type" => "status",
+      "event_id" => "wamid.status.multi",
+      "entry_id" => "waba-123",
+      "message_id" => "wamid.status.multi",
+      "recipient_phone" => "919309800427",
+      "to_phone_number_id" => "phone-number-id",
+      "timestamp" => "1710000001",
+      "status" => "delivered",
+      "payload" => { "id" => "wamid.status.multi" }
+    }
+
+    capture_logs do |logs|
+      stub_redis(results: [true]) do
+        assert_equal :processed, Whatsapp::WebhookEventProcessor.new(event).call
+      end
+
+      status_log = logs.find { |payload| payload[:event] == "whatsapp.webhook.status_received" }
+      assert_equal newer_booking.id, status_log[:booking_id]
+      refute_equal older_booking.id, status_log[:booking_id]
     end
   end
 end
