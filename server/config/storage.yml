@@ -6,6 +6,15 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
+s3:
+  service: S3
+  access_key_id: <%= ENV["ACTIVE_STORAGE_ACCESS_KEY_ID"].presence || ENV["ACCESS_KEY_ID"].presence || ENV["AWS_ACCESS_KEY_ID"].presence %>
+  secret_access_key: <%= ENV["ACTIVE_STORAGE_SECRET_ACCESS_KEY"].presence || ENV["SECRET_ACCESS_KEY"].presence || ENV["AWS_SECRET_ACCESS_KEY"].presence %>
+  region: <%= ENV["ACTIVE_STORAGE_REGION"].presence || ENV["REGION"].presence || ENV["AWS_DEFAULT_REGION"].presence || "auto" %>
+  bucket: <%= ENV["ACTIVE_STORAGE_BUCKET"].presence || ENV["BUCKET"].presence || ENV["AWS_S3_BUCKET_NAME"].presence %>
+  endpoint: <%= ENV["ACTIVE_STORAGE_ENDPOINT"].presence || ENV["ENDPOINT"].presence || ENV["AWS_ENDPOINT_URL"].presence %>
+  force_path_style: <%= ActiveModel::Type::Boolean.new.cast(ENV.fetch("ACTIVE_STORAGE_FORCE_PATH_STYLE", "true")) %>
+
 # Use bin/rails credentials:edit to set the AWS secrets (as aws:access_key_id|secret_access_key)
 # amazon:
 #   service: S3
@@ -24,7 +33,7 @@ local:
 # Use bin/rails credentials:edit to set the Azure Storage secret (as azure_storage:storage_access_key)
 # microsoft:
 #   service: AzureStorage
-#   storage_account_name: your_account_name
+#   storage_account_name: <%= Rails.application.credentials.dig(:azure_storage, :storage_account_name) %>
 #   storage_access_key: <%= Rails.application.credentials.dig(:azure_storage, :storage_access_key) %>
 #   container: your_container_name-<%= Rails.env %>
 

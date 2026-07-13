@@ -53,6 +53,7 @@ COPY --from=gems /usr/local/bundle /usr/local/bundle
 COPY server/ ./
 COPY scripts/ /app/server/scripts/
 RUN chmod +x /app/server/scripts/*.sh
+RUN chmod +x /app/server/bin/railway-start /app/server/bin/railway-predeploy
 COPY --from=frontend-build /app/client/build/ ./public/
 
 RUN bundle exec bootsnap precompile --gemfile && \

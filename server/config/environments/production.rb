@@ -1,6 +1,7 @@
 require "active_support/core_ext/integer/time"
 require "uri"
 require "set"
+require Rails.root.join("lib/infrastructure/active_storage_config").to_s
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -40,8 +41,8 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Sendfile" # for Apache
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
-  # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  # Store uploaded files on S3-compatible object storage in production when configured.
+  config.active_storage.service = Infrastructure::ActiveStorageConfig.service_name
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
@@ -78,7 +79,11 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "homostay_app_production"
 
   config.action_mailer.perform_caching = false
-  production_url = ENV.fetch("BACKEND_URL", ENV.fetch("FRONTEND_URL"))
+  production_url =
+    ENV["BACKEND_URL"].presence ||
+    ENV["FRONTEND_URL"].presence ||
+    ENV["RAILWAY_PUBLIC_DOMAIN"].presence&.then { |domain| "https://#{domain}" } ||
+    "http://localhost"
   production_uri = URI.parse(production_url)
   default_url_options = {
     protocol: production_uri.scheme,
@@ -116,6 +121,8 @@ Rails.application.configure do
       rescue URI::InvalidURIError
         next
       end
+
+      host_candidates << ENV["RAILWAY_PUBLIC_DOMAIN"] if ENV["RAILWAY_PUBLIC_DOMAIN"].present?
 
       host_candidates.to_a
     end

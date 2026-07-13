@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd /app/server
+
+mode="${SERVICE_MODE:-web}"
+rails_env="${RAILS_ENV:-production}"
+sidekiq_concurrency="${SIDEKIQ_CONCURRENCY:-2}"
+# Single Railway web service runs Sidekiq alongside Puma by default.
+# Set RUN_SIDEKIQ_IN_WEB=false when a dedicated worker service uses SERVICE_MODE=worker.
+run_sidekiq_in_web="${RUN_SIDEKIQ_IN_WEB:-true}"
+
+SIDEKIQ_PID=""
+PUMA_PID=""
+
+/app/server/scripts/wait-for-postgres.sh
+
+shutdown_children() {
+  local pid
+  for pid in "${PUMA_PID}" "${SIDEKIQ_PID}"; do
+    if [[ -n "${pid}" ]] && kill -0 "${pid}" 2>/dev/null; then
+      kill -TERM "${pid}" 2>/dev/null || true
+    fi
+  done
+  wait || true
+}
+
+start_sidekiq_background() {
+  echo "Starting Sidekiq (concurrency=${sidekiq_concurrency})..."
+  bundle exec sidekiq -e "${rails_env}" -c "${sidekiq_concurrency}" &
+  SIDEKIQ_PID=$!
+}
+
+start_puma_foreground() {
+  echo "Starting Puma..."
+  if [[ -n "${SIDEKIQ_PID}" ]]; then
+    ./bin/docker-entrypoint bundle exec puma -C config/puma.rb &
+    PUMA_PID=$!
+    trap shutdown_children EXIT TERM INT
+    wait "${PUMA_PID}"
+    exit_code=$?
+    shutdown_children
+    trap - EXIT TERM INT
+    exit "${exit_code}"
+  fi
+
+  exec ./bin/docker-entrypoint bundle exec puma -C config/puma.rb
+}
+
+case "$mode" in
+  web)
+    if [[ "${run_sidekiq_in_web}" == "true" ]]; then
+      start_sidekiq_background
+    fi
+    start_puma_foreground
+    ;;
+  worker)
+    echo "Starting Sidekiq worker..."
+    exec bundle exec sidekiq -e "${rails_env}" -c "${sidekiq_concurrency}"
+    ;;
+  all)
+    start_sidekiq_background
+    start_puma_foreground
+    ;;
+  *)
+    echo "Unknown SERVICE_MODE: ${mode} (expected web, worker, or all)" >&2
+    exit 1
+    ;;
+esac

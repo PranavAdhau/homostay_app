@@ -1,0 +1,2 @@
+web: /bin/bash /app/server/bin/railway-start
+worker: SERVICE_MODE=worker /bin/bash /app/server/bin/railway-start

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd /app/server
+
+if [[ "${SERVICE_MODE:-web}" == "worker" ]]; then
+  echo "Skipping db:prepare for SERVICE_MODE=worker"
+  exit 0
+fi
+
+echo "Running rails db:prepare..."
+exec bundle exec rails db:prepare
